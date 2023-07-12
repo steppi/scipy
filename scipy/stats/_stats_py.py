@@ -9893,21 +9893,50 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
     This test and its method for computing confidence intervals are
     non-parametric. They are valid if and only if the observations are i.i.d.
 
-    The implementation of the test follows Conover [1]_. The p-value of this
-    test derives from the binomial distribution but, different from the binomial
-    test, there are two different test statistics::
+    The implementation of the test follows Conover [1]_. The Null hypothesis
+    of the test is:
 
-        k1 = (x <= q).sum()
-        k2 = (x < q).sum()
+    H0: The `p`th population quantile is `q`.
 
-    The p-value is given by::
+    and the null distribution is `Y ~ binom(n=len(x), p=p)`.
 
-        if alternative == 'less':
-            pvalue = bd.sf(k2)
-        elif alternative == 'greater':
-            pvalue = bd.cdf(k1-1)  # -1 because of the step-like CDF
-        elif alternative == 'two-sided':
-            pvalue = min(bd.cdf(k1-1), bd.sf(k2))
+    There are two test statistics:
+
+    T1: The number of observations in x less than or equal to q.
+
+        T1 = (x <= q).sum()
+
+    T2: The number of observations in x strictly less than q.
+
+        T2 = (x < q).sum()
+
+    Using two test statistics is necessary to handle the possibility that
+    `x` was generated from a discrete or mixed distribution.
+
+    When `alternative = 'less', the alternative hypothesis is:
+
+    H1: The `p`th population quantile is less than `q`.
+
+    and the p-value is the probability that the binomial random variable
+    `Y ~ binom(n=len(x), p=p)` is greater than or equal to the observed value
+    `T2`.
+
+    When `alternative = 'greater'`, the alternative hypothesis is :
+
+    H1: The `p`th population quantile is greater than `q`
+
+    and the p-value is the probability that the binomial random variable
+    `Y ~ binom(n=len(x), p=p)` is less than or equal to the observed value
+    `T1`.
+
+    When `alternative = 'two-sided', the alternative hypothesis is
+
+    H1: `q` is not the `p`th population quantile.
+
+    and the p-value is twice the smaller of the p-values for the
+    `alternative = 'less'` and `alternative = 'greater'` cases. Both of
+    these p-values can exceed 0.5 for the same data, so the value is
+    clipped into the interval [0, 1].
 
     The approach for confidence intervals is attributed to Thompson [2]_ and
     later proven to be applicable to any set of i.i.d. samples [3]_. The
