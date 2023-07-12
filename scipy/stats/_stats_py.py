@@ -9732,6 +9732,9 @@ class QuantileTestResult:
         hypothesized quantile.
     pvalue : float
         The p-value of the hypothesis test.
+        
+    In the quantile test, two test statistics are required to handle the
+    possibility the data was generated from a discrete or mixed distribution.
 
     """
 
