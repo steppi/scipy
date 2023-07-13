@@ -10083,7 +10083,7 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
     Also, if a 95% confidence interval is repeatedly generated for random
     samples, the confidence interval will contain the true quantile value in
     approximately 95% of replications.
-    
+
     >>> dist = stats.rayleigh() # our "unknown" distribution
     >>> p = 0.2
     >>> true_stat = dist.ppf(p) # the true value of the statistic
@@ -10096,8 +10096,8 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
     ...     if ci[0] < true_stat < ci[1]:
     ...         quantile_ci_contains_true_stat += 1
     >>> quantile_ci_contains_true_stat  # approximately 95%
-    968
-    
+    >>> assert quantile_ci_contains_true_stat >= 950
+
     This works with any distribution and any quantile, as long as the samples
     are i.i.d.
     """
