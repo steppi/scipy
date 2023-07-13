@@ -9894,47 +9894,59 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
     non-parametric. They are valid if and only if the observations are i.i.d.
 
     The implementation of the test follows Conover [1]_. The Null hypothesis
-    of the test is:
+    for the test is:
 
-        H0: The `p`th population quantile is `q`.
+        **H0**: The `p`th population quantile is `q`.
 
-    and the null distribution is `Y ~ binom(n=len(x), p=p)`.
+    and the null distribution is
+
+    .. math::
+
+        Y \sim \mathrm{binom}\left(n, p\right)
 
     There are two test statistics:
 
-    T1: The number of observations in x less than or equal to q.
+    T1: The number of observations in `x` less than or equal to `q`.
 
         T1 = (x <= q).sum()
 
-    T2: The number of observations in x strictly less than q.
+    T2: The number of observations in `x` strictly less than `q`.
 
         T2 = (x < q).sum()
 
     Using two test statistics is necessary to handle the possibility that
     `x` was generated from a discrete or mixed distribution.
 
-    When `alternative = 'less', the alternative hypothesis is:
+    When ``alternative = 'less'``, the alternative hypothesis is:
 
-        H1: The `p`th population quantile is less than `q`.
+        **H1**: The `p`th population quantile is less than `q`.
+
+    and the `p`-value is the probability that the binomial random variable
+
+    .. math::
+
+        Y \sim \mathrm{binom}\left(n, p\right)
+
+    is greater than or equal to the observed value T2.
+
+    When ``alternative = 'greater'``, the alternative hypothesis is :
+
+        **H1**: The `p`th population quantile is greater than `q`
 
     and the p-value is the probability that the binomial random variable
-    `Y ~ binom(n=len(x), p=p)` is greater than or equal to the observed value
-    `T2`.
 
-    When `alternative = 'greater'`, the alternative hypothesis is :
+    .. math::
 
-        H1: The `p`th population quantile is greater than `q`
+        Y \sim \mathrm{binom}\left(n, p\right)
 
-    and the p-value is the probability that the binomial random variable
-    `Y ~ binom(n=len(x), p=p)` is less than or equal to the observed value
-    `T1`.
+    is less than or equal to the observed value T1.
 
-    When `alternative = 'two-sided', the alternative hypothesis is
+    When ``alternative = 'two-sided'``, the alternative hypothesis is
 
-        H1: `q` is not the `p`th population quantile.
+        **H1**: `q` is not the `p`th population quantile.
 
     and the p-value is twice the smaller of the p-values for the
-    `alternative = 'less'` and `alternative = 'greater'` cases. Both of
+    ``alternative = 'less'`` and ``alternative = 'greater'`` cases. Both of
     these p-values can exceed 0.5 for the same data, so the value is
     clipped into the interval [0, 1].
 
