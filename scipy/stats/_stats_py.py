@@ -9945,10 +9945,9 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
 
         **H1**: `q` is not the `p`th population quantile.
 
-    and the p-value is twice the smaller of the p-values for the
-    ``alternative = 'less'`` and ``alternative = 'greater'`` cases. Both of
-    these p-values can exceed 0.5 for the same data, so the value is
-    clipped into the interval [0, 1].
+    and the p-value is twice the smaller of the p-values for the ``'less'``
+    and ``'greater'`` cases. Both of these p-values can exceed 0.5 for the same
+    data, so the value is clipped into the interval [0, 1].
 
     The approach for confidence intervals is attributed to Thompson [2]_ and
     later proven to be applicable to any set of i.i.d. samples [3]_. The
