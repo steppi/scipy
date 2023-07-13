@@ -9947,7 +9947,7 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
 
     and the p-value is twice the smaller of the p-values for the ``'less'``
     and ``'greater'`` cases. Both of these p-values can exceed 0.5 for the same
-    data, so the value is clipped into the interval [0, 1].
+    data, so the value is clipped into the interval :math:`[0, 1]`.
 
     The approach for confidence intervals is attributed to Thompson [2]_ and
     later proven to be applicable to any set of i.i.d. samples [3]_. The
@@ -10007,28 +10007,28 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
     is equal to 0.5. We choose a confidence level of 99%; that is, we will
     reject the null hypothesis in favor of the alternative if the p-value is
     less than 0.01.
-    
+
     When testing random variates from the standard uniform distribution, which
     has a median of 0.5, we expect the data to be consistent with the null
     hypothesis most of the time.
-    
+
     >>> import numpy as np
     >>> from scipy import stats
     >>> rng = np.random.default_rng(6981396440634228121)
     >>> rvs = stats.uniform.rvs(size=100, random_state=rng)
     >>> stats.quantile_test(rvs, q=0.5, p=0.5)
      QuantileTestResult(statistic1=45, statistic2=45, pvalue=0.36820161732669576)
-    
+
     As expected, the p-value is not below our threshold of 0.01, so
     we cannot reject the null hypothesis.
-    
+
     When testing data from the standard *normal* distribution, which has a 
     median of 0, we would expect the null hypothesis to be rejected.
-    
+
     >>> rvs = stats.norm.rvs(size=100, random_state=rng)
     >>> stats.quantile_test(rvs, q=0.5, p=0.5)
     QuantileTestResult(statistic1=67, statistic2=67, pvalue=0.0008737198369123724)
-    
+
     Indeed, the p-value is lower than our threshold of 0.01, so we reject the
     null hypothesis in favor of the default "two-sided" alternative: the median
     of the population is *not* equal to 0.5.
@@ -10037,38 +10037,38 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
     one-sided alternative that the median of the population is *greater* than
     0.5. Since the median of the standard normal is less than 0.5, we would not
     expect the null hypothesis to be rejected.
-    
+
     >>> stats.quantile_test(rvs, q=0.5, p=0.5, alternative='greater')
     QuantileTestResult(statistic1=67, statistic2=67, pvalue=0.9997956114162866)
-    
+
     Unsurprisingly, with a p-value greater than our threshold, we would not
     reject the null hypothesis in favor of the chosen alternative.
-    
+
     The quantile test can be used for any quantile, not only the median. For
     example, we can test whether the third quartile of the distribution
     underlying the sample is greater than 0.6.
-    
+
     >>> rvs = stats.uniform.rvs(size=100, random_state=rng)
     >>> stats.quantile_test(rvs, q=0.6, p=0.75, alternative='greater')
     QuantileTestResult(statistic1=64, statistic2=64, pvalue=0.00940696592998271)
-    
+
     The p-value is lower than the threshold. We reject the null hypothesis in
     favor of the alternative: the third quartile of the uniform distribution is
     larger than 0.6.
-    
+
     `quantile_test` can also compute confidence intervals for any quantile.
-    
+
     >>> rvs = stats.norm.rvs(size=100, random_state=rng)
     >>> res = stats.quantile_test(rvs, q=0.6, p=0.75)
     >>> ci = res.confidence_interval(confidence_level=0.95)
     >>> ci
     ConfidenceInterval(low=0.284491604437432, high=0.8912531024914844)
-    
+
     When testing a one-sided alternative, the confidence interval contains
     all observations such that if passed as `q`, the p-value of the test would
     be greater than 0.05, and therefore the null hypothesis would not be
     rejected. For example:
-    
+
     >>> rvs.sort()
     >>> q, p, alpha = 0.6, 0.75, 0.95
     >>> res = stats.quantile_test(rvs, q=q, p=p, alternative='less')
