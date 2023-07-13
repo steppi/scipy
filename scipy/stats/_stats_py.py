@@ -9896,7 +9896,7 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
     The implementation of the test follows Conover [1]_. The Null hypothesis
     of the test is:
 
-    H0: The `p`th population quantile is `q`.
+        H0: The `p`th population quantile is `q`.
 
     and the null distribution is `Y ~ binom(n=len(x), p=p)`.
 
@@ -9915,7 +9915,7 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
 
     When `alternative = 'less', the alternative hypothesis is:
 
-    H1: The `p`th population quantile is less than `q`.
+        H1: The `p`th population quantile is less than `q`.
 
     and the p-value is the probability that the binomial random variable
     `Y ~ binom(n=len(x), p=p)` is greater than or equal to the observed value
@@ -9923,7 +9923,7 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
 
     When `alternative = 'greater'`, the alternative hypothesis is :
 
-    H1: The `p`th population quantile is greater than `q`
+        H1: The `p`th population quantile is greater than `q`
 
     and the p-value is the probability that the binomial random variable
     `Y ~ binom(n=len(x), p=p)` is less than or equal to the observed value
@@ -9931,7 +9931,7 @@ def quantile_test(x, *, q=0, p=0.5, alternative='two-sided'):
 
     When `alternative = 'two-sided', the alternative hypothesis is
 
-    H1: `q` is not the `p`th population quantile.
+        H1: `q` is not the `p`th population quantile.
 
     and the p-value is twice the smaller of the p-values for the
     `alternative = 'less'` and `alternative = 'greater'` cases. Both of
