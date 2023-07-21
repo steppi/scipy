@@ -545,9 +545,11 @@
     },
     "exp1": {
         "specfun_wrappers.h": {
-            "cexp1_wrap": "D->D",
-            "exp1_wrap": "d->d"
-        }
+            "cexp1_wrap": "D->D"
+        },
+	"_exp1.hh": {
+	    "_exp1": "d->d",
+	}
     },
     "_scaled_exp1": {
         "scaled_exp1.h": {

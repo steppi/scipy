@@ -1,4 +1,5 @@
 import os
+import pythran
 import sys
 from os.path import join, dirname
 from distutils.sysconfig import get_python_inc
@@ -30,8 +31,9 @@ def configuration(parent_package='',top_path=None):
 
     curdir = os.path.abspath(os.path.dirname(__file__))
     python_inc_dirs = get_python_inc()
+    pythran_inc_dirs = pythran.config.get_include()
     plat_specific_python_inc_dirs = get_python_inc(plat_specific=1)
-    inc_dirs = [get_numpy_include_dirs(), python_inc_dirs]
+    inc_dirs = [get_numpy_include_dirs(), python_inc_dirs, pythran_inc_dirs]
     if python_inc_dirs != plat_specific_python_inc_dirs:
         inc_dirs.append(plat_specific_python_inc_dirs)
     inc_dirs.append(join(dirname(dirname(__file__)), '_lib'))
