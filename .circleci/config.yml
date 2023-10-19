@@ -118,7 +118,7 @@ jobs:
           name: build docs
           no_output_timeout: 25m
           command: |
-            export PYTHONPATH=$PWD/build-install/lib/python3.9/site-packages
+            export PYTHONPATH=$PWD/build-install/lib/python3.11/site-packages
             python dev.py --no-build doc -j2
 
       - store_artifacts:
@@ -145,7 +145,7 @@ jobs:
           name: run asv
           no_output_timeout: 30m
           command: |
-            export PYTHONPATH=$PWD/build-install/lib/python3.9/site-packages
+            export PYTHONPATH=$PWD/build-install/lib/python3.11/site-packages
             cd benchmarks
             asv machine --machine CircleCI
             export SCIPY_GLOBAL_BENCH_NUMTRIALS=1
@@ -173,7 +173,7 @@ jobs:
           no_output_timeout: 25m
           command: |
             sudo apt-get install -y wamerican-small
-            export PYTHONPATH=$PWD/build-install/lib/python3.9/site-packages
+            export PYTHONPATH=$PWD/build-install/lib/python3.11/site-packages
             python dev.py --no-build refguide-check
 
 # Upload build output to scipy/devdocs repository, using SSH deploy keys.
