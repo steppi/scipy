@@ -51,7 +51,8 @@ extensions = [
     'scipyoptdoc',
     'doi_role',
     'matplotlib.sphinxext.plot_directive',
-    'myst_nb',
+#    'myst_nb',
+    'jupyterlite_sphinx',
 ]
 
 
@@ -357,7 +358,22 @@ plot_rcparams = {
 # Notebook tutorials with MyST-NB
 # -----------------------------------------------------------------------------
 
-nb_execution_mode = "auto"
+# nb_execution_mode = "auto"
+
+# -----------------------------------------------------------------------------
+# Interactive examples with jupyterlite-sphinx
+# -----------------------------------------------------------------------------
+global_enable_try_examples = True
+try_examples_button_css = """
+color: white;
+background-color: #0054a6;
+border: none;
+padding: 5px 10px;
+border-radius: 5px;
+cursor: pointer;
+float: right;
+"""
+try_examples_toolbar = False
 
 # -----------------------------------------------------------------------------
 # Source code links

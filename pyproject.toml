@@ -112,6 +112,8 @@ doc = [
     "jupytext",
     "myst-nb",
     "pooch",
+    "jupyterlite-sphinx@git+https://github.com/steppi/jupyterlite-sphinx@try-examples",
+    "jupyterlite-pyodide-kernel",
 ]
 dev = [
     "mypy",
@@ -124,6 +126,7 @@ dev = [
     "click",
     "doit>=0.36.0",
     "pydevtool",
+
 ]
 
 [project.urls]
