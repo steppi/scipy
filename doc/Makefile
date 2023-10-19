@@ -107,7 +107,7 @@ upload:
 html: version-check html-build
 html-build:
 	mkdir -p build/html build/doctrees
-	$(SPHINXBUILD) -WT --keep-going $(VERSIONWARNING) -b html $(ALLSPHINXOPTS) build/html $(FILES)
+	$(SPHINXBUILD) -T --keep-going $(VERSIONWARNING) -b html $(ALLSPHINXOPTS) build/html $(FILES)
 
 coverage: build version-check
 	mkdir -p build/coverage build/doctrees
