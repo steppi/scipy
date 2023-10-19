@@ -8,3 +8,5 @@ matplotlib>2
 jupytext
 myst-nb
 pooch
+jupyterlite-sphinx@git+https://github.com/steppi/jupyterlite-sphinx@try-examples
+jupyterlite-pyodide-kernel
