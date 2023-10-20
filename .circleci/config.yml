@@ -199,7 +199,7 @@ jobs:
             echo -e "Host *\nStrictHostKeyChecking no" > ~/.ssh/config
             chmod og= ~/.ssh/config
             git clone git@github.com:steppi/scipy.git scipy;
-            cd devdocs;
+            cd scipy;
             (git checkout --orphan tmp && git branch -D gh-pages || true);
             git checkout --orphan gh-pages;
             git reset --hard;
