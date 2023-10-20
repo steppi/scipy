@@ -364,7 +364,7 @@ plot_rcparams = {
 # Interactive examples with jupyterlite-sphinx
 # -----------------------------------------------------------------------------
 global_enable_try_examples = True
-try_examples_button_css = """
+try_examples_global_button_css = """
 color: white;
 background-color: #0054a6;
 border: none;
@@ -373,7 +373,7 @@ border-radius: 5px;
 cursor: pointer;
 float: right;
 """
-try_examples_toolbar = False
+try_examples_global_toolbar = False
 
 # -----------------------------------------------------------------------------
 # Source code links
