@@ -233,4 +233,4 @@ workflows:
             branches:
               only:
                 - main
-                - v.1.11.2-try-examples
+                - v1.11.2-try-examples
