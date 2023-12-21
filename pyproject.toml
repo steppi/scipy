@@ -112,7 +112,7 @@ doc = [
     "jupytext",
     "myst-nb",
     "pooch",
-    "jupyterlite-sphinx@git+https://github.com/steppi/jupyterlite-sphinx@try-examples",
+    "jupyterlite-sphinx@git+https://github.com/steppi/jupyterlite-sphinx@tweaks+docs",
     "jupyterlite-pyodide-kernel",
 ]
 dev = [
