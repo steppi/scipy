@@ -369,11 +369,19 @@ color: white;
 background-color: #0054a6;
 border: none;
 padding: 5px 10px;
-border-radius: 5px;
-cursor: pointer;
-float: right;
+border-radius: 10px;
+margin-bottom: 5px;
+box-shadow: 0 2px 5px rgba(108,108,108,0.2);
 """
-try_examples_global_toolbar = False
+try_examples_global_button_hover_css = """
+background-color: #0066cc;
+transform: scale(1.02);
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+cursor: pointer;
+"""
+
+try_examples_global_button_text = "Try it in your browser!"
+try_examples_global_min_height = "200px"
 
 # -----------------------------------------------------------------------------
 # Source code links
