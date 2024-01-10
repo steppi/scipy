@@ -381,7 +381,7 @@ cursor: pointer;
 """
 
 try_examples_global_button_text = "Try it in your browser!"
-try_examples_global_min_height = "200px"
+try_examples_global_min_height = "400px"
 
 # -----------------------------------------------------------------------------
 # Source code links
