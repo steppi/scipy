@@ -367,6 +367,12 @@ plot_rcparams = {
 global_enable_try_examples = True
 try_examples_global_button_text = "Try it in your browser!"
 try_examples_global_min_height = "400px"
+try_examples_global_warning_text = (
+    "Interactive examples with Jupyterlite are experimental and may not always work as"
+    " expected. Load times when importing from SciPy may take 30 seconds or more. If"
+    " you notice a problem, feel free to open an"
+    " [issue](https://github.com/scipy/scipy/issues/new/choose)."
+)
 
 # -----------------------------------------------------------------------------
 # Source code links
