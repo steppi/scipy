@@ -226,4 +226,4 @@ workflows:
             - build_docs
           filters:
             branches:
-              only: main
+              only: interactive-docs-deploy
