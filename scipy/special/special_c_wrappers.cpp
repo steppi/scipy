@@ -1,4 +1,5 @@
 extern "C" {
+
 #include <numpy/npy_math.h>
 #include "special_c_wrappers.h"
 }
