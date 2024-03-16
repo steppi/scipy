@@ -72,7 +72,7 @@ PyMODINIT_FUNC PyInit_specfun2() {
 
     // These two lines will be needed for each ufunc
     PyObject *expi = PyUFunc_FromFuncAndData(expi_funcs, nullptr, reinterpret_cast<char *>(expi_types), 2, 1, 1,
-                                             PyUFunc_None, "expi", nullptr, 0);
+                                             PyUFunc_None, "expi", "docstring goes here", 0);
     PyModule_AddObjectRef(specfun2, "expi", expi);
 
     // More ufuncs would follow ...
