@@ -1,4 +1,6 @@
 #include <array>
+#include <map>
+#include <tuple>
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -73,14 +75,23 @@ struct ufunc_traits<F> {
     }
 };
 
+template <int N>
+struct SpecFun_UFuncEntry {
+    PyUFuncGenericFunction func[N];
+    std::array<std::array<char, 2>, N> types;
+};
+
 // This function now generates a ufunc
 template <auto... F>
 PyObject *SpecFun_UFunc(const char *name, const char *doc) {
-    // ...
-    static PyUFuncGenericFunction funcs[sizeof...(F)] = {ufunc_traits<F>::func...};
-    static std::array<std::array<char, 2>, sizeof...(F)> types{ufunc_traits<F>::type...};
+    using entry_type = SpecFun_UFuncEntry<sizeof...(F)>;
 
-    return PyUFunc_FromFuncAndData(funcs, nullptr, reinterpret_cast<char *>(types.data()), sizeof...(F), 1, 1,
+    static std::map<std::string, entry_type> m;
+
+    auto &e = m[name];
+    e = entry_type{{ufunc_traits<F>::func...}, {ufunc_traits<F>::type...}};
+
+    return PyUFunc_FromFuncAndData(e.func, nullptr, reinterpret_cast<char *>(e.types.data()), sizeof...(F), 1, 1,
                                    PyUFunc_None, name, doc, 0);
 }
 
