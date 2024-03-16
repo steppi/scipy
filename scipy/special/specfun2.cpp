@@ -72,7 +72,7 @@ struct ufunc_traits<F> {
 };
 
 // This function now generates a ufunc
-template <autoauto... F>
+template <auto... F>
 PyObject *SpecFun_UFunc(const char *name, const char *doc) {
     // ...
     static PyUFuncGenericFunction funcs[sizeof...(F)] = {ufunc_traits<F>::func...};
