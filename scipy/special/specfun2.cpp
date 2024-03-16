@@ -54,6 +54,8 @@ static PyUFuncGenericFunction expi_funcs[2] = {
     SpecFun_UFuncLoop<std::complex<double>, std::complex<double>, special::cexpi>};
 static char expi_types[2][2] = {{NPY_FLOAT64, NPY_FLOAT64}, {NPY_COMPLEX128, NPY_COMPLEX128}};
 
+// More ufunc definitions would follow ...
+
 static PyModuleDef specfun2_def = {
     PyModuleDef_HEAD_INIT,
     .m_name = "specfun2",
@@ -72,6 +74,8 @@ PyMODINIT_FUNC PyInit_specfun2() {
     PyObject *expi = PyUFunc_FromFuncAndData(expi_funcs, nullptr, reinterpret_cast<char *>(expi_types), 2, 1, 1,
                                              PyUFunc_None, "expi", nullptr, 0);
     PyModule_AddObjectRef(specfun2, "expi", expi);
+
+    // More ufuncs would follow ...
 
     return specfun2;
 }
