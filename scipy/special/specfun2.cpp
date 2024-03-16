@@ -1,11 +1,9 @@
 #include <array>
 #include <map>
-#include <tuple>
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#define NPY_NO_DEPRECATED_API NPY_API_VERSION
 #include <numpy/arrayobject.h>
 #include <numpy/npy_3kcompat.h>
 #include <numpy/ufuncobject.h>
