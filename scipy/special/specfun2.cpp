@@ -8,19 +8,6 @@
 
 #include "special/specfun.h"
 
-// This is a simple generic inline function that generates the strided loop needed for a ufunc given a function pointer.
-// It should go in a common header.
-// This can be done for an arbitrary number of arguments.
-template <typename Arg0, typename Res, Res (*F)(Arg0)>
-void SpecFun_UFuncLoop(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
-    for (npy_intp i = 0; i < dimensions[0]; ++i) {
-        *reinterpret_cast<Res *>(args[1]) = F(*reinterpret_cast<Arg0 *>(args[0]));
-
-        args[0] += steps[0];
-        args[1] += steps[1];
-    }
-}
-
 // Just initializes everything needed, can also go in a common header
 bool SpecFun_Initialize() {
     Py_Initialize();
@@ -48,13 +35,52 @@ int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *value) {
 }
 #endif
 
-// These two definitions will be needed for each ufunc
-static PyUFuncGenericFunction expi_funcs[2] = {
-    SpecFun_UFuncLoop<double, double, special::expi>,
-    SpecFun_UFuncLoop<std::complex<double>, std::complex<double>, special::cexpi>};
-static char expi_types[2][2] = {{NPY_FLOAT64, NPY_FLOAT64}, {NPY_COMPLEX128, NPY_COMPLEX128}};
+template <auto F>
+struct ufunc_traits;
 
-// More ufunc definitions would follow ...
+template <typename T>
+struct npy_type;
+
+template <>
+struct npy_type<double> {
+    static constexpr int value = NPY_FLOAT64;
+};
+
+template <>
+struct npy_type<std::complex<double>> {
+    static constexpr int value = NPY_COMPLEX128;
+};
+
+template <typename T>
+struct npy_type;
+
+template <typename Res, typename Arg0, Res (*F)(Arg0)>
+struct ufunc_traits<F> {
+    static constexpr int nin = 1;
+    static constexpr int nout = 1;
+
+    static constexpr std::array<char, 2> type = {npy_type<Arg0>::value, npy_type<Res>::value};
+
+    static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
+        for (npy_intp i = 0; i < dimensions[0]; ++i) {
+            *reinterpret_cast<Res *>(args[1]) = F(*reinterpret_cast<Arg0 *>(args[0]));
+
+            args[0] += steps[0];
+            args[1] += steps[1];
+        }
+    }
+};
+
+// This function now generates a ufunc
+template <autoauto... F>
+PyObject *SpecFun_UFunc(const char *name, const char *doc) {
+    // ...
+    static PyUFuncGenericFunction funcs[sizeof...(F)] = {ufunc_traits<F>::func...};
+    static std::array<std::array<char, 2>, sizeof...(F)> types{ufunc_traits<F>::type...};
+
+    return PyUFunc_FromFuncAndData(funcs, nullptr, reinterpret_cast<char *>(types.data()), sizeof...(F), 1, 1,
+                                   PyUFunc_None, name, doc, 0);
+}
 
 static PyModuleDef specfun2_def = {
     PyModuleDef_HEAD_INIT,
@@ -70,9 +96,7 @@ PyMODINIT_FUNC PyInit_specfun2() {
         return nullptr;
     }
 
-    // These two lines will be needed for each ufunc
-    PyObject *expi = PyUFunc_FromFuncAndData(expi_funcs, nullptr, reinterpret_cast<char *>(expi_types), 2, 1, 1,
-                                             PyUFunc_None, "expi", "docstring goes here", 0);
+    PyObject *expi = SpecFun_UFunc<special::expi, special::cexpi>("expi", "docstring goes here");
     PyModule_AddObjectRef(specfun2, "expi", expi);
 
     // More ufuncs would follow ...
