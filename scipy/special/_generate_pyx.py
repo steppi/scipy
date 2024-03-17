@@ -369,7 +369,8 @@ def generate_loop(func_inputs, func_outputs, func_retval,
             func_retval != "v" and len(func_outputs)+1 == len(ufunc_outputs)):
         raise ValueError("Function retval and ufunc outputs don't match")
 
-    name = f"loop_{func_retval}_{func_inputs}_{func_outputs}_As_{ufunc_inputs}_{ufunc_outputs}"
+    name = (f"loop_{func_retval}_{func_inputs}_{func_outputs}"
+            f"_As_{ufunc_inputs}_{ufunc_outputs}")
     body = (f"cdef void {name}(char **args, np.npy_intp *dims, np.npy_intp *steps, "
             f"void *data) noexcept nogil:\n")
     body += "    cdef np.npy_intp i, n = dims[0]\n"
@@ -1240,8 +1241,7 @@ def get_declaration(ufunc, c_name, c_proto, cy_proto, header,
         # check function signature at compile time
         proto_name = '_proto_%s_t' % var_name
         defs.append("ctypedef %s" % (cy_proto.replace('(*)', proto_name)))
-        defs.append("cdef {} *{}_var = &{}".format(
-            proto_name, proto_name, ufunc.cython_func_name(c_name, specialized=True)))
+        defs.append(f"cdef {proto_name} *{proto_name}_var = &{ufunc.cython_func_name(c_name, specialized=True)}")
     else:
         # redeclare the function, so that the assumed
         # signature is checked at compile time
@@ -1295,10 +1295,7 @@ def generate_ufuncs(fn_prefix, cxx_fn_prefix, ufuncs):
                 cxx_defs.extend(item_defs)
                 cxx_defs_h.extend(item_defs_h)
 
-                cxx_defs.append("cdef void *_export_{} = <void*>{}".format(
-                    var_name,
-                    ufunc.cython_func_name(c_name, specialized=True, override=False)
-                ))
+                cxx_defs.append(f"cdef void *_export_{var_name} = <void*>{ufunc.cython_func_name(c_name, specialized=True, override=False)}")
                 cxx_pxd_defs.append(f"cdef void *_export_{var_name}")
 
                 # let cython grab the function pointer from the c++ shared library
