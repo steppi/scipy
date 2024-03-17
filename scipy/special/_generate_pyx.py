@@ -1297,8 +1297,7 @@ def generate_ufuncs(fn_prefix, cxx_fn_prefix, ufuncs):
                 cxx_defs_h.extend(item_defs_h)
 
                 cxx_defs.append(f"cdef void *_export_{var_name} = "
-                                f"<void*>{ufunc.cython_func_name(c_name,
-                                specialized=True, override=False)}")
+                                f"<void*>{ufunc.cython_func_name(c_name, specialized=True, override=False)}")
                 cxx_pxd_defs.append(f"cdef void *_export_{var_name}")
 
                 # let cython grab the function pointer from the c++ shared library
