@@ -123,9 +123,9 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
             for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
             }
-
-            sf_error_check_fpe("test"); // same as above
         }
+
+        sf_error_check_fpe("test"); // same as above
     }
 };
 

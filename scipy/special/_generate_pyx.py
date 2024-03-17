@@ -1241,7 +1241,8 @@ def get_declaration(ufunc, c_name, c_proto, cy_proto, header,
         # check function signature at compile time
         proto_name = '_proto_%s_t' % var_name
         defs.append("ctypedef %s" % (cy_proto.replace('(*)', proto_name)))
-        defs.append(f"cdef {proto_name} *{proto_name}_var = &{ufunc.cython_func_name(c_name, specialized=True)}")
+        defs.append(f"cdef {proto_name} *{proto_name}_var = "
+                    f"&{ufunc.cython_func_name(c_name, specialized=True)}")
     else:
         # redeclare the function, so that the assumed
         # signature is checked at compile time
@@ -1295,7 +1296,8 @@ def generate_ufuncs(fn_prefix, cxx_fn_prefix, ufuncs):
                 cxx_defs.extend(item_defs)
                 cxx_defs_h.extend(item_defs_h)
 
-                cxx_defs.append(f"cdef void *_export_{var_name} = <void*>{ufunc.cython_func_name(c_name, specialized=True, override=False)}")
+                cxx_defs.append(f"cdef void *_export_{var_name} = "
+                                f"<void*>{ufunc.cython_func_name(c_name, specialized=True, override=False)}")
                 cxx_pxd_defs.append(f"cdef void *_export_{var_name}")
 
                 # let cython grab the function pointer from the c++ shared library
