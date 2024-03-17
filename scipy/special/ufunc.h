@@ -67,11 +67,10 @@ struct ufunc_traits<F> {
     }
 };
 
-template <size_t NTypes, size_t NIn, size_t NOut>
+template <size_t NTypes, size_t NInAndNOut>
 struct SpecFun_UFuncFuncAndData {
     static constexpr int ntypes = NTypes;
-    static constexpr int nin = NIn;
-    static constexpr int nout = NOut;
+    static constexpr int nin_and_nout = NInAndNOut;
 
     PyUFuncGenericFunction func[ntypes];
     char types[ntypes * (nin + nout)];
@@ -82,7 +81,7 @@ struct SpecFun_UFuncFuncAndData {
         std::copy(func.begin(), func.end(), this->func);
 
         for (auto it = types.begin(); it != types.end(); ++it) {
-            std::copy(*it, *it + nin + nout, this->types + (it - types.begin()) * (nin + nout));
+            std::copy(*it, *it + nin_and_nout, this->types + (it - types.begin()) * nin_and_nout);
         }
 
         std::fill_n(data, ntypes, nullptr);
@@ -91,7 +90,7 @@ struct SpecFun_UFuncFuncAndData {
 
 // This function now generates a ufunc
 template <auto F0, auto... F>
-PyObject *SpecFun_UFunc(const char *name, const char *doc) {
+PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout = 1) {
     static_assert(((ufunc_traits<F0>::nin == ufunc_traits<F>::nin) && ... && true),
                   "number of inputs must be the same for all functions");
     static_assert(((ufunc_traits<F0>::nout == ufunc_traits<F>::nout) && ... && true),
@@ -106,6 +105,6 @@ PyObject *SpecFun_UFunc(const char *name, const char *doc) {
 
     func_and_data_type &func_and_data = entries.back();
     return PyUFunc_FromFuncAndData(func_and_data.func, func_and_data.data, func_and_data.types,
-                                   func_and_data_type::ntypes, func_and_data_type::nin, func_and_data_type::nout,
-                                   PyUFunc_None, name, doc, 0);
+                                   func_and_data_type::ntypes, func_and_data_type::nin_and_nout,
+                                   func_and_data_type::nin_and_nout - nout, PyUFunc_None, name, doc, 0);
 }
