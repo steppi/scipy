@@ -7,14 +7,8 @@
 #include <numpy/npy_3kcompat.h>
 #include <numpy/ufuncobject.h>
 
-#define UFUNC_FPE_DIVIDEBYZERO 1
-#define UFUNC_FPE_OVERFLOW 2
-#define UFUNC_FPE_UNDERFLOW 4
-#define UFUNC_FPE_INVALID 8
-
 void sf_error_check_fpe(const char *func_name) {
-    int status;
-    status = PyUFunc_getfperr();
+    int status = PyUFunc_getfperr();
     if (status & UFUNC_FPE_DIVIDEBYZERO) {
         special::set_error(func_name, SF_ERROR_SINGULAR, "floating point division by zero");
     }
