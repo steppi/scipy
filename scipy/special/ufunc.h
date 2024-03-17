@@ -50,6 +50,33 @@ int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *value) {
 }
 #endif
 
+template <auto F>
+struct arity_of;
+
+template <typename Res, typename... Args, Res (*F)(Args...)>
+struct arity_of<F> {
+    static constexpr size_t value = sizeof...(Args);
+};
+
+template <auto F>
+constexpr size_t arity_of_v = arity_of<F>::value;
+
+template <auto F>
+struct has_result;
+
+template <typename Res, typename... Args, Res (*F)(Args...)>
+struct has_result<F> {
+    static constexpr bool value = true;
+};
+
+template <typename... Args, void (*F)(Args...)>
+struct has_result<F> {
+    static constexpr bool value = false;
+};
+
+template <auto F>
+constexpr bool has_result_v = has_result<F>::value;
+
 template <typename T>
 struct npy_type;
 
@@ -63,40 +90,38 @@ struct npy_type<std::complex<double>> {
     static constexpr int value = NPY_COMPLEX128;
 };
 
-template <auto F>
+template <auto F, typename I = std::make_index_sequence<arity_of_v<F>>>
 struct ufunc_traits;
 
-template <typename Res, typename Arg0, Res (*F)(Arg0)>
-struct ufunc_traits<F> {
-    static constexpr int nargs = 1;
-    static constexpr int nres = 1;
-
-    static constexpr char type[2] = {npy_type<Arg0>::value, npy_type<Res>::value};
+template <typename Res, typename... Args, Res (*F)(Args...), size_t... I>
+struct ufunc_traits<F, std::index_sequence<I...>> {
+    static constexpr char type[sizeof...(Args) + 1] = {npy_type<Args>::value..., npy_type<Res>::value};
 
     static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
-            *reinterpret_cast<Res *>(args[1]) = F(*reinterpret_cast<Arg0 *>(args[0]));
+            *reinterpret_cast<Res *>(args[sizeof...(Args)]) = F(*reinterpret_cast<Args *>(args[I])...);
 
-            args[0] += steps[0];
-            args[1] += steps[1];
+            for (npy_intp j = 0; j < sizeof...(Args); ++j) {
+                args[j] += steps[j];
+            }
+            args[sizeof...(Args)] += steps[sizeof...(Args)]; // output
         }
 
         sf_error_check_fpe("test");
     }
 };
 
-template <typename Arg0, void (*F)(Arg0)>
-struct ufunc_traits<F> {
-    static constexpr int nargs = 1;
-    static constexpr int nres = 0;
-
-    static constexpr char type[1] = {npy_type<Arg0>::value};
+template <typename... Args, void (*F)(Args...), size_t... I>
+struct ufunc_traits<F, std::index_sequence<I...>> {
+    static constexpr char type[sizeof...(Args)] = {npy_type<Args>::value...};
 
     static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
-            F(*reinterpret_cast<Arg0 *>(args[0]));
+            F(*reinterpret_cast<Args *>(args[I])...);
 
-            args[0] += steps[0];
+            for (npy_intp j = 0; j < sizeof...(Args); ++j) {
+                args[j] += steps[j];
+            }
         }
     }
 };
@@ -125,13 +150,12 @@ struct SpecFun_UFuncFuncAndData {
 // This function now generates a ufunc
 template <auto F0, auto... F>
 PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout) {
-    static_assert(((ufunc_traits<F0>::nargs == ufunc_traits<F>::nargs) && ... && true),
+    static_assert(((arity_of_v<F0> == arity_of_v<F>) && ... && true),
                   "all functions must have the same number of arguments");
-    static_assert(((ufunc_traits<F0>::nres == ufunc_traits<F>::nres) && ... && true),
+    static_assert(((has_result_v<F0> == has_result_v<F>) && ... && true),
                   "all functions must be void if any function is");
 
-    using func_and_data_type =
-        SpecFun_UFuncFuncAndData<sizeof...(F) + 1, ufunc_traits<F0>::nargs + ufunc_traits<F0>::nres>;
+    using func_and_data_type = SpecFun_UFuncFuncAndData<sizeof...(F) + 1, arity_of_v<F0> + has_result_v<F0>>;
 
     static std::vector<func_and_data_type> entries;
     entries.push_back(
@@ -145,5 +169,5 @@ PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout) {
 
 template <auto F0, auto... F>
 PyObject *SpecFun_UFunc(const char *name, const char *doc) {
-    return SpecFun_UFunc<F0, F...>(name, doc, ufunc_traits<F0>::nres);
+    return SpecFun_UFunc<F0, F...>(name, doc, has_result_v<F0>);
 }

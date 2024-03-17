@@ -101,7 +101,7 @@ UFUNCS_EXTRA_CODE_BOTTOM = """\
 #
 jn = jv
 
-from ._specfun2 import bei, beip, ber, berp, expi
+from ._specfun2 import bei, beip, ber, berp, exp1, expi
 """
 
 CYTHON_SPECIAL_PXD = """\

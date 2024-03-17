@@ -27,6 +27,9 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *berp = SpecFun_UFunc<special::berp>("berp", "docstring goes here");
     PyModule_AddObjectRef(specfun2, "berp", berp);
 
+    PyObject *exp1 = SpecFun_UFunc<special::exp1, special::cexp1>("exp1", "docstring goes here");
+    PyModule_AddObjectRef(specfun2, "exp1", exp1);
+
     PyObject *expi = SpecFun_UFunc<special::expi, special::cexpi>("expi", "docstring goes here");
     PyModule_AddObjectRef(specfun2, "expi", expi);
 
