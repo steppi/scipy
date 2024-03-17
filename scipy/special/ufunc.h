@@ -91,6 +91,8 @@ struct SpecFun_UFuncFuncAndData {
     static constexpr int nout() { return NOut; }
 };
 
+#include <vector>
+
 // This function now generates a ufunc
 template <auto F0, auto... F>
 PyObject *SpecFun_UFunc(const char *name, const char *doc) {
@@ -100,11 +102,10 @@ PyObject *SpecFun_UFunc(const char *name, const char *doc) {
     using func_and_data_type =
         SpecFun_UFuncFuncAndData<sizeof...(F) + 1, ufunc_traits<F0>::nin, ufunc_traits<F0>::nout>;
 
-    static std::map<std::string, func_and_data_type> entries;
-    auto [it, flag] =
-        entries.insert_or_assign(name, func_and_data_type{{ufunc_traits<F0>::func, ufunc_traits<F>::func...},
-                                                          {ufunc_traits<F0>::type, ufunc_traits<F>::type...}});
+    static std::vector<func_and_data_type> entries;
+    auto it = entries.emplace_back(func_and_data_type{{ufunc_traits<F0>::func, ufunc_traits<F>::func...},
+                                                      {ufunc_traits<F0>::type, ufunc_traits<F>::type...}});
 
-    return PyUFunc_FromFuncAndData(it->second.func, it->second.data, it->second.types, func_and_data_type::ntypes(),
+    return PyUFunc_FromFuncAndData(it->func, it->data, it->types, func_and_data_type::ntypes(),
                                    func_and_data_type::nin(), func_and_data_type::nout(), PyUFunc_None, name, doc, 0);
 }
