@@ -15,10 +15,20 @@ PyMODINIT_FUNC PyInit__specfun2() {
         return nullptr;
     }
 
+    PyObject *bei = SpecFun_UFunc<special::bei>("bei", "docstring goes here");
+    PyModule_AddObjectRef(specfun2, "bei", bei);
+
+    PyObject *beip = SpecFun_UFunc<special::beip>("beip", "docstring goes here");
+    PyModule_AddObjectRef(specfun2, "beip", beip);
+
+    PyObject *ber = SpecFun_UFunc<special::ber>("ber", "docstring goes here");
+    PyModule_AddObjectRef(specfun2, "ber", ber);
+
+    PyObject *berp = SpecFun_UFunc<special::berp>("berp", "docstring goes here");
+    PyModule_AddObjectRef(specfun2, "berp", berp);
+
     PyObject *expi = SpecFun_UFunc<special::expi, special::cexpi>("expi", "docstring goes here");
     PyModule_AddObjectRef(specfun2, "expi", expi);
-
-    // More ufuncs would follow ...
 
     return specfun2;
 }

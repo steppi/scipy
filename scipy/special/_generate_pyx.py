@@ -100,6 +100,8 @@ UFUNCS_EXTRA_CODE_BOTTOM = """\
 # Aliases
 #
 jn = jv
+
+from ._specfun2 import bei, beip, ber, berp, expi
 """
 
 CYTHON_SPECIAL_PXD = """\
