@@ -1,16 +1,16 @@
 #include "special/specfun.h"
 #include "ufunc.h"
 
-static PyModuleDef specfun2_def = {
+static PyModuleDef _specfun2_def = {
     PyModuleDef_HEAD_INIT,
-    .m_name = "specfun2",
+    .m_name = "_specfun2",
     .m_size = -1,
 };
 
-PyMODINIT_FUNC PyInit_specfun2() {
+PyMODINIT_FUNC PyInit__specfun2() {
     SpecFun_Initialize();
 
-    PyObject *specfun2 = PyModule_Create(&specfun2_def);
+    PyObject *specfun2 = PyModule_Create(&_specfun2_def);
     if (specfun2 == nullptr) {
         return nullptr;
     }

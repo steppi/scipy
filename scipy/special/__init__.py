@@ -804,7 +804,7 @@ from ._spherical_bessel import (
     spherical_kn
 )
 
-from .specfun2 import *
+from ._specfun2 import *
 
 # Deprecated namespaces, to be removed in v2.0.0
 from . import add_newdocs, basic, orthogonal, specfun, sf_error, spfun_stats
