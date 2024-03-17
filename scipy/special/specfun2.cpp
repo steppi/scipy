@@ -73,31 +73,34 @@ struct ufunc_traits<F> {
     }
 };
 
-template <int N>
+template <int NTypes, int NIn, int NOut>
 struct SpecFun_UFuncEntry {
     using T = const char *;
 
-    PyUFuncGenericFunction func[N];
-    char types[N][2];
+    PyUFuncGenericFunction func[NTypes];
+    char types[NTypes][NIn + NOut];
 
     SpecFun_UFuncEntry() = default;
 
-    SpecFun_UFuncEntry(const PyUFuncGenericFunction (&f)[N], const T (&t)[N]) {
-        for (size_t i = 0; i < N; ++i) {
+    SpecFun_UFuncEntry(const PyUFuncGenericFunction (&f)[NTypes], const T (&t)[NTypes]) {
+        for (size_t i = 0; i < NTypes; ++i) {
             func[i] = f[i];
-            std::copy(t[i], t[i] + 2, types[i]);
+            std::copy(t[i], t[i] + NIn + NOut, types[i]);
         }
     }
 };
 
 // This function now generates a ufunc
-template <auto... F>
+template <auto F0, auto... F>
 PyObject *SpecFun_UFunc(const char *name, const char *doc) {
-    static std::map<std::string, SpecFun_UFuncEntry<sizeof...(F)>> m;
+    static std::map<std::string, SpecFun_UFuncEntry<1 + sizeof...(F), ufunc_traits<F0>::nin, ufunc_traits<F0>::nout>> m;
 
-    auto [it, flag] = m.insert({name, {{ufunc_traits<F>::func...}, {ufunc_traits<F>::type...}}});
-    return PyUFunc_FromFuncAndData(it->second.func, nullptr, reinterpret_cast<char *>(it->second.types), sizeof...(F),
-                                   1, 1, PyUFunc_None, name, doc, 0);
+    auto [it, flag] = m.insert(
+        {name,
+         {{ufunc_traits<F0>::func, ufunc_traits<F>::func...}, {ufunc_traits<F0>::type, ufunc_traits<F>::type...}}});
+    return PyUFunc_FromFuncAndData(it->second.func, nullptr, reinterpret_cast<char *>(it->second.types),
+                                   1 + sizeof...(F), ufunc_traits<F0>::nin, ufunc_traits<F0>::nout, PyUFunc_None, name,
+                                   doc, 0);
 }
 
 static PyModuleDef specfun2_def = {
