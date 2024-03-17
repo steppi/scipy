@@ -1,3 +1,5 @@
+#include <map>
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -65,27 +67,44 @@ struct ufunc_traits<F> {
     }
 };
 
-inline PyObject *SpecFun_UFunc(const char *name, const char *doc, std::initializer_list<PyUFuncGenericFunction> funcs,
-                               std::initializer_list<const char *> types, int nin, int nout) {
-    int ntypes = types.size();
+template <size_t NTypes, size_t NIn, size_t NOut>
+struct SpecFun_UFuncFuncAndData {
+    PyUFuncGenericFunction func[NTypes];
+    char types[NTypes * (NIn + NOut)];
+    void *data[NTypes];
 
-    PyUFuncGenericFunction *funcs2 = new PyUFuncGenericFunction[ntypes];
-    std::copy(funcs.begin(), funcs.end(), funcs2);
+    SpecFun_UFuncFuncAndData(std::initializer_list<PyUFuncGenericFunction> func,
+                             std::initializer_list<const char *> type) {
+        std::copy(func.begin(), func.end(), this->func);
 
-    char *types2 = new char[ntypes * (nin + nout)];
-    for (auto it = types.begin(); it != types.end(); ++it) {
-        memcpy(types2 + (it - types.begin()) * (nin + nout), *it, nin + nout);
+        for (auto it = type.begin(); it != type.end(); ++it) {
+            std::copy(*it, *it + NIn + NOut, types + (it - type.begin()) * (NIn + NOut));
+        }
+
+        std::fill_n(data, NTypes, nullptr);
     }
 
-    static void *data2[1] = {nullptr};
+    static constexpr int ntypes() { return NTypes; }
 
-    return PyUFunc_FromFuncAndData(funcs2, data2, types2, ntypes, nin, nout, PyUFunc_None, name, doc, 0);
-}
+    static constexpr int nin() { return NIn; }
+
+    static constexpr int nout() { return NOut; }
+};
 
 // This function now generates a ufunc
 template <auto F0, auto... F>
 PyObject *SpecFun_UFunc(const char *name, const char *doc) {
-    return SpecFun_UFunc(name, doc, {ufunc_traits<F0>::func, ufunc_traits<F>::func...},
-                         {ufunc_traits<F0>::type, ufunc_traits<F>::type...}, ufunc_traits<F0>::nin,
-                         ufunc_traits<F0>::nout);
+    static_assert(((ufunc_traits<F0>::nin == ufunc_traits<F>::nin) && ... && true), "nin must be the same");
+    static_assert(((ufunc_traits<F0>::nout == ufunc_traits<F>::nout) && ... && true), "nout must be the same");
+
+    using func_and_data_type =
+        SpecFun_UFuncFuncAndData<sizeof...(F) + 1, ufunc_traits<F0>::nin, ufunc_traits<F0>::nout>;
+
+    static std::map<std::string, func_and_data_type> entries;
+    auto [it, flag] =
+        entries.insert_or_assign(name, func_and_data_type{{ufunc_traits<F0>::func, ufunc_traits<F>::func...},
+                                                          {ufunc_traits<F0>::type, ufunc_traits<F>::type...}});
+
+    return PyUFunc_FromFuncAndData(it->second.func, it->second.data, it->second.types, func_and_data_type::ntypes(),
+                                   func_and_data_type::nin(), func_and_data_type::nout(), PyUFunc_None, name, doc, 0);
 }
