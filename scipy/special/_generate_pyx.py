@@ -369,9 +369,7 @@ def generate_loop(func_inputs, func_outputs, func_retval,
             func_retval != "v" and len(func_outputs)+1 == len(ufunc_outputs)):
         raise ValueError("Function retval and ufunc outputs don't match")
 
-    name = "loop_{}_{}_{}_As_{}_{}".format(
-        func_retval, func_inputs, func_outputs, ufunc_inputs, ufunc_outputs
-        )
+    name = f"loop_{func_retval}_{func_inputs}_{func_outputs}_As_{ufunc_inputs}_{ufunc_outputs}"
     body = (f"cdef void {name}(char **args, np.npy_intp *dims, np.npy_intp *steps, "
             f"void *data) noexcept nogil:\n")
     body += "    cdef np.npy_intp i, n = dims[0]\n"

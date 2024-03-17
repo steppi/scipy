@@ -108,7 +108,7 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
             args[sizeof...(Args)] += steps[sizeof...(Args)]; // output
         }
 
-        sf_error_check_fpe("test");
+        sf_error_check_fpe("test"); // TODO: this is an issue as we don't have access to the function name here
     }
 };
 
@@ -123,6 +123,8 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
             for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
             }
+
+            sf_error_check_fpe("test"); // same as above
         }
     }
 };
