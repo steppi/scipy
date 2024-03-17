@@ -52,8 +52,8 @@ struct ufunc_traits;
 
 template <typename Res, typename Arg0, Res (*F)(Arg0)>
 struct ufunc_traits<F> {
-    static constexpr int nin = 1;
-    static constexpr int nout = 1;
+    static constexpr int nargs = 1;
+    static constexpr int nres = 1;
 
     static constexpr char type[2] = {npy_type<Arg0>::value, npy_type<Res>::value};
 
@@ -67,13 +67,13 @@ struct ufunc_traits<F> {
     }
 };
 
-template <size_t NTypes, size_t NInAndNOut>
+template <int NTypes, int NInAndNOut>
 struct SpecFun_UFuncFuncAndData {
     static constexpr int ntypes = NTypes;
     static constexpr int nin_and_nout = NInAndNOut;
 
     PyUFuncGenericFunction func[ntypes];
-    char types[ntypes * (nin + nout)];
+    char types[ntypes * nin_and_nout];
     void *data[ntypes];
 
     SpecFun_UFuncFuncAndData(std::initializer_list<PyUFuncGenericFunction> func,
@@ -90,14 +90,14 @@ struct SpecFun_UFuncFuncAndData {
 
 // This function now generates a ufunc
 template <auto F0, auto... F>
-PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout = 1) {
-    static_assert(((ufunc_traits<F0>::nin == ufunc_traits<F>::nin) && ... && true),
-                  "number of inputs must be the same for all functions");
-    static_assert(((ufunc_traits<F0>::nout == ufunc_traits<F>::nout) && ... && true),
-                  "number of outputs must be the same for all functions");
+PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout) {
+    static_assert(((ufunc_traits<F0>::nargs == ufunc_traits<F>::nargs) && ... && true),
+                  "all functions must have the same number of arguments");
+    static_assert(((ufunc_traits<F0>::nres == ufunc_traits<F>::nres) && ... && true),
+                  "all functions must be void if any function is");
 
     using func_and_data_type =
-        SpecFun_UFuncFuncAndData<sizeof...(F) + 1, ufunc_traits<F0>::nin, ufunc_traits<F0>::nout>;
+        SpecFun_UFuncFuncAndData<sizeof...(F) + 1, ufunc_traits<F0>::nargs + ufunc_traits<F0>::nres>;
 
     static std::vector<func_and_data_type> entries;
     entries.push_back(
@@ -105,6 +105,11 @@ PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout = 1) {
 
     func_and_data_type &func_and_data = entries.back();
     return PyUFunc_FromFuncAndData(func_and_data.func, func_and_data.data, func_and_data.types,
-                                   func_and_data_type::ntypes, func_and_data_type::nin_and_nout,
-                                   func_and_data_type::nin_and_nout - nout, PyUFunc_None, name, doc, 0);
+                                   func_and_data_type::ntypes, func_and_data_type::nin_and_nout - nout, nout,
+                                   PyUFunc_None, name, doc, 0);
+}
+
+template <auto F0, auto... F>
+PyObject *SpecFun_UFunc(const char *name, const char *doc) {
+    return SpecFun_UFunc<F0, F...>(name, doc, ufunc_traits<F0>::nres);
 }
