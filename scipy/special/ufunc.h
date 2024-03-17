@@ -69,26 +69,24 @@ struct ufunc_traits<F> {
 
 template <size_t NTypes, size_t NIn, size_t NOut>
 struct SpecFun_UFuncFuncAndData {
-    PyUFuncGenericFunction func[NTypes];
-    char types[NTypes * (NIn + NOut)];
-    void *data[NTypes];
+    static constexpr int ntypes = NTypes;
+    static constexpr int nin = NIn;
+    static constexpr int nout = NOut;
+
+    PyUFuncGenericFunction func[ntypes];
+    char types[ntypes * (nin + nout)];
+    void *data[ntypes];
 
     SpecFun_UFuncFuncAndData(std::initializer_list<PyUFuncGenericFunction> func,
                              std::initializer_list<const char *> types) {
         std::copy(func.begin(), func.end(), this->func);
 
         for (auto it = types.begin(); it != types.end(); ++it) {
-            std::copy(*it, *it + NIn + NOut, this->types + (it - types.begin()) * (NIn + NOut));
+            std::copy(*it, *it + nin + nout, this->types + (it - types.begin()) * (nin + nout));
         }
 
-        std::fill_n(data, NTypes, nullptr);
+        std::fill_n(data, ntypes, nullptr);
     }
-
-    static constexpr int ntypes() { return NTypes; }
-
-    static constexpr int nin() { return NIn; }
-
-    static constexpr int nout() { return NOut; }
 };
 
 // This function now generates a ufunc
@@ -108,6 +106,6 @@ PyObject *SpecFun_UFunc(const char *name, const char *doc) {
 
     func_and_data_type &func_and_data = entries.back();
     return PyUFunc_FromFuncAndData(func_and_data.func, func_and_data.data, func_and_data.types,
-                                   func_and_data_type::ntypes(), func_and_data_type::nin(), func_and_data_type::nout(),
+                                   func_and_data_type::ntypes, func_and_data_type::nin, func_and_data_type::nout,
                                    PyUFunc_None, name, doc, 0);
 }
