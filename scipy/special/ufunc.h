@@ -86,6 +86,7 @@ struct ufunc_traits<F> {
             args[0] += steps[0];
             args[1] += steps[1];
         }
+
         sf_error_check_fpe("test");
     }
 };
