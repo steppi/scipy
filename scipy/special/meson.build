@@ -135,7 +135,7 @@ cephes_lib = static_library('cephes',
 )
 
 py3.extension_module('_specfun2',
-  ['_specfun2.cpp'],
+  ['_specfun2.cpp', '_specfun2_docs.cpp'],
   dependencies: [np_dep],
   link_args: version_link_args,
   install: true,
