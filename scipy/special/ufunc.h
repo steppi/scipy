@@ -102,7 +102,7 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
             *reinterpret_cast<Res *>(args[sizeof...(Args)]) = F(*reinterpret_cast<Args *>(args[I])...);
 
-            for (npy_intp j = 0; j < sizeof...(Args); ++j) {
+            for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
             }
             args[sizeof...(Args)] += steps[sizeof...(Args)]; // output
@@ -120,7 +120,7 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
             F(*reinterpret_cast<Args *>(args[I])...);
 
-            for (npy_intp j = 0; j < sizeof...(Args); ++j) {
+            for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
             }
         }
