@@ -67,6 +67,22 @@ struct ufunc_traits<F> {
     }
 };
 
+template <typename Arg0, void (*F)(Arg0)>
+struct ufunc_traits<F> {
+    static constexpr int nargs = 1;
+    static constexpr int nres = 0;
+
+    static constexpr char type[1] = {npy_type<Arg0>::value};
+
+    static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
+        for (npy_intp i = 0; i < dimensions[0]; ++i) {
+            F(*reinterpret_cast<Arg0 *>(args[0]));
+
+            args[0] += steps[0];
+        }
+    }
+};
+
 template <int NTypes, int NInAndNOut>
 struct SpecFun_UFuncFuncAndData {
     static constexpr int ntypes = NTypes;
