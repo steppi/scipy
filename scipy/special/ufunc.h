@@ -77,7 +77,9 @@ inline PyObject *SpecFun_UFunc(const char *name, const char *doc, std::initializ
         memcpy(types2 + (it - types.begin()) * (nin + nout), *it, nin + nout);
     }
 
-    return PyUFunc_FromFuncAndData(funcs2, nullptr, types2, ntypes, nin, nout, PyUFunc_None, name, doc, 0);
+    static void *data2[1] = {nullptr};
+
+    return PyUFunc_FromFuncAndData(funcs2, data2, types2, ntypes, nin, nout, PyUFunc_None, name, doc, 0);
 }
 
 // This function now generates a ufunc
