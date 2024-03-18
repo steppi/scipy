@@ -22,6 +22,12 @@ extern const char *ker_doc;
 extern const char *kerp_doc;
 extern const char *mathieu_a_doc;
 extern const char *mathieu_b_doc;
+extern const char *mathieu_cem_doc;
+extern const char *mathieu_modcem1_doc;
+extern const char *mathieu_modcem2_doc;
+extern const char *mathieu_modsem1_doc;
+extern const char *mathieu_modsem2_doc;
+extern const char *mathieu_sem_doc;
 
 static PyModuleDef _specfun2_def = {
     PyModuleDef_HEAD_INIT,
@@ -99,6 +105,24 @@ PyMODINIT_FUNC PyInit__specfun2() {
 
     PyObject *mathieu_b = SpecFun_UFunc<special::sem_cva>("mathieu_b", mathieu_b_doc);
     PyModule_AddObjectRef(specfun2, "mathieu_b", mathieu_b);
+
+    PyObject *mathieu_cem = SpecFun_UFunc<special::cem>("mathieu_cem", mathieu_cem_doc, 2);
+    PyModule_AddObjectRef(specfun2, "mathieu_cem", mathieu_cem);
+
+    PyObject *mathieu_modcem1 = SpecFun_UFunc<special::mcm1>("mathieu_modcem1", mathieu_modcem1_doc, 2);
+    PyModule_AddObjectRef(specfun2, "mathieu_modcem1", mathieu_modcem1);
+
+    PyObject *mathieu_modcem2 = SpecFun_UFunc<special::mcm2>("mathieu_modcem2", mathieu_modcem2_doc, 2);
+    PyModule_AddObjectRef(specfun2, "mathieu_modcem2", mathieu_modcem2);
+
+    PyObject *mathieu_modsem1 = SpecFun_UFunc<special::msm1>("mathieu_modsem1", mathieu_modsem1_doc, 2);
+    PyModule_AddObjectRef(specfun2, "mathieu_modsem1", mathieu_modsem1);
+
+    PyObject *mathieu_modsem2 = SpecFun_UFunc<special::msm2>("mathieu_modsem2", mathieu_modsem2_doc, 2);
+    PyModule_AddObjectRef(specfun2, "mathieu_modsem2", mathieu_modsem2);
+
+    PyObject *mathieu_sem = SpecFun_UFunc<special::sem>("mathieu_sem", mathieu_sem_doc, 2);
+    PyModule_AddObjectRef(specfun2, "mathieu_sem", mathieu_sem);
 
     return specfun2;
 }

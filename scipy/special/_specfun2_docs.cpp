@@ -1080,3 +1080,201 @@ const char *mathieu_b_doc = R"(
     mathieu_a, mathieu_cem, mathieu_sem
 
     )";
+
+const char *mathieu_cem_doc = R"(
+    mathieu_cem(m, q, x, out=None)
+
+    Even Mathieu function and its derivative
+
+    Returns the even Mathieu function, ``ce_m(x, q)``, of order `m` and
+    parameter `q` evaluated at `x` (given in degrees).  Also returns the
+    derivative with respect to `x` of ce_m(x, q)
+
+    Parameters
+    ----------
+    m : array_like
+        Order of the function
+    q : array_like
+        Parameter of the function
+    x : array_like
+        Argument of the function, *given in degrees, not radians*
+    out : tuple of ndarray, optional
+        Optional output arrays for the function results
+
+    Returns
+    -------
+    y : scalar or ndarray
+        Value of the function
+    yp : scalar or ndarray
+        Value of the derivative vs x
+
+    See Also
+    --------
+    mathieu_a, mathieu_b, mathieu_sem
+
+    )";
+
+const char *mathieu_modcem1_doc = R"(
+    mathieu_modcem1(m, q, x, out=None)
+
+    Even modified Mathieu function of the first kind and its derivative
+
+    Evaluates the even modified Mathieu function of the first kind,
+    ``Mc1m(x, q)``, and its derivative at `x` for order `m` and parameter
+    `q`.
+
+    Parameters
+    ----------
+    m : array_like
+        Order of the function
+    q : array_like
+        Parameter of the function
+    x : array_like
+        Argument of the function, *given in degrees, not radians*
+    out : tuple of ndarray, optional
+        Optional output arrays for the function results
+
+    Returns
+    -------
+    y : scalar or ndarray
+        Value of the function
+    yp : scalar or ndarray
+        Value of the derivative vs x
+
+    See Also
+    --------
+    mathieu_modsem1
+
+    )";
+
+const char *mathieu_modcem2_doc = R"(
+    mathieu_modcem2(m, q, x, out=None)
+
+    Even modified Mathieu function of the second kind and its derivative
+
+    Evaluates the even modified Mathieu function of the second kind,
+    Mc2m(x, q), and its derivative at `x` (given in degrees) for order `m`
+    and parameter `q`.
+
+    Parameters
+    ----------
+    m : array_like
+        Order of the function
+    q : array_like
+        Parameter of the function
+    x : array_like
+        Argument of the function, *given in degrees, not radians*
+    out : tuple of ndarray, optional
+        Optional output arrays for the function results
+
+    Returns
+    -------
+    y : scalar or ndarray
+        Value of the function
+    yp : scalar or ndarray
+        Value of the derivative vs x
+
+    See Also
+    --------
+    mathieu_modsem2
+
+    )";
+
+const char *mathieu_modsem1_doc = R"(
+    mathieu_modsem1(m, q, x, out=None)
+
+    Odd modified Mathieu function of the first kind and its derivative
+
+    Evaluates the odd modified Mathieu function of the first kind,
+    Ms1m(x, q), and its derivative at `x` (given in degrees) for order `m`
+    and parameter `q`.
+
+    Parameters
+    ----------
+    m : array_like
+        Order of the function
+    q : array_like
+        Parameter of the function
+    x : array_like
+        Argument of the function, *given in degrees, not radians*
+    out : tuple of ndarray, optional
+        Optional output arrays for the function results
+
+    Returns
+    -------
+    y : scalar or ndarray
+        Value of the function
+    yp : scalar or ndarray
+        Value of the derivative vs x
+
+    See Also
+    --------
+    mathieu_modcem1
+
+    )";
+
+const char *mathieu_modsem2_doc = R"(
+    mathieu_modsem2(m, q, x, out=None)
+
+    Odd modified Mathieu function of the second kind and its derivative
+
+    Evaluates the odd modified Mathieu function of the second kind,
+    Ms2m(x, q), and its derivative at `x` (given in degrees) for order `m`
+    and parameter q.
+
+    Parameters
+    ----------
+    m : array_like
+        Order of the function
+    q : array_like
+        Parameter of the function
+    x : array_like
+        Argument of the function, *given in degrees, not radians*
+    out : tuple of ndarray, optional
+        Optional output arrays for the function results
+
+    Returns
+    -------
+    y : scalar or ndarray
+        Value of the function
+    yp : scalar or ndarray
+        Value of the derivative vs x
+
+    See Also
+    --------
+    mathieu_modcem2
+
+    )";
+
+const char *mathieu_sem_doc = R"(
+    mathieu_sem(m, q, x, out=None)
+
+    Odd Mathieu function and its derivative
+
+    Returns the odd Mathieu function, se_m(x, q), of order `m` and
+    parameter `q` evaluated at `x` (given in degrees).  Also returns the
+    derivative with respect to `x` of se_m(x, q).
+
+    Parameters
+    ----------
+    m : array_like
+        Order of the function
+    q : array_like
+        Parameter of the function
+    x : array_like
+        Argument of the function, *given in degrees, not radians*.
+    out : tuple of ndarray, optional
+        Optional output arrays for the function results
+
+    Returns
+    -------
+    y : scalar or ndarray
+        Value of the function
+    yp : scalar or ndarray
+        Value of the derivative vs x
+
+    See Also
+    --------
+    mathieu_a, mathieu_b, mathieu_cem
+
+    )";
