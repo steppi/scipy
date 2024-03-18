@@ -108,7 +108,8 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
             args[sizeof...(Args)] += steps[sizeof...(Args)]; // output
         }
 
-        sf_error_check_fpe("test"); // TODO: this is an issue as we don't have access to the function name here
+        const char *func_name = static_cast<char *>(data);
+        sf_error_check_fpe(func_name);
     }
 };
 
@@ -125,7 +126,8 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
             }
         }
 
-        sf_error_check_fpe("test"); // same as above
+        const char *func_name = static_cast<char *>(data);
+        sf_error_check_fpe(func_name);
     }
 };
 
@@ -139,14 +141,14 @@ struct SpecFun_UFuncFuncAndData {
     void *data[ntypes];
 
     SpecFun_UFuncFuncAndData(std::initializer_list<PyUFuncGenericFunction> func,
-                             std::initializer_list<const char *> types) {
+                             std::initializer_list<const char *> types, const char *name) {
         std::copy(func.begin(), func.end(), this->func);
 
         for (auto it = types.begin(); it != types.end(); ++it) {
             std::copy(*it, *it + nin_and_nout, this->types + (it - types.begin()) * nin_and_nout);
         }
 
-        std::fill_n(data, ntypes, nullptr);
+        std::fill_n(data, ntypes, const_cast<char *>(name));
     }
 };
 
@@ -162,7 +164,7 @@ PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout) {
 
     static std::vector<func_and_data_type> entries;
     entries.push_back(
-        {{ufunc_traits<F0>::func, ufunc_traits<F>::func...}, {ufunc_traits<F0>::type, ufunc_traits<F>::type...}});
+        {{ufunc_traits<F0>::func, ufunc_traits<F>::func...}, {ufunc_traits<F0>::type, ufunc_traits<F>::type...}, name});
 
     func_and_data_type &func_and_data = entries.back();
     return PyUFunc_FromFuncAndData(func_and_data.func, func_and_data.data, func_and_data.types,
