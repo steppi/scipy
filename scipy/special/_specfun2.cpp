@@ -7,6 +7,10 @@ extern const char *ber_doc;
 extern const char *berp_doc;
 extern const char *exp1_doc;
 extern const char *expi_doc;
+extern const char *it2i0k0_doc;
+extern const char *it2j0y0_doc;
+extern const char *it2struve0_doc;
+extern const char *itairy_doc;
 
 static PyModuleDef _specfun2_def = {
     PyModuleDef_HEAD_INIT,
@@ -39,6 +43,45 @@ PyMODINIT_FUNC PyInit__specfun2() {
 
     PyObject *expi = SpecFun_UFunc<special::expi, special::cexpi>("expi", expi_doc);
     PyModule_AddObjectRef(specfun2, "expi", expi);
+
+    PyObject *it2i0k0 = SpecFun_UFunc<special::it2i0k0>("it2i0k0", it2i0k0_doc, 2);
+    PyModule_AddObjectRef(specfun2, "it2i0k0", it2i0k0);
+
+    PyObject *it2j0y0 = SpecFun_UFunc<special::it2j0y0>("it2j0y0", it2j0y0_doc, 2);
+    PyModule_AddObjectRef(specfun2, "it2j0y0", it2j0y0);
+
+    PyObject *it2struve0 = SpecFun_UFunc<special::it2struve0>("it2struve0", it2struve0_doc);
+    PyModule_AddObjectRef(specfun2, "it2struve0", it2struve0);
+
+    PyObject *itairy = SpecFun_UFunc<special::itairy>("itairy", itairy_doc, 4);
+    PyModule_AddObjectRef(specfun2, "itairy", itairy);
+
+    PyObject *iti0k0 = SpecFun_UFunc<special::it1i0k0>("iti0k0", nullptr, 2);
+    PyModule_AddObjectRef(specfun2, "iti0k0", iti0k0);
+
+    PyObject *itj0y0 = SpecFun_UFunc<special::it1j0y0>("itj0y0", nullptr, 2);
+    PyModule_AddObjectRef(specfun2, "itj0y0", itj0y0);
+
+    PyObject *itmodstruve0 = SpecFun_UFunc<special::itmodstruve0>("itmodstruve0", nullptr);
+    PyModule_AddObjectRef(specfun2, "itmodstruve0", itmodstruve0);
+
+    PyObject *itstruve0 = SpecFun_UFunc<special::itstruve0>("itstruve0", nullptr);
+    PyModule_AddObjectRef(specfun2, "itstruve0", itstruve0);
+
+    PyObject *kei = SpecFun_UFunc<special::kei>("kei", nullptr);
+    PyModule_AddObjectRef(specfun2, "kei", kei);
+
+    PyObject *keip = SpecFun_UFunc<special::keip>("keip", nullptr);
+    PyModule_AddObjectRef(specfun2, "keip", keip);
+
+    PyObject *kelvin = SpecFun_UFunc<special::kelvin>("kelvin", nullptr, 4);
+    PyModule_AddObjectRef(specfun2, "kelvin", kelvin);
+
+    PyObject *ker = SpecFun_UFunc<special::ker>("ker", nullptr);
+    PyModule_AddObjectRef(specfun2, "ker", ker);
+
+    PyObject *kerp = SpecFun_UFunc<special::kerp>("kerp", nullptr);
+    PyModule_AddObjectRef(specfun2, "kerp", kerp);
 
     return specfun2;
 }

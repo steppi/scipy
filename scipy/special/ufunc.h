@@ -8,7 +8,7 @@
 #include <numpy/npy_3kcompat.h>
 #include <numpy/ufuncobject.h>
 
-void sf_error_check_fpe(const char *func_name) {
+inline void sf_error_check_fpe(const char *func_name) {
     int status = PyUFunc_getfperr();
     if (status & UFUNC_FPE_DIVIDEBYZERO) {
         special::set_error(func_name, SF_ERROR_SINGULAR, "floating point division by zero");
@@ -87,9 +87,37 @@ struct npy_type<double> {
 };
 
 template <>
+struct npy_type<int> {
+    static constexpr int value = NPY_INT;
+};
+
+template <typename T>
+struct npy_type<T *> {
+    static constexpr int value = npy_type<T>::value;
+};
+
+template <>
 struct npy_type<std::complex<double>> {
     static constexpr int value = NPY_COMPLEX128;
 };
+
+template <typename T>
+void arg_cast(char *src, T &dst) {
+    dst = *reinterpret_cast<T *>(src);
+}
+
+template <typename T>
+void arg_cast(char *src, T *&dst) {
+    dst = reinterpret_cast<T *>(src);
+}
+
+template <typename T>
+T arg_cast(char *src) {
+    T dst;
+    arg_cast(src, dst);
+
+    return dst;
+}
 
 template <auto F, typename I = std::make_index_sequence<arity_of_v<F>>>
 struct ufunc_traits;
@@ -100,7 +128,7 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
 
     static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
-            *reinterpret_cast<Res *>(args[sizeof...(Args)]) = F(*reinterpret_cast<Args *>(args[I])...);
+            *reinterpret_cast<Res *>(args[sizeof...(Args)]) = F(arg_cast<Args>(args[I])...);
 
             for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
@@ -119,7 +147,7 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
 
     static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
-            F(*reinterpret_cast<Args *>(args[I])...);
+            F(arg_cast<Args>(args[I])...);
 
             for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];

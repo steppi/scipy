@@ -107,7 +107,7 @@ inline double hyp1f1(double a, double b, double x) {
     return outy;
 }
 
-inline int itairy(double x, double *apt, double *bpt, double *ant, double *bnt) {
+inline void itairy(double x, double *apt, double *bpt, double *ant, double *bnt) {
     double tmp;
     int flag = 0;
 
@@ -124,7 +124,6 @@ inline int itairy(double x, double *apt, double *bpt, double *ant, double *bnt) 
         *bpt = -*bnt;
         *bnt = -tmp;
     }
-    return 0;
 }
 
 inline double exp1(double x) {
@@ -332,8 +331,8 @@ inline double keip(double x) {
     return Kep.imag();
 }
 
-inline int kelvin(double x, std::complex<double> *Be, std::complex<double> *Ke, std::complex<double> *Bep,
-                  std::complex<double> *Kep) {
+inline void kelvin(double x, std::complex<double> *Be, std::complex<double> *Ke, std::complex<double> *Bep,
+                   std::complex<double> *Kep) {
     int flag = 0;
     double ber, bei, ger, gei, der, dei, her, hei;
     if (x < 0) {
@@ -363,7 +362,6 @@ inline int kelvin(double x, std::complex<double> *Be, std::complex<double> *Ke, 
         Kep->real(std::numeric_limits<double>::quiet_NaN());
         Kep->imag(std::numeric_limits<double>::quiet_NaN());
     }
-    return 0;
 }
 
 /* Integrals of bessel functions */
@@ -371,7 +369,7 @@ inline int kelvin(double x, std::complex<double> *Be, std::complex<double> *Ke, 
 /* int(j0(t),t=0..x) */
 /* int(y0(t),t=0..x) */
 
-inline int it1j0y0(double x, double *j0int, double *y0int) {
+inline void it1j0y0(double x, double *j0int, double *y0int) {
     int flag = 0;
 
     if (x < 0) {
@@ -383,13 +381,12 @@ inline int it1j0y0(double x, double *j0int, double *y0int) {
         *j0int = -(*j0int);
         *y0int = std::numeric_limits<double>::quiet_NaN(); /* domain error */
     }
-    return 0;
 }
 
 /* int((1-j0(t))/t,t=0..x) */
 /* int(y0(t)/t,t=x..inf) */
 
-inline int it2j0y0(double x, double *j0int, double *y0int) {
+inline void it2j0y0(double x, double *j0int, double *y0int) {
     int flag = 0;
 
     if (x < 0) {
@@ -400,12 +397,11 @@ inline int it2j0y0(double x, double *j0int, double *y0int) {
     if (flag) {
         *y0int = std::numeric_limits<double>::quiet_NaN(); /* domain error */
     }
-    return 0;
 }
 
 /* Integrals of modified bessel functions */
 
-inline int it1i0k0(double x, double *i0int, double *k0int) {
+inline void it1i0k0(double x, double *i0int, double *k0int) {
     int flag = 0;
 
     if (x < 0) {
@@ -417,10 +413,9 @@ inline int it1i0k0(double x, double *i0int, double *k0int) {
         *i0int = -(*i0int);
         *k0int = std::numeric_limits<double>::quiet_NaN(); /* domain error */
     }
-    return 0;
 }
 
-inline int it2i0k0(double x, double *i0int, double *k0int) {
+inline void it2i0k0(double x, double *i0int, double *k0int) {
     int flag = 0;
 
     if (x < 0) {
@@ -431,7 +426,6 @@ inline int it2i0k0(double x, double *i0int, double *k0int) {
     if (flag) {
         *k0int = std::numeric_limits<double>::quiet_NaN(); /* domain error */
     }
-    return 0;
 }
 
 /* Fresnel integrals of complex numbers */

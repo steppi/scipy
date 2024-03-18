@@ -322,3 +322,273 @@ const char *expi_doc = R"(
     (-0.21938393439552062-0j)
 
     )";
+
+const char *it2i0k0_doc = R"(
+    it2i0k0(x, out=None)
+
+    Integrals related to modified Bessel functions of order 0.
+
+    Computes the integrals
+
+    .. math::
+
+        \int_0^x \frac{I_0(t) - 1}{t} dt \\
+        \int_x^\infty \frac{K_0(t)}{t} dt.
+
+    Parameters
+    ----------
+    x : array_like
+        Values at which to evaluate the integrals.
+    out : tuple of ndarrays, optional
+        Optional output arrays for the function results.
+
+    Returns
+    -------
+    ii0 : scalar or ndarray
+        The integral for `i0`
+    ik0 : scalar or ndarray
+        The integral for `k0`
+
+    References
+    ----------
+    .. [1] S. Zhang and J.M. Jin, "Computation of Special Functions",
+           Wiley 1996
+
+    Examples
+    --------
+    Evaluate the functions at one point.
+
+    >>> from scipy.special import it2i0k0
+    >>> int_i, int_k = it2i0k0(1.)
+    >>> int_i, int_k
+    (0.12897944249456852, 0.2085182909001295)
+
+    Evaluate the functions at several points.
+
+    >>> import numpy as np
+    >>> points = np.array([0.5, 1.5, 3.])
+    >>> int_i, int_k = it2i0k0(points)
+    >>> int_i, int_k
+    (array([0.03149527, 0.30187149, 1.50012461]),
+     array([0.66575102, 0.0823715 , 0.00823631]))
+
+    Plot the functions from 0 to 5.
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> x = np.linspace(0., 5., 1000)
+    >>> int_i, int_k = it2i0k0(x)
+    >>> ax.plot(x, int_i, label=r"$\int_0^x \frac{I_0(t)-1}{t}\,dt$")
+    >>> ax.plot(x, int_k, label=r"$\int_x^{\infty} \frac{K_0(t)}{t}\,dt$")
+    >>> ax.legend()
+    >>> ax.set_ylim(0, 10)
+    >>> plt.show()
+    )";
+
+const char *it2j0y0_doc = R"(
+    it2j0y0(x, out=None)
+
+    Integrals related to Bessel functions of the first kind of order 0.
+
+    Computes the integrals
+
+    .. math::
+
+        \int_0^x \frac{1 - J_0(t)}{t} dt \\
+        \int_x^\infty \frac{Y_0(t)}{t} dt.
+
+    For more on :math:`J_0` and :math:`Y_0` see `j0` and `y0`.
+
+    Parameters
+    ----------
+    x : array_like
+        Values at which to evaluate the integrals.
+    out : tuple of ndarrays, optional
+        Optional output arrays for the function results.
+
+    Returns
+    -------
+    ij0 : scalar or ndarray
+        The integral for `j0`
+    iy0 : scalar or ndarray
+        The integral for `y0`
+
+    References
+    ----------
+    .. [1] S. Zhang and J.M. Jin, "Computation of Special Functions",
+           Wiley 1996
+
+    Examples
+    --------
+    Evaluate the functions at one point.
+
+    >>> from scipy.special import it2j0y0
+    >>> int_j, int_y = it2j0y0(1.)
+    >>> int_j, int_y
+    (0.12116524699506871, 0.39527290169929336)
+
+    Evaluate the functions at several points.
+
+    >>> import numpy as np
+    >>> points = np.array([0.5, 1.5, 3.])
+    >>> int_j, int_y = it2j0y0(points)
+    >>> int_j, int_y
+    (array([0.03100699, 0.26227724, 0.85614669]),
+     array([ 0.26968854,  0.29769696, -0.02987272]))
+
+    Plot the functions from 0 to 10.
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> x = np.linspace(0., 10., 1000)
+    >>> int_j, int_y = it2j0y0(x)
+    >>> ax.plot(x, int_j, label=r"$\int_0^x \frac{1-J_0(t)}{t}\,dt$")
+    >>> ax.plot(x, int_y, label=r"$\int_x^{\infty} \frac{Y_0(t)}{t}\,dt$")
+    >>> ax.legend()
+    >>> ax.set_ylim(-2.5, 2.5)
+    >>> plt.show()
+    )";
+
+const char *it2struve0_doc = R"(
+    it2struve0(x, out=None)
+
+    Integral related to the Struve function of order 0.
+
+    Returns the integral,
+
+    .. math::
+        \int_x^\infty \frac{H_0(t)}{t}\,dt
+
+    where :math:`H_0` is the Struve function of order 0.
+
+    Parameters
+    ----------
+    x : array_like
+        Lower limit of integration.
+    out : ndarray, optional
+        Optional output array for the function values
+
+    Returns
+    -------
+    I : scalar or ndarray
+        The value of the integral.
+
+    See Also
+    --------
+    struve
+
+    Notes
+    -----
+    Wrapper for a Fortran routine created by Shanjie Zhang and Jianming
+    Jin [1]_.
+
+    References
+    ----------
+    .. [1] Zhang, Shanjie and Jin, Jianming. "Computation of Special
+           Functions", John Wiley and Sons, 1996.
+           https://people.sc.fsu.edu/~jburkardt/f_src/special_functions/special_functions.html
+
+    Examples
+    --------
+    Evaluate the function at one point.
+
+    >>> import numpy as np
+    >>> from scipy.special import it2struve0
+    >>> it2struve0(1.)
+    0.9571973506383524
+
+    Evaluate the function at several points by supplying
+    an array for `x`.
+
+    >>> points = np.array([1., 2., 3.5])
+    >>> it2struve0(points)
+    array([0.95719735, 0.46909296, 0.10366042])
+
+    Plot the function from -10 to 10.
+
+    >>> import matplotlib.pyplot as plt
+    >>> x = np.linspace(-10., 10., 1000)
+    >>> it2struve0_values = it2struve0(x)
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot(x, it2struve0_values)
+    >>> ax.set_xlabel(r'$x$')
+    >>> ax.set_ylabel(r'$\int_x^{\infty}\frac{H_0(t)}{t}\,dt$')
+    >>> plt.show()
+    )";
+
+const char *itairy_doc = R"(
+    itairy(x, out=None)
+
+    Integrals of Airy functions
+
+    Calculates the integrals of Airy functions from 0 to `x`.
+
+    Parameters
+    ----------
+
+    x : array_like
+        Upper limit of integration (float).
+    out : tuple of ndarray, optional
+        Optional output arrays for the function values
+
+    Returns
+    -------
+    Apt : scalar or ndarray
+        Integral of Ai(t) from 0 to x.
+    Bpt : scalar or ndarray
+        Integral of Bi(t) from 0 to x.
+    Ant : scalar or ndarray
+        Integral of Ai(-t) from 0 to x.
+    Bnt : scalar or ndarray
+        Integral of Bi(-t) from 0 to x.
+
+    Notes
+    -----
+
+    Wrapper for a Fortran routine created by Shanjie Zhang and Jianming
+    Jin [1]_.
+
+    References
+    ----------
+
+    .. [1] Zhang, Shanjie and Jin, Jianming. "Computation of Special
+           Functions", John Wiley and Sons, 1996.
+           https://people.sc.fsu.edu/~jburkardt/f_src/special_functions/special_functions.html
+
+    Examples
+    --------
+    Compute the functions at ``x=1.``.
+
+    >>> import numpy as np
+    >>> from scipy.special import itairy
+    >>> import matplotlib.pyplot as plt
+    >>> apt, bpt, ant, bnt = itairy(1.)
+    >>> apt, bpt, ant, bnt
+    (0.23631734191710949,
+     0.8727691167380077,
+     0.46567398346706845,
+     0.3730050096342943)
+
+    Compute the functions at several points by providing a NumPy array for `x`.
+
+    >>> x = np.array([1., 1.5, 2.5, 5])
+    >>> apt, bpt, ant, bnt = itairy(x)
+    >>> apt, bpt, ant, bnt
+    (array([0.23631734, 0.28678675, 0.324638  , 0.33328759]),
+     array([  0.87276912,   1.62470809,   5.20906691, 321.47831857]),
+     array([0.46567398, 0.72232876, 0.93187776, 0.7178822 ]),
+     array([ 0.37300501,  0.35038814, -0.02812939,  0.15873094]))
+
+    Plot the functions from -10 to 10.
+
+    >>> x = np.linspace(-10, 10, 500)
+    >>> apt, bpt, ant, bnt = itairy(x)
+    >>> fig, ax = plt.subplots(figsize=(6, 5))
+    >>> ax.plot(x, apt, label=r"$\int_0^x\, Ai(t)\, dt$")
+    >>> ax.plot(x, bpt, ls="dashed", label=r"$\int_0^x\, Bi(t)\, dt$")
+    >>> ax.plot(x, ant, ls="dashdot", label=r"$\int_0^x\, Ai(-t)\, dt$")
+    >>> ax.plot(x, bnt, ls="dotted", label=r"$\int_0^x\, Bi(-t)\, dt$")
+    >>> ax.set_ylim(-2, 1.5)
+    >>> ax.legend(loc="lower right")
+    >>> plt.show()
+    )";
