@@ -115,11 +115,12 @@ T arg_cast(char *src) {
     return dst;
 }
 
-template <auto F, typename I = std::make_index_sequence<arity_of_v<F>>>
+template <auto F, typename Signature = std::remove_pointer_t<decltype(F)>,
+          typename I = std::make_index_sequence<arity_of_v<F>>>
 struct ufunc_traits;
 
-template <typename Res, typename... Args, Res (*F)(Args...), size_t... I>
-struct ufunc_traits<F, std::index_sequence<I...>> {
+template <typename Res, typename... Args, auto F, size_t... I>
+struct ufunc_traits<F, Res(Args...), std::index_sequence<I...>> {
     static constexpr char type[sizeof...(Args) + 1] = {npy_type<Args>::value..., npy_type<Res>::value};
 
     static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
@@ -137,8 +138,8 @@ struct ufunc_traits<F, std::index_sequence<I...>> {
     }
 };
 
-template <typename... Args, void (*F)(Args...), size_t... I>
-struct ufunc_traits<F, std::index_sequence<I...>> {
+template <auto F, typename... Args, size_t... I>
+struct ufunc_traits<F, void(Args...), std::index_sequence<I...>> {
     static constexpr char type[sizeof...(Args)] = {npy_type<Args>::value...};
 
     static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
