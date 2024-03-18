@@ -622,7 +622,7 @@ inline double pmv(double m, double v, double x) {
  * If x > 0 return w1f and w1d. Otherwise set x = abs(x) and return
  * w2f and -w2d.
  */
-inline int pbwa(double a, double x, double *wf, double *wd) {
+inline void pbwa(double a, double x, double *wf, double *wd) {
     int flag = 0;
     double w1f = 0.0, w1d = 0.0, w2f = 0.0, w2d = 0.0;
 
@@ -634,22 +634,20 @@ inline int pbwa(double a, double x, double *wf, double *wd) {
         *wf = std::numeric_limits<double>::quiet_NaN();
         *wd = std::numeric_limits<double>::quiet_NaN();
         set_error("pbwa", SF_ERROR_LOSS, NULL);
-        return 0;
-    }
-
-    if (x < 0) {
-        x = -x;
-        flag = 1;
-    }
-    specfun::pbwa(a, x, &w1f, &w1d, &w2f, &w2d);
-    if (flag) {
-        *wf = w2f;
-        *wd = -w2d;
     } else {
-        *wf = w1f;
-        *wd = w1d;
+        if (x < 0) {
+            x = -x;
+            flag = 1;
+        }
+        specfun::pbwa(a, x, &w1f, &w1d, &w2f, &w2d);
+        if (flag) {
+            *wf = w2f;
+            *wd = -w2d;
+        } else {
+            *wf = w1f;
+            *wd = w1d;
+        }
     }
-    return 0;
 }
 
 inline void pbdv(double v, double x, double *pdf, double *pdd) {
@@ -676,7 +674,7 @@ inline void pbdv(double v, double x, double *pdf, double *pdd) {
     }
 }
 
-inline int pbvv(double v, double x, double *pvf, double *pvd) {
+inline void pbvv(double v, double x, double *pvf, double *pvd) {
     double *vv;
     double *vp;
     int num;
@@ -684,21 +682,20 @@ inline int pbvv(double v, double x, double *pvf, double *pvd) {
     if (isnan(v) || isnan(x)) {
         *pvf = std::numeric_limits<double>::quiet_NaN();
         *pvd = std::numeric_limits<double>::quiet_NaN();
-        return 0;
+    } else {
+        /* NB. Indexing of DV/DP in specfun.f:PBVV starts from 0, hence +2 */
+        num = std::abs((int) v) + 2;
+        vv = (double *) malloc(sizeof(double) * 2 * num);
+        if (vv == NULL) {
+            set_error("pbvv", SF_ERROR_OTHER, "memory allocation error");
+            *pvf = std::numeric_limits<double>::quiet_NaN();
+            *pvd = std::numeric_limits<double>::quiet_NaN();
+        } else {
+            vp = vv + num;
+            specfun::pbvv(x, v, vv, vp, pvf, pvd);
+            free(vv);
+        }
     }
-    /* NB. Indexing of DV/DP in specfun.f:PBVV starts from 0, hence +2 */
-    num = std::abs((int) v) + 2;
-    vv = (double *) malloc(sizeof(double) * 2 * num);
-    if (vv == NULL) {
-        set_error("pbvv", SF_ERROR_OTHER, "memory allocation error");
-        *pvf = std::numeric_limits<double>::quiet_NaN();
-        *pvd = std::numeric_limits<double>::quiet_NaN();
-        return -1;
-    }
-    vp = vv + num;
-    specfun::pbvv(x, v, vv, vp, pvf, pvd);
-    free(vv);
-    return 0;
 }
 
 inline double prolate_segv(double m, double n, double c) {

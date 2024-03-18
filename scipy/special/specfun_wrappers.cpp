@@ -131,14 +131,20 @@ int msm2_wrap(double m, double q, double x, double *f2r, double *d2r) {
 
 double pmv_wrap(double m, double v, double x) { return special::pmv(m, v, x); }
 
-int pbwa_wrap(double a, double x, double *wf, double *wd) { return special::pbwa(a, x, wf, wd); }
+int pbwa_wrap(double a, double x, double *wf, double *wd) {
+    special::pbwa(a, x, wf, wd);
+    return 0;
+}
 
 int pbdv_wrap(double v, double x, double *pdf, double *pdd) {
     special::pbdv(v, x, pdf, pdd);
     return 0;
 }
 
-int pbvv_wrap(double v, double x, double *pvf, double *pvd) { return special::pbvv(v, x, pvf, pvd); }
+int pbvv_wrap(double v, double x, double *pvf, double *pvd) {
+    special::pbvv(v, x, pvf, pvd);
+    return 0;
+}
 
 double prolate_segv_wrap(double m, double n, double c) { return special::prolate_segv(m, n, c); }
 

@@ -28,6 +28,8 @@ extern const char *mathieu_modcem2_doc;
 extern const char *mathieu_modsem1_doc;
 extern const char *mathieu_modsem2_doc;
 extern const char *mathieu_sem_doc;
+extern const char *modfresnelm_doc;
+extern const char *modfresnelp_doc;
 
 static PyModuleDef _specfun2_def = {
     PyModuleDef_HEAD_INIT,
@@ -123,6 +125,12 @@ PyMODINIT_FUNC PyInit__specfun2() {
 
     PyObject *mathieu_sem = SpecFun_UFunc<special::sem>("mathieu_sem", mathieu_sem_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_sem", mathieu_sem);
+
+    PyObject *modfresnelm = SpecFun_UFunc<special::modified_fresnel_minus>("modfresnelm", modfresnelm_doc, 2);
+    PyModule_AddObjectRef(specfun2, "modfresnelm", modfresnelm);
+
+    PyObject *modfresnelp = SpecFun_UFunc<special::modified_fresnel_plus>("modfresnelp", modfresnelp_doc, 2);
+    PyModule_AddObjectRef(specfun2, "modfresnelp", modfresnelp);
 
     return specfun2;
 }
