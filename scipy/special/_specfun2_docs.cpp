@@ -592,3 +592,438 @@ const char *itairy_doc = R"(
     >>> ax.legend(loc="lower right")
     >>> plt.show()
     )";
+
+const char *iti0k0_doc = R"(
+    iti0k0(x, out=None)
+
+    Integrals of modified Bessel functions of order 0.
+
+    Computes the integrals
+
+    .. math::
+
+        \int_0^x I_0(t) dt \\
+        \int_0^x K_0(t) dt.
+
+    For more on :math:`I_0` and :math:`K_0` see `i0` and `k0`.
+
+    Parameters
+    ----------
+    x : array_like
+        Values at which to evaluate the integrals.
+    out : tuple of ndarrays, optional
+        Optional output arrays for the function results.
+
+    Returns
+    -------
+    ii0 : scalar or ndarray
+        The integral for `i0`
+    ik0 : scalar or ndarray
+        The integral for `k0`
+
+    References
+    ----------
+    .. [1] S. Zhang and J.M. Jin, "Computation of Special Functions",
+           Wiley 1996
+
+    Examples
+    --------
+    Evaluate the functions at one point.
+
+    >>> from scipy.special import iti0k0
+    >>> int_i, int_k = iti0k0(1.)
+    >>> int_i, int_k
+    (1.0865210970235892, 1.2425098486237771)
+
+    Evaluate the functions at several points.
+
+    >>> import numpy as np
+    >>> points = np.array([0., 1.5, 3.])
+    >>> int_i, int_k = iti0k0(points)
+    >>> int_i, int_k
+    (array([0.        , 1.80606937, 6.16096149]),
+     array([0.        , 1.39458246, 1.53994809]))
+
+    Plot the functions from 0 to 5.
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> x = np.linspace(0., 5., 1000)
+    >>> int_i, int_k = iti0k0(x)
+    >>> ax.plot(x, int_i, label=r"$\int_0^x I_0(t)\,dt$")
+    >>> ax.plot(x, int_k, label=r"$\int_0^x K_0(t)\,dt$")
+    >>> ax.legend()
+    >>> plt.show()
+    )";
+
+const char *itj0y0_doc = R"(
+    itj0y0(x, out=None)
+
+    Integrals of Bessel functions of the first kind of order 0.
+
+    Computes the integrals
+
+    .. math::
+
+        \int_0^x J_0(t) dt \\
+        \int_0^x Y_0(t) dt.
+
+    For more on :math:`J_0` and :math:`Y_0` see `j0` and `y0`.
+
+    Parameters
+    ----------
+    x : array_like
+        Values at which to evaluate the integrals.
+    out : tuple of ndarrays, optional
+        Optional output arrays for the function results.
+
+    Returns
+    -------
+    ij0 : scalar or ndarray
+        The integral of `j0`
+    iy0 : scalar or ndarray
+        The integral of `y0`
+
+    References
+    ----------
+    .. [1] S. Zhang and J.M. Jin, "Computation of Special Functions",
+           Wiley 1996
+
+    Examples
+    --------
+    Evaluate the functions at one point.
+
+    >>> from scipy.special import itj0y0
+    >>> int_j, int_y = itj0y0(1.)
+    >>> int_j, int_y
+    (0.9197304100897596, -0.637069376607422)
+
+    Evaluate the functions at several points.
+
+    >>> import numpy as np
+    >>> points = np.array([0., 1.5, 3.])
+    >>> int_j, int_y = itj0y0(points)
+    >>> int_j, int_y
+    (array([0.        , 1.24144951, 1.38756725]),
+     array([ 0.        , -0.51175903,  0.19765826]))
+
+    Plot the functions from 0 to 10.
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> x = np.linspace(0., 10., 1000)
+    >>> int_j, int_y = itj0y0(x)
+    >>> ax.plot(x, int_j, label=r"$\int_0^x J_0(t)\,dt$")
+    >>> ax.plot(x, int_y, label=r"$\int_0^x Y_0(t)\,dt$")
+    >>> ax.legend()
+    >>> plt.show()
+
+    )";
+
+const char *itmodstruve0_doc = R"(
+    itmodstruve0(x, out=None)
+
+    Integral of the modified Struve function of order 0.
+
+    .. math::
+        I = \int_0^x L_0(t)\,dt
+
+    Parameters
+    ----------
+    x : array_like
+        Upper limit of integration (float).
+    out : ndarray, optional
+        Optional output array for the function values
+
+    Returns
+    -------
+    I : scalar or ndarray
+        The integral of :math:`L_0` from 0 to `x`.
+
+    See Also
+    --------
+    modstruve: Modified Struve function which is integrated by this function
+
+    Notes
+    -----
+    Wrapper for a Fortran routine created by Shanjie Zhang and Jianming
+    Jin [1]_.
+
+    References
+    ----------
+    .. [1] Zhang, Shanjie and Jin, Jianming. "Computation of Special
+           Functions", John Wiley and Sons, 1996.
+           https://people.sc.fsu.edu/~jburkardt/f_src/special_functions/special_functions.html
+
+    Examples
+    --------
+    Evaluate the function at one point.
+
+    >>> import numpy as np
+    >>> from scipy.special import itmodstruve0
+    >>> itmodstruve0(1.)
+    0.3364726286440384
+
+    Evaluate the function at several points by supplying
+    an array for `x`.
+
+    >>> points = np.array([1., 2., 3.5])
+    >>> itmodstruve0(points)
+    array([0.33647263, 1.588285  , 7.60382578])
+
+    Plot the function from -10 to 10.
+
+    >>> import matplotlib.pyplot as plt
+    >>> x = np.linspace(-10., 10., 1000)
+    >>> itmodstruve0_values = itmodstruve0(x)
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot(x, itmodstruve0_values)
+    >>> ax.set_xlabel(r'$x$')
+    >>> ax.set_ylabel(r'$\int_0^xL_0(t)\,dt$')
+    >>> plt.show()
+    )";
+
+const char *itstruve0_doc = R"(
+    itstruve0(x, out=None)
+
+    Integral of the Struve function of order 0.
+
+    .. math::
+        I = \int_0^x H_0(t)\,dt
+
+    Parameters
+    ----------
+    x : array_like
+        Upper limit of integration (float).
+    out : ndarray, optional
+        Optional output array for the function values
+
+    Returns
+    -------
+    I : scalar or ndarray
+        The integral of :math:`H_0` from 0 to `x`.
+
+    See Also
+    --------
+    struve: Function which is integrated by this function
+
+    Notes
+    -----
+    Wrapper for a Fortran routine created by Shanjie Zhang and Jianming
+    Jin [1]_.
+
+    References
+    ----------
+    .. [1] Zhang, Shanjie and Jin, Jianming. "Computation of Special
+           Functions", John Wiley and Sons, 1996.
+           https://people.sc.fsu.edu/~jburkardt/f_src/special_functions/special_functions.html
+
+    Examples
+    --------
+    Evaluate the function at one point.
+
+    >>> import numpy as np
+    >>> from scipy.special import itstruve0
+    >>> itstruve0(1.)
+    0.30109042670805547
+
+    Evaluate the function at several points by supplying
+    an array for `x`.
+
+    >>> points = np.array([1., 2., 3.5])
+    >>> itstruve0(points)
+    array([0.30109043, 1.01870116, 1.96804581])
+
+    Plot the function from -20 to 20.
+
+    >>> import matplotlib.pyplot as plt
+    >>> x = np.linspace(-20., 20., 1000)
+    >>> istruve0_values = itstruve0(x)
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot(x, istruve0_values)
+    >>> ax.set_xlabel(r'$x$')
+    >>> ax.set_ylabel(r'$\int_0^{x}H_0(t)\,dt$')
+    >>> plt.show()
+    )";
+
+const char *kei_doc = R"(
+    kei(x, out=None)
+
+    Kelvin function kei.
+
+    Defined as
+
+    .. math::
+
+        \mathrm{kei}(x) = \Im[K_0(x e^{\pi i / 4})]
+
+    where :math:`K_0` is the modified Bessel function of the second
+    kind (see `kv`). See [dlmf]_ for more details.
+
+    Parameters
+    ----------
+    x : array_like
+        Real argument.
+    out : ndarray, optional
+        Optional output array for the function results.
+
+    Returns
+    -------
+    scalar or ndarray
+        Values of the Kelvin function.
+
+    See Also
+    --------
+    ker : the corresponding real part
+    keip : the derivative of kei
+    kv : modified Bessel function of the second kind
+
+    References
+    ----------
+    .. [dlmf] NIST, Digital Library of Mathematical Functions,
+        https://dlmf.nist.gov/10.61
+
+    Examples
+    --------
+    It can be expressed using the modified Bessel function of the
+    second kind.
+
+    >>> import numpy as np
+    >>> import scipy.special as sc
+    >>> x = np.array([1.0, 2.0, 3.0, 4.0])
+    >>> sc.kv(0, x * np.exp(np.pi * 1j / 4)).imag
+    array([-0.49499464, -0.20240007, -0.05112188,  0.0021984 ])
+    >>> sc.kei(x)
+    array([-0.49499464, -0.20240007, -0.05112188,  0.0021984 ])
+
+    )";
+
+const char *keip_doc = R"(
+    keip(x, out=None)
+
+    Derivative of the Kelvin function kei.
+
+    Parameters
+    ----------
+    x : array_like
+        Real argument.
+    out : ndarray, optional
+        Optional output array for the function results.
+
+    Returns
+    -------
+    scalar or ndarray
+        The values of the derivative of kei.
+
+    See Also
+    --------
+    kei
+
+    References
+    ----------
+    .. [dlmf] NIST, Digital Library of Mathematical Functions,
+        https://dlmf.nist.gov/10#PT5
+
+    )";
+
+const char *kelvin_doc = R"(
+    kelvin(x, out=None)
+
+    Kelvin functions as complex numbers
+
+    Parameters
+    ----------
+    x : array_like
+        Argument
+    out : tuple of ndarray, optional
+        Optional output arrays for the function values
+
+    Returns
+    -------
+    Be, Ke, Bep, Kep : 4-tuple of scalar or ndarray
+        The tuple (Be, Ke, Bep, Kep) contains complex numbers
+        representing the real and imaginary Kelvin functions and their
+        derivatives evaluated at `x`.  For example, kelvin(x)[0].real =
+        ber x and kelvin(x)[0].imag = bei x with similar relationships
+        for ker and kei.
+    )";
+
+const char *ker_doc = R"(
+    ker(x, out=None)
+
+    Kelvin function ker.
+
+    Defined as
+
+    .. math::
+
+        \mathrm{ker}(x) = \Re[K_0(x e^{\pi i / 4})]
+
+    Where :math:`K_0` is the modified Bessel function of the second
+    kind (see `kv`). See [dlmf]_ for more details.
+
+    Parameters
+    ----------
+    x : array_like
+        Real argument.
+    out : ndarray, optional
+        Optional output array for the function results.
+
+    Returns
+    -------
+    scalar or ndarray
+        Values of the Kelvin function.
+
+    See Also
+    --------
+    kei : the corresponding imaginary part
+    kerp : the derivative of ker
+    kv : modified Bessel function of the second kind
+
+    References
+    ----------
+    .. [dlmf] NIST, Digital Library of Mathematical Functions,
+        https://dlmf.nist.gov/10.61
+
+    Examples
+    --------
+    It can be expressed using the modified Bessel function of the
+    second kind.
+
+    >>> import numpy as np
+    >>> import scipy.special as sc
+    >>> x = np.array([1.0, 2.0, 3.0, 4.0])
+    >>> sc.kv(0, x * np.exp(np.pi * 1j / 4)).real
+    array([ 0.28670621, -0.04166451, -0.06702923, -0.03617885])
+    >>> sc.ker(x)
+    array([ 0.28670621, -0.04166451, -0.06702923, -0.03617885])
+
+    )";
+
+const char *kerp_doc = R"(
+    kerp(x, out=None)
+
+    Derivative of the Kelvin function ker.
+
+    Parameters
+    ----------
+    x : array_like
+        Real argument.
+    out : ndarray, optional
+        Optional output array for the function results.
+
+    Returns
+    -------
+    scalar or ndarray
+        Values of the derivative of ker.
+
+    See Also
+    --------
+    ker
+
+    References
+    ----------
+    .. [dlmf] NIST, Digital Library of Mathematical Functions,
+        https://dlmf.nist.gov/10#PT5
+
+    )";
