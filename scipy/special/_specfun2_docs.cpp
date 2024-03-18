@@ -1027,3 +1027,56 @@ const char *kerp_doc = R"(
         https://dlmf.nist.gov/10#PT5
 
     )";
+
+
+const char *mathieu_a_doc = R"(
+    mathieu_a(m, q, out=None)
+
+    Characteristic value of even Mathieu functions
+
+    Parameters
+    ----------
+    m : array_like
+        Order of the function
+    q : array_like
+        Parameter of the function
+    out : ndarray, optional
+        Optional output array for the function results
+
+    Returns
+    -------
+    scalar or ndarray
+        Characteristic value for the even solution, ``ce_m(z, q)``, of
+        Mathieu's equation.
+
+    See Also
+    --------
+    mathieu_b, mathieu_cem, mathieu_sem
+
+    )";
+
+const char *mathieu_b_doc = R"(
+    mathieu_b(m, q, out=None)
+
+    Characteristic value of odd Mathieu functions
+
+    Parameters
+    ----------
+    m : array_like
+        Order of the function
+    q : array_like
+        Parameter of the function
+    out : ndarray, optional
+        Optional output array for the function results
+
+    Returns
+    -------
+    scalar or ndarray
+        Characteristic value for the odd solution, ``se_m(z, q)``, of Mathieu's
+        equation.
+
+    See Also
+    --------
+    mathieu_a, mathieu_cem, mathieu_sem
+
+    )";

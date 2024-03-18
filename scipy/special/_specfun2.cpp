@@ -20,6 +20,8 @@ extern const char *keip_doc;
 extern const char *kelvin_doc;
 extern const char *ker_doc;
 extern const char *kerp_doc;
+extern const char *mathieu_a_doc;
+extern const char *mathieu_b_doc;
 
 static PyModuleDef _specfun2_def = {
     PyModuleDef_HEAD_INIT,
@@ -91,6 +93,12 @@ PyMODINIT_FUNC PyInit__specfun2() {
 
     PyObject *kerp = SpecFun_UFunc<special::kerp>("kerp", kerp_doc);
     PyModule_AddObjectRef(specfun2, "kerp", kerp);
+
+    PyObject *mathieu_a = SpecFun_UFunc<special::cem_cva>("mathieu_a", mathieu_a_doc);
+    PyModule_AddObjectRef(specfun2, "mathieu_a", mathieu_a);
+
+    PyObject *mathieu_b = SpecFun_UFunc<special::sem_cva>("mathieu_b", mathieu_b_doc);
+    PyModule_AddObjectRef(specfun2, "mathieu_b", mathieu_b);
 
     return specfun2;
 }
