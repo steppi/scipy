@@ -1,3 +1,4 @@
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -67,12 +68,7 @@ struct has_result;
 
 template <typename Res, typename... Args, Res (*F)(Args...)>
 struct has_result<F> {
-    static constexpr bool value = true;
-};
-
-template <typename... Args, void (*F)(Args...)>
-struct has_result<F> {
-    static constexpr bool value = false;
+    static constexpr bool value = !std::is_void_v<Res>;
 };
 
 template <auto F>
