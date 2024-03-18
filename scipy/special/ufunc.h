@@ -98,25 +98,25 @@ struct npy_type<std::complex<double>> {
 };
 
 template <typename T>
-void arg_cast(char *src, T &dst) {
-    dst = *reinterpret_cast<T *>(src);
-}
-
-template <typename T>
-void arg_cast(char *src, T *&dst) {
+void from_pointer(char *src, T *&dst) {
     dst = reinterpret_cast<T *>(src);
 }
 
 template <typename T>
-T arg_cast(char *src) {
+void from_pointer(char *src, T &dst) {
+    dst = *reinterpret_cast<T *>(src);
+}
+
+template <typename T>
+T from_pointer(char *src) {
     T dst;
-    arg_cast(src, dst);
+    from_pointer(src, dst);
 
     return dst;
 }
 
 template <auto F, typename Signature = std::remove_pointer_t<decltype(F)>,
-          typename I = std::make_index_sequence<arity_of_v<F>>>
+          typename IndexSequence = std::make_index_sequence<arity_of_v<F>>>
 struct ufunc_traits;
 
 template <typename Res, typename... Args, auto F, size_t... I>
@@ -125,7 +125,7 @@ struct ufunc_traits<F, Res(Args...), std::index_sequence<I...>> {
 
     static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
-            *reinterpret_cast<Res *>(args[sizeof...(Args)]) = F(arg_cast<Args>(args[I])...);
+            *reinterpret_cast<Res *>(args[sizeof...(Args)]) = F(from_pointer<Args>(args[I])...);
 
             for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
@@ -144,7 +144,7 @@ struct ufunc_traits<F, void(Args...), std::index_sequence<I...>> {
 
     static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
-            F(arg_cast<Args>(args[I])...);
+            F(from_pointer<Args>(args[I])...);
 
             for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
