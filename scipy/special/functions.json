@@ -597,7 +597,7 @@
         "_legacy.pxd": {
             "expn_unsafe": "dd->d"
         },
-        "cephes.h": {
+        "_special.h++": {
             "expn": "id->d"
         }
     },

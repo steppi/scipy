@@ -12,6 +12,8 @@
 #include "special/digamma.h"
 #include "special/wright_bessel.h"
 
+#include "special/cephes/expn.h"
+
 
 inline double binom(double n, double k) {
     return special::binom(n, k);
@@ -82,4 +84,8 @@ inline double wright_bessel_scalar(double a, double b, double x) {
 
 inline double rgamma(double x) {
     return special::cephes::rgamma(x);
+}
+
+inline double expn(int n, double x) {
+    return special::cephes::expn(n, x);
 }
