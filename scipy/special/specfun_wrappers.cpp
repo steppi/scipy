@@ -90,31 +90,53 @@ int it2i0k0_wrap(double x, double *i0int, double *k0int) {
 }
 
 int cfresnl_wrap(npy_cdouble z, npy_cdouble *zfs, npy_cdouble *zfc) {
-    return special::cfresnl({npy_creal(z), npy_cimag(z)}, reinterpret_cast<std::complex<double> *>(zfs),
-                            reinterpret_cast<std::complex<double> *>(zfc));
+    special::cfresnl({npy_creal(z), npy_cimag(z)}, reinterpret_cast<std::complex<double> *>(zfs),
+                     reinterpret_cast<std::complex<double> *>(zfc));
+    return 0;
 }
 
 double cem_cva_wrap(double m, double q) { return special::cem_cva(m, q); }
 
 double sem_cva_wrap(double m, double q) { return special::sem_cva(m, q); }
 
-int cem_wrap(double m, double q, double x, double *csf, double *csd) { return special::cem(m, q, x, csf, csd); }
+int cem_wrap(double m, double q, double x, double *csf, double *csd) {
+    special::cem(m, q, x, csf, csd);
+    return 0;
+}
 
-int sem_wrap(double m, double q, double x, double *csf, double *csd) { return special::sem(m, q, x, csf, csd); }
+int sem_wrap(double m, double q, double x, double *csf, double *csd) {
+    special::sem(m, q, x, csf, csd);
+    return 0;
+}
 
-int mcm1_wrap(double m, double q, double x, double *f1r, double *d1r) { return special::mcm1(m, q, x, f1r, d1r); }
+int mcm1_wrap(double m, double q, double x, double *f1r, double *d1r) {
+    special::mcm1(m, q, x, f1r, d1r);
+    return 0;
+}
 
-int msm1_wrap(double m, double q, double x, double *f1r, double *d1r) { return special::msm1(m, q, x, f1r, d1r); }
+int msm1_wrap(double m, double q, double x, double *f1r, double *d1r) {
+    special::msm1(m, q, x, f1r, d1r);
+    return 0;
+}
 
-int mcm2_wrap(double m, double q, double x, double *f2r, double *d2r) { return special::mcm2(m, q, x, f2r, d2r); }
+int mcm2_wrap(double m, double q, double x, double *f2r, double *d2r) {
+    special::mcm2(m, q, x, f2r, d2r);
+    return 0;
+}
 
-int msm2_wrap(double m, double q, double x, double *f2r, double *d2r) { return special::msm2(m, q, x, f2r, d2r); }
+int msm2_wrap(double m, double q, double x, double *f2r, double *d2r) {
+    special::msm2(m, q, x, f2r, d2r);
+    return 0;
+}
 
 double pmv_wrap(double m, double v, double x) { return special::pmv(m, v, x); }
 
 int pbwa_wrap(double a, double x, double *wf, double *wd) { return special::pbwa(a, x, wf, wd); }
 
-int pbdv_wrap(double v, double x, double *pdf, double *pdd) { return special::pbdv(v, x, pdf, pdd); }
+int pbdv_wrap(double v, double x, double *pdf, double *pdd) {
+    special::pbdv(v, x, pdf, pdd);
+    return 0;
+}
 
 int pbvv_wrap(double v, double x, double *pvf, double *pvd) { return special::pbvv(v, x, pvf, pvd); }
 
@@ -131,11 +153,13 @@ double oblate_aswfa_nocv_wrap(double m, double n, double c, double x, double *s1
 }
 
 int prolate_aswfa_wrap(double m, double n, double c, double cv, double x, double *s1f, double *s1d) {
-    return special::prolate_aswfa(m, n, c, cv, x, s1f, s1d);
+    special::prolate_aswfa(m, n, c, cv, x, s1f, s1d);
+    return 0;
 }
 
 int oblate_aswfa_wrap(double m, double n, double c, double cv, double x, double *s1f, double *s1d) {
-    return special::oblate_aswfa(m, n, c, cv, x, s1f, s1d);
+    special::oblate_aswfa(m, n, c, cv, x, s1f, s1d);
+    return 0;
 }
 
 double prolate_radial1_nocv_wrap(double m, double n, double c, double x, double *r1d) {
@@ -147,11 +171,13 @@ double prolate_radial2_nocv_wrap(double m, double n, double c, double x, double 
 }
 
 int prolate_radial1_wrap(double m, double n, double c, double cv, double x, double *r1f, double *r1d) {
-    return special::prolate_radial1(m, n, c, cv, x, r1f, r1d);
+    special::prolate_radial1(m, n, c, cv, x, r1f, r1d);
+    return 0;
 }
 
 int prolate_radial2_wrap(double m, double n, double c, double cv, double x, double *r2f, double *r2d) {
-    return special::prolate_radial2(m, n, c, cv, x, r2f, r2d);
+    special::prolate_radial2(m, n, c, cv, x, r2f, r2d);
+    return 0;
 }
 
 double oblate_radial1_nocv_wrap(double m, double n, double c, double x, double *r1d) {
@@ -163,20 +189,24 @@ double oblate_radial2_nocv_wrap(double m, double n, double c, double x, double *
 }
 
 int oblate_radial1_wrap(double m, double n, double c, double cv, double x, double *r1f, double *r1d) {
-    return special::oblate_radial1(m, n, c, cv, x, r1f, r1d);
+    special::oblate_radial1(m, n, c, cv, x, r1f, r1d);
+    return 0;
 }
 
 int oblate_radial2_wrap(double m, double n, double c, double cv, double x, double *r2f, double *r2d) {
-    return special::oblate_radial2(m, n, c, cv, x, r2f, r2d);
+    special::oblate_radial2(m, n, c, cv, x, r2f, r2d);
+    return 0;
 }
 
 int modified_fresnel_plus_wrap(double x, npy_cdouble *Fplus, npy_cdouble *Kplus) {
-    return special::modified_fresnel_minus(x, reinterpret_cast<std::complex<double> *>(Fplus),
-                                           reinterpret_cast<std::complex<double> *>(Kplus));
+    special::modified_fresnel_plus(x, reinterpret_cast<std::complex<double> *>(Fplus),
+                                   reinterpret_cast<std::complex<double> *>(Kplus));
+    return 0;
 }
 
 int modified_fresnel_minus_wrap(double x, npy_cdouble *Fminus, npy_cdouble *Kminus) {
-    return special::modified_fresnel_minus(x, reinterpret_cast<std::complex<double> *>(Fminus),
-                                           reinterpret_cast<std::complex<double> *>(Kminus));
+    special::modified_fresnel_minus(x, reinterpret_cast<std::complex<double> *>(Fminus),
+                                    reinterpret_cast<std::complex<double> *>(Kminus));
+    return 0;
 }
 }

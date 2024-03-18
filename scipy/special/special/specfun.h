@@ -28,9 +28,9 @@
 
 namespace special {
 
-inline int cem(double m, double q, double x, double *csf, double *csd);
+inline void cem(double m, double q, double x, double *csf, double *csd);
 inline double sem_cva(double m, double q);
-inline int sem(double m, double q, double x, double *csf, double *csd);
+inline void sem(double m, double q, double x, double *csf, double *csd);
 
 inline std::complex<double> chyp2f1(double a, double b, double c, std::complex<double> z) {
     std::complex<double> outz;
@@ -430,19 +430,11 @@ inline void it2i0k0(double x, double *i0int, double *k0int) {
 
 /* Fresnel integrals of complex numbers */
 
-inline int cfresnl(std::complex<double> z, std::complex<double> *zfs, std::complex<double> *zfc) {
-    std::complex<double> z99(z.real(), z.imag());
-    std::complex<double> zfs99, zfc99, zfd;
+inline void cfresnl(std::complex<double> z, std::complex<double> *zfs, std::complex<double> *zfc) {
+    std::complex<double> zfd;
 
-    specfun::cfs(z99, &zfs99, &zfd);
-    specfun::cfc(z99, &zfc99, &zfd);
-
-    zfs->real(zfs99.real());
-    zfs->imag(zfs99.imag());
-    zfc->real(zfc99.real());
-    zfc->imag(zfc99.imag());
-
-    return 0;
+    specfun::cfs(z, zfs, &zfd);
+    specfun::cfc(z, zfc, &zfd);
 }
 
 /* Mathieu functions */
@@ -497,72 +489,67 @@ inline double sem_cva(double m, double q) {
 }
 
 /* Mathieu functions */
-inline int cem(double m, double q, double x, double *csf, double *csd) {
+inline void cem(double m, double q, double x, double *csf, double *csd) {
     int int_m, kf = 1, sgn;
     double f = 0.0, d = 0.0;
     if ((m < 0) || (m != floor(m))) {
         *csf = std::numeric_limits<double>::quiet_NaN();
         *csd = std::numeric_limits<double>::quiet_NaN();
         set_error("cem", SF_ERROR_DOMAIN, NULL);
-        return -1;
-    }
-    int_m = (int) m;
-    if (q < 0) {
-        /* https://dlmf.nist.gov/28.2#E34 */
-        if (int_m % 2 == 0) {
-            sgn = ((int_m / 2) % 2 == 0) ? 1 : -1;
-            cem(m, -q, 90 - x, &f, &d);
-            *csf = sgn * f;
-            *csd = -sgn * d;
-            return 0;
+    } else {
+        int_m = (int) m;
+        if (q < 0) {
+            /* https://dlmf.nist.gov/28.2#E34 */
+            if (int_m % 2 == 0) {
+                sgn = ((int_m / 2) % 2 == 0) ? 1 : -1;
+                cem(m, -q, 90 - x, &f, &d);
+                *csf = sgn * f;
+                *csd = -sgn * d;
+
+            } else {
+                sgn = ((int_m / 2) % 2 == 0) ? 1 : -1;
+                sem(m, -q, 90 - x, &f, &d);
+                *csf = sgn * f;
+                *csd = -sgn * d;
+            }
         } else {
-            sgn = ((int_m / 2) % 2 == 0) ? 1 : -1;
-            sem(m, -q, 90 - x, &f, &d);
-            *csf = sgn * f;
-            *csd = -sgn * d;
-            return 0;
+            specfun::mtu0(kf, int_m, q, x, csf, csd);
         }
     }
-    specfun::mtu0(kf, int_m, q, x, csf, csd);
-    return 0;
 }
 
-inline int sem(double m, double q, double x, double *csf, double *csd) {
+inline void sem(double m, double q, double x, double *csf, double *csd) {
     int int_m, kf = 2, sgn;
     double f = 0.0, d = 0.0;
     if ((m < 0) || (m != floor(m))) {
         *csf = std::numeric_limits<double>::quiet_NaN();
         *csd = std::numeric_limits<double>::quiet_NaN();
         set_error("sem", SF_ERROR_DOMAIN, NULL);
-        return -1;
-    }
-    int_m = (int) m;
-    if (int_m == 0) {
-        *csf = 0;
-        *csd = 0;
-        return 0;
-    }
-    if (q < 0) {
-        /* https://dlmf.nist.gov/28.2#E34 */
-        if (int_m % 2 == 0) {
-            sgn = ((int_m / 2) % 2 == 0) ? -1 : 1;
-            sem(m, -q, 90 - x, &f, &d);
-            *csf = sgn * f;
-            *csd = -sgn * d;
-            return 0;
+    } else {
+        int_m = (int) m;
+        if (int_m == 0) {
+            *csf = 0;
+            *csd = 0;
+        } else if (q < 0) {
+            /* https://dlmf.nist.gov/28.2#E34 */
+            if (int_m % 2 == 0) {
+                sgn = ((int_m / 2) % 2 == 0) ? -1 : 1;
+                sem(m, -q, 90 - x, &f, &d);
+                *csf = sgn * f;
+                *csd = -sgn * d;
+            } else {
+                sgn = ((int_m / 2) % 2 == 0) ? 1 : -1;
+                cem(m, -q, 90 - x, &f, &d);
+                *csf = sgn * f;
+                *csd = -sgn * d;
+            }
         } else {
-            sgn = ((int_m / 2) % 2 == 0) ? 1 : -1;
-            cem(m, -q, 90 - x, &f, &d);
-            *csf = sgn * f;
-            *csd = -sgn * d;
-            return 0;
+            specfun::mtu0(kf, int_m, q, x, csf, csd);
         }
     }
-    specfun::mtu0(kf, int_m, q, x, csf, csd);
-    return 0;
 }
 
-inline int mcm1(double m, double q, double x, double *f1r, double *d1r) {
+inline void mcm1(double m, double q, double x, double *f1r, double *d1r) {
     int int_m, kf = 1, kc = 1;
     double f2r = 0.0, d2r = 0.0;
 
@@ -570,14 +557,13 @@ inline int mcm1(double m, double q, double x, double *f1r, double *d1r) {
         *f1r = std::numeric_limits<double>::quiet_NaN();
         *d1r = std::numeric_limits<double>::quiet_NaN();
         set_error("mcm1", SF_ERROR_DOMAIN, NULL);
-        return -1;
+    } else {
+        int_m = (int) m;
+        specfun::mtu12(kf, kc, int_m, q, x, f1r, d1r, &f2r, &d2r);
     }
-    int_m = (int) m;
-    specfun::mtu12(kf, kc, int_m, q, x, f1r, d1r, &f2r, &d2r);
-    return 0;
 }
 
-inline int msm1(double m, double q, double x, double *f1r, double *d1r) {
+inline void msm1(double m, double q, double x, double *f1r, double *d1r) {
     int int_m, kf = 2, kc = 1;
     double f2r = 0.0, d2r = 0.0;
 
@@ -585,14 +571,13 @@ inline int msm1(double m, double q, double x, double *f1r, double *d1r) {
         *f1r = std::numeric_limits<double>::quiet_NaN();
         *d1r = std::numeric_limits<double>::quiet_NaN();
         set_error("msm1", SF_ERROR_DOMAIN, NULL);
-        return -1;
+    } else {
+        int_m = (int) m;
+        specfun::mtu12(kf, kc, int_m, q, x, f1r, d1r, &f2r, &d2r);
     }
-    int_m = (int) m;
-    specfun::mtu12(kf, kc, int_m, q, x, f1r, d1r, &f2r, &d2r);
-    return 0;
 }
 
-inline int mcm2(double m, double q, double x, double *f2r, double *d2r) {
+inline void mcm2(double m, double q, double x, double *f2r, double *d2r) {
     int int_m, kf = 1, kc = 2;
     double f1r = 0.0, d1r = 0.0;
 
@@ -600,14 +585,13 @@ inline int mcm2(double m, double q, double x, double *f2r, double *d2r) {
         *f2r = std::numeric_limits<double>::quiet_NaN();
         *d2r = std::numeric_limits<double>::quiet_NaN();
         set_error("mcm2", SF_ERROR_DOMAIN, NULL);
-        return -1;
+    } else {
+        int_m = (int) m;
+        specfun::mtu12(kf, kc, int_m, q, x, &f1r, &d1r, f2r, d2r);
     }
-    int_m = (int) m;
-    specfun::mtu12(kf, kc, int_m, q, x, &f1r, &d1r, f2r, d2r);
-    return 0;
 }
 
-inline int msm2(double m, double q, double x, double *f2r, double *d2r) {
+inline void msm2(double m, double q, double x, double *f2r, double *d2r) {
     int int_m, kf = 2, kc = 2;
     double f1r = 0.0, d1r = 0.0;
 
@@ -615,11 +599,10 @@ inline int msm2(double m, double q, double x, double *f2r, double *d2r) {
         *f2r = std::numeric_limits<double>::quiet_NaN();
         *d2r = std::numeric_limits<double>::quiet_NaN();
         set_error("msm2", SF_ERROR_DOMAIN, NULL);
-        return -1;
+    } else {
+        int_m = (int) m;
+        specfun::mtu12(kf, kc, int_m, q, x, &f1r, &d1r, f2r, d2r);
     }
-    int_m = (int) m;
-    specfun::mtu12(kf, kc, int_m, q, x, &f1r, &d1r, f2r, d2r);
-    return 0;
 }
 
 inline double pmv(double m, double v, double x) {
@@ -669,7 +652,7 @@ inline int pbwa(double a, double x, double *wf, double *wd) {
     return 0;
 }
 
-inline int pbdv(double v, double x, double *pdf, double *pdd) {
+inline void pbdv(double v, double x, double *pdf, double *pdd) {
     double *dv;
     double *dp;
     int num;
@@ -677,21 +660,20 @@ inline int pbdv(double v, double x, double *pdf, double *pdd) {
     if (isnan(v) || isnan(x)) {
         *pdf = std::numeric_limits<double>::quiet_NaN();
         *pdd = std::numeric_limits<double>::quiet_NaN();
-        return 0;
+    } else {
+        /* NB. Indexing of DV/DP in specfun.f:PBDV starts from 0, hence +2 */
+        num = std::abs((int) v) + 2;
+        dv = (double *) malloc(sizeof(double) * 2 * num);
+        if (dv == NULL) {
+            set_error("pbdv", SF_ERROR_OTHER, "memory allocation error");
+            *pdf = std::numeric_limits<double>::quiet_NaN();
+            *pdd = std::numeric_limits<double>::quiet_NaN();
+        } else {
+            dp = dv + num;
+            specfun::pbdv(x, v, dv, dp, pdf, pdd);
+            free(dv);
+        }
     }
-    /* NB. Indexing of DV/DP in specfun.f:PBDV starts from 0, hence +2 */
-    num = std::abs((int) v) + 2;
-    dv = (double *) malloc(sizeof(double) * 2 * num);
-    if (dv == NULL) {
-        set_error("pbdv", SF_ERROR_OTHER, "memory allocation error");
-        *pdf = std::numeric_limits<double>::quiet_NaN();
-        *pdd = std::numeric_limits<double>::quiet_NaN();
-        return -1;
-    }
-    dp = dv + num;
-    specfun::pbdv(x, v, dv, dp, pdf, pdd);
-    free(dv);
-    return 0;
 }
 
 inline int pbvv(double v, double x, double *pvf, double *pvd) {
@@ -807,36 +789,24 @@ double oblate_aswfa_nocv(double m, double n, double c, double x, double *s1d) {
     return s1f;
 }
 
-inline int prolate_aswfa(double m, double n, double c, double cv, double x, double *s1f, double *s1d) {
-    int kd = 1;
-    int int_m, int_n;
-
+inline void prolate_aswfa(double m, double n, double c, double cv, double x, double *s1f, double *s1d) {
     if ((x >= 1) || (x <= -1) || (m < 0) || (n < m) || (m != floor(m)) || (n != floor(n))) {
         set_error("prolate_aswfa", SF_ERROR_DOMAIN, NULL);
         *s1f = std::numeric_limits<double>::quiet_NaN();
         *s1d = std::numeric_limits<double>::quiet_NaN();
-        return 0;
+    } else {
+        specfun::aswfa(x, static_cast<int>(m), static_cast<int>(n), c, 1, cv, s1f, s1d);
     }
-    int_m = (int) m;
-    int_n = (int) n;
-    specfun::aswfa(x, int_m, int_n, c, kd, cv, s1f, s1d);
-    return 0;
 }
 
-inline int oblate_aswfa(double m, double n, double c, double cv, double x, double *s1f, double *s1d) {
-    int kd = -1;
-    int int_m, int_n;
-
+inline void oblate_aswfa(double m, double n, double c, double cv, double x, double *s1f, double *s1d) {
     if ((x >= 1) || (x <= -1) || (m < 0) || (n < m) || (m != floor(m)) || (n != floor(n))) {
         set_error("oblate_aswfa", SF_ERROR_DOMAIN, NULL);
         *s1f = std::numeric_limits<double>::quiet_NaN();
         *s1d = std::numeric_limits<double>::quiet_NaN();
-        return 0;
+    } else {
+        specfun::aswfa(x, static_cast<int>(m), static_cast<int>(n), c, -1, cv, s1f, s1d);
     }
-    int_m = (int) m;
-    int_n = (int) n;
-    specfun::aswfa(x, int_m, int_n, c, kd, cv, s1f, s1d);
-    return 0;
 }
 
 inline double prolate_radial1_nocv(double m, double n, double c, double x, double *r1d) {
@@ -887,7 +857,7 @@ inline double prolate_radial2_nocv(double m, double n, double c, double x, doubl
     return r2f;
 }
 
-inline int prolate_radial1(double m, double n, double c, double cv, double x, double *r1f, double *r1d) {
+inline void prolate_radial1(double m, double n, double c, double cv, double x, double *r1f, double *r1d) {
     int kf = 1;
     double r2f = 0.0, r2d = 0.0;
     int int_m, int_n;
@@ -896,15 +866,14 @@ inline int prolate_radial1(double m, double n, double c, double cv, double x, do
         set_error("prolate_radial1", SF_ERROR_DOMAIN, NULL);
         *r1f = std::numeric_limits<double>::quiet_NaN();
         *r1d = std::numeric_limits<double>::quiet_NaN();
-        return 0;
+    } else {
+        int_m = (int) m;
+        int_n = (int) n;
+        specfun::rswfp(int_m, int_n, c, x, cv, kf, r1f, r1d, &r2f, &r2d);
     }
-    int_m = (int) m;
-    int_n = (int) n;
-    specfun::rswfp(int_m, int_n, c, x, cv, kf, r1f, r1d, &r2f, &r2d);
-    return 0;
 }
 
-inline int prolate_radial2(double m, double n, double c, double cv, double x, double *r2f, double *r2d) {
+inline void prolate_radial2(double m, double n, double c, double cv, double x, double *r2f, double *r2d) {
     int kf = 2;
     double r1f = 0.0, r1d = 0.0;
     int int_m, int_n;
@@ -913,12 +882,11 @@ inline int prolate_radial2(double m, double n, double c, double cv, double x, do
         set_error("prolate_radial2", SF_ERROR_DOMAIN, NULL);
         *r2f = std::numeric_limits<double>::quiet_NaN();
         *r2d = std::numeric_limits<double>::quiet_NaN();
-        return 0;
+    } else {
+        int_m = (int) m;
+        int_n = (int) n;
+        specfun::rswfp(int_m, int_n, c, x, cv, kf, &r1f, &r1d, r2f, r2d);
     }
-    int_m = (int) m;
-    int_n = (int) n;
-    specfun::rswfp(int_m, int_n, c, x, cv, kf, &r1f, &r1d, r2f, r2d);
-    return 0;
 }
 
 inline double oblate_radial1_nocv(double m, double n, double c, double x, double *r1d) {
@@ -969,41 +937,33 @@ inline double oblate_radial2_nocv(double m, double n, double c, double x, double
     return r2f;
 }
 
-inline int oblate_radial1(double m, double n, double c, double cv, double x, double *r1f, double *r1d) {
+inline void oblate_radial1(double m, double n, double c, double cv, double x, double *r1f, double *r1d) {
     int kf = 1;
     double r2f = 0.0, r2d = 0.0;
-    int int_m, int_n;
 
     if ((x < 0.0) || (m < 0) || (n < m) || (m != floor(m)) || (n != floor(n))) {
         set_error("oblate_radial1", SF_ERROR_DOMAIN, NULL);
         *r1f = std::numeric_limits<double>::quiet_NaN();
         *r1d = std::numeric_limits<double>::quiet_NaN();
-        return 0;
+    } else {
+        specfun::rswfo(static_cast<int>(m), static_cast<int>(n), c, x, cv, kf, r1f, r1d, &r2f, &r2d);
     }
-    int_m = (int) m;
-    int_n = (int) n;
-    specfun::rswfo(int_m, int_n, c, x, cv, kf, r1f, r1d, &r2f, &r2d);
-    return 0;
 }
 
-inline int oblate_radial2(double m, double n, double c, double cv, double x, double *r2f, double *r2d) {
+inline void oblate_radial2(double m, double n, double c, double cv, double x, double *r2f, double *r2d) {
     int kf = 2;
     double r1f = 0.0, r1d = 0.0;
-    int int_m, int_n;
 
     if ((x < 0.0) || (m < 0) || (n < m) || (m != floor(m)) || (n != floor(n))) {
         set_error("oblate_radial2", SF_ERROR_DOMAIN, NULL);
         *r2f = std::numeric_limits<double>::quiet_NaN();
         *r2d = std::numeric_limits<double>::quiet_NaN();
-        return 0;
+    } else {
+        specfun::rswfo(static_cast<int>(m), static_cast<int>(n), c, x, cv, kf, &r1f, &r1d, r2f, r2d);
     }
-    int_m = (int) m;
-    int_n = (int) n;
-    specfun::rswfo(int_m, int_n, c, x, cv, kf, &r1f, &r1d, r2f, r2d);
-    return 0;
 }
 
-inline int modified_fresnel_plus(double x, std::complex<double> *Fplus, std::complex<double> *Kplus) {
+inline void modified_fresnel_plus(double x, std::complex<double> *Fplus, std::complex<double> *Kplus) {
     int ks = 0;
     double fr = 0.0, gr = 0.0, fi = 0.0, gi = 0.0, fa = 0.0, ga = 0.0, fm = 0.0, gm = 0.0;
 
@@ -1012,10 +972,9 @@ inline int modified_fresnel_plus(double x, std::complex<double> *Fplus, std::com
     Fplus->imag(fi);
     Kplus->real(gr);
     Kplus->imag(gi);
-    return 0;
 }
 
-inline int modified_fresnel_minus(double x, std::complex<double> *Fminus, std::complex<double> *Kminus) {
+inline void modified_fresnel_minus(double x, std::complex<double> *Fminus, std::complex<double> *Kminus) {
     int ks = 1;
     double fr = 0.0, gr = 0.0, fi = 0.0, gi = 0.0, fa = 0.0, ga = 0.0, fm = 0.0, gm = 0.0;
 
@@ -1024,7 +983,6 @@ inline int modified_fresnel_minus(double x, std::complex<double> *Fminus, std::c
     Fminus->imag(fi);
     Kminus->real(gr);
     Kminus->imag(gi);
-    return 0;
 }
 
 } // namespace special
