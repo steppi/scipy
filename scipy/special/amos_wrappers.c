@@ -1,11 +1,11 @@
-#define _USE_MATH_DEFINES
-#include <complex.h>
+#include "Python.h"
+#include <numpy/npy_math.h>
 #include <math.h>
+#include "npy_2_complexcompat.h"
 
 #include "_amos.h"
 #include "amos_wrappers.h"
 #include "sf_error.h"
-#include "npy_2_complexcompat.h"
 
 #define CADDR(z) ((double *) (&(z))), (&(((double *) (&(z)))[1]))
 
