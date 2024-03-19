@@ -102,7 +102,7 @@ UFUNCS_EXTRA_CODE_BOTTOM = """\
 jn = jv
 
 from ._specfun2 import (_cosine_cdf, _cosine_invcdf, airy, airye, bei, beip,
-    ber, berp, exp1, expi, it2i0k0, it2j0y0,
+    ber, berp, exp1, expi, hankel1, hankel1e, hankel2, hankel2e, it2i0k0, it2j0y0,
     it2struve0, itairy, iti0k0, itj0y0, itmodstruve0, itstruve0,
     kei, keip, kelvin, ker, kerp, mathieu_a, mathieu_b, mathieu_cem,
     mathieu_modcem1, mathieu_modcem2, mathieu_modsem1, mathieu_modsem2,

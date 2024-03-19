@@ -23,6 +23,10 @@ extern const char *ber_doc;
 extern const char *berp_doc;
 extern const char *exp1_doc;
 extern const char *expi_doc;
+extern const char *hankel1_doc;
+extern const char *hankel1e_doc;
+extern const char *hankel2_doc;
+extern const char *hankel2e_doc;
 extern const char *it2i0k0_doc;
 extern const char *it2j0y0_doc;
 extern const char *it2struve0_doc;
@@ -90,6 +94,18 @@ PyMODINIT_FUNC PyInit__specfun2() {
 
     PyObject *expi = SpecFun_UFunc<special::expi, special::cexpi>("expi", expi_doc);
     PyModule_AddObjectRef(specfun2, "expi", expi);
+
+    PyObject *hankel1 = SpecFun_UFunc<cbesh_wrap1>("hankel1", hankel1_doc);
+    PyModule_AddObjectRef(specfun2, "hankel1", hankel1);
+
+    PyObject *hankel1e = SpecFun_UFunc<cbesh_wrap1_e>("hankel1e", hankel1e_doc);
+    PyModule_AddObjectRef(specfun2, "hankel1e", hankel1e);
+
+    PyObject *hankel2 = SpecFun_UFunc<cbesh_wrap2>("hankel2", hankel2_doc);
+    PyModule_AddObjectRef(specfun2, "hankel2", hankel2);
+
+    PyObject *hankel2e = SpecFun_UFunc<cbesh_wrap2_e>("hankel2e", hankel2e_doc);
+    PyModule_AddObjectRef(specfun2, "hankel2e", hankel2e);
 
     PyObject *it2i0k0 = SpecFun_UFunc<special::it2i0k0>("it2i0k0", it2i0k0_doc, 2);
     PyModule_AddObjectRef(specfun2, "it2i0k0", it2i0k0);
