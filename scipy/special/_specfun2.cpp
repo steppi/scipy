@@ -129,10 +129,10 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *hankel2e = SpecFun_UFunc<cbesh_wrap2_e>("hankel2e", hankel2e_doc);
     PyModule_AddObjectRef(specfun2, "hankel2e", hankel2e);
 
-    PyObject *it2i0k0 = SpecFun_UFunc<special::it2i0k0>("it2i0k0", it2i0k0_doc, 2);
+    PyObject *it2i0k0 = SpecFun_UFunc<special::it2i0k0<float>, special::it2i0k0<double>>("it2i0k0", it2i0k0_doc, 2);
     PyModule_AddObjectRef(specfun2, "it2i0k0", it2i0k0);
 
-    PyObject *it2j0y0 = SpecFun_UFunc<special::it2j0y0>("it2j0y0", it2j0y0_doc, 2);
+    PyObject *it2j0y0 = SpecFun_UFunc<special::it2j0y0<float>, special::it2j0y0<double>>("it2j0y0", it2j0y0_doc, 2);
     PyModule_AddObjectRef(specfun2, "it2j0y0", it2j0y0);
 
     PyObject *it2struve0 = SpecFun_UFunc<special::it2struve0>("it2struve0", it2struve0_doc);

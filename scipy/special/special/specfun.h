@@ -425,7 +425,8 @@ inline void it1j0y0(double x, double *j0int, double *y0int) {
 /* int((1-j0(t))/t,t=0..x) */
 /* int(y0(t)/t,t=x..inf) */
 
-inline void it2j0y0(double x, double *j0int, double *y0int) {
+template <typename T>
+void it2j0y0(T x, T *j0int, T *y0int) {
     int flag = 0;
 
     if (x < 0) {
@@ -434,8 +435,18 @@ inline void it2j0y0(double x, double *j0int, double *y0int) {
     }
     specfun::ittjya(x, j0int, y0int);
     if (flag) {
-        *y0int = std::numeric_limits<double>::quiet_NaN(); /* domain error */
+        *y0int = std::numeric_limits<T>::quiet_NaN(); /* domain error */
     }
+}
+
+template <>
+inline void it2j0y0(float xf, float *j0intf, float *y0intf) {
+    double x = xf;
+    double j0int, y0int;
+    it2j0y0(x, &j0int, &y0int);
+
+    *j0intf = j0int;
+    *y0intf = y0int;
 }
 
 /* Integrals of modified bessel functions */
@@ -454,7 +465,8 @@ inline void it1i0k0(double x, double *i0int, double *k0int) {
     }
 }
 
-inline void it2i0k0(double x, double *i0int, double *k0int) {
+template <typename T>
+void it2i0k0(T x, T *i0int, T *k0int) {
     int flag = 0;
 
     if (x < 0) {
@@ -463,8 +475,18 @@ inline void it2i0k0(double x, double *i0int, double *k0int) {
     }
     specfun::ittika(x, i0int, k0int);
     if (flag) {
-        *k0int = std::numeric_limits<double>::quiet_NaN(); /* domain error */
+        *k0int = std::numeric_limits<T>::quiet_NaN(); /* domain error */
     }
+}
+
+template <>
+inline void it2i0k0(float xf, float *i0intf, float *k0intf) {
+    double x = xf;
+    double i0int, k0int;
+    it2i0k0(x, &i0int, &k0int);
+
+    *i0intf = i0int;
+    *k0intf = k0int;
 }
 
 /* Fresnel integrals of complex numbers */
