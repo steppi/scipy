@@ -1,6 +1,18 @@
+extern "C" {
+
+#include "_cosine.h"
+
+#include "cephes.h"
+#undef cospi
+}
+
 #include "special/specfun.h"
+#include "special/trig.h"
 #include "ufunc.h"
 
+extern const char *_cosine_cdf_doc;
+extern const char *_cosine_invcdf_doc;
+extern const char *_cospi_doc;
 extern const char *bei_doc;
 extern const char *beip_doc;
 extern const char *ber_doc;
@@ -44,6 +56,15 @@ PyMODINIT_FUNC PyInit__specfun2() {
     if (specfun2 == nullptr) {
         return nullptr;
     }
+
+    PyObject *_cosine_cdf = SpecFun_UFunc<cosine_cdf>("_cosine_cdf", _cosine_cdf_doc);
+    PyModule_AddObjectRef(specfun2, "_cosine_cdf", _cosine_cdf);
+
+    PyObject *_cosine_invcdf = SpecFun_UFunc<cosine_invcdf>("_cosine_invcdf", _cosine_invcdf_doc);
+    PyModule_AddObjectRef(specfun2, "_cosine_invcdf", _cosine_invcdf);
+
+    PyObject *_cospi = SpecFun_UFunc<cephes_cospi, special::cospi>("_cospi", _cospi_doc);
+    PyModule_AddObjectRef(specfun2, "_cospi", _cospi);
 
     PyObject *bei = SpecFun_UFunc<special::bei>("bei", bei_doc);
     PyModule_AddObjectRef(specfun2, "bei", bei);
