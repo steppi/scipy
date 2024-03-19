@@ -12,7 +12,7 @@
 #include "sf_error.h"
 
 // Just initializes everything needed, can also go in a common header
-bool SpecFun_Initialize() {
+inline bool SpecFun_Initialize() {
     Py_Initialize();
 
     import_array();
@@ -32,7 +32,7 @@ bool SpecFun_Initialize() {
 
 #if (PY_VERSION_HEX < 0x030a00f0)
 // this is in Python >=3.10
-int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *value) {
+inline int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *value) {
     Py_INCREF(value);
     return PyModule_AddObject(module, name, value);
 }
