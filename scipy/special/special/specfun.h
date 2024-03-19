@@ -251,17 +251,24 @@ inline float bei(float xf) {
     return bei(x);
 }
 
-inline double ker(double x) {
-    std::complex<double> Ke;
-    double ber, bei, ger, gei, der, dei, her, hei;
+template <typename T>
+inline T ker(T x) {
+    std::complex<T> Ke;
+    T ber, bei, ger, gei, der, dei, her, hei;
     if (x < 0) {
-        return std::numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<T>::quiet_NaN();
     }
     specfun::klvna(x, &ber, &bei, &ger, &gei, &der, &dei, &her, &hei);
     Ke.real(ger);
     Ke.imag(gei);
     SPECFUN_ZCONVINF("ker", Ke);
     return Ke.real();
+}
+
+template <>
+inline float ker(float xf) {
+    double x = xf;
+    return ker(x);
 }
 
 template <typename T>
@@ -335,18 +342,25 @@ float beip(float xf) {
     return beip(x);
 }
 
-inline double kerp(double x) {
-    std::complex<double> Kep;
-    double ber, bei, ger, gei, der, dei, her, hei;
+template <typename T>
+T kerp(T x) {
+    std::complex<T> Kep;
+    T ber, bei, ger, gei, der, dei, her, hei;
 
     if (x < 0) {
-        return std::numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<T>::quiet_NaN();
     }
     specfun::klvna(x, &ber, &bei, &ger, &gei, &der, &dei, &her, &hei);
     Kep.real(her);
     Kep.imag(hei);
     SPECFUN_ZCONVINF("kerp", Kep);
     return Kep.real();
+}
+
+template <>
+inline float kerp(float xf) {
+    double x = xf;
+    return kerp(x);
 }
 
 template <typename T>
@@ -370,10 +384,10 @@ inline float keip(float xf) {
     return keip(x);
 }
 
-inline void kelvin(double x, std::complex<double> *Be, std::complex<double> *Ke, std::complex<double> *Bep,
-                   std::complex<double> *Kep) {
+template <typename T>
+void kelvin(T x, std::complex<T> *Be, std::complex<T> *Ke, std::complex<T> *Bep, std::complex<T> *Kep) {
     int flag = 0;
-    double ber, bei, ger, gei, der, dei, her, hei;
+    T ber, bei, ger, gei, der, dei, her, hei;
     if (x < 0) {
         x = -x;
         flag = 1;
@@ -396,11 +410,27 @@ inline void kelvin(double x, std::complex<double> *Be, std::complex<double> *Ke,
     if (flag) {
         Bep->real(-Bep->real());
         Bep->imag(-Bep->imag());
-        Ke->real(std::numeric_limits<double>::quiet_NaN());
-        Ke->imag(std::numeric_limits<double>::quiet_NaN());
-        Kep->real(std::numeric_limits<double>::quiet_NaN());
-        Kep->imag(std::numeric_limits<double>::quiet_NaN());
+        Ke->real(std::numeric_limits<T>::quiet_NaN());
+        Ke->imag(std::numeric_limits<T>::quiet_NaN());
+        Kep->real(std::numeric_limits<T>::quiet_NaN());
+        Kep->imag(std::numeric_limits<T>::quiet_NaN());
     }
+}
+
+template <>
+inline void kelvin(float xf, std::complex<float> *Bef, std::complex<float> *Kef, std::complex<float> *Bepf,
+                   std::complex<float> *Kepf) {
+    double x = xf;
+    std::complex<double> Be;
+    std::complex<double> Ke;
+    std::complex<double> Bep;
+    std::complex<double> Kep;
+    kelvin(x, &Be, &Ke, &Bep, &Kep);
+
+    *Bef = Be;
+    *Kef = Ke;
+    *Bepf = Bep;
+    *Kepf = Kep;
 }
 
 /* Integrals of bessel functions */

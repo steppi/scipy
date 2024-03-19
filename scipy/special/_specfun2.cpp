@@ -159,13 +159,13 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *keip = SpecFun_UFunc<special::keip<float>, special::keip<double>>("keip", keip_doc);
     PyModule_AddObjectRef(specfun2, "keip", keip);
 
-    PyObject *kelvin = SpecFun_UFunc<special::kelvin>("kelvin", kelvin_doc, 4);
+    PyObject *kelvin = SpecFun_UFunc<special::kelvin<float>, special::kelvin<double>>("kelvin", kelvin_doc, 4);
     PyModule_AddObjectRef(specfun2, "kelvin", kelvin);
 
-    PyObject *ker = SpecFun_UFunc<special::ker>("ker", ker_doc);
+    PyObject *ker = SpecFun_UFunc<special::ker<float>, special::ker<double>>("ker", ker_doc);
     PyModule_AddObjectRef(specfun2, "ker", ker);
 
-    PyObject *kerp = SpecFun_UFunc<special::kerp>("kerp", kerp_doc);
+    PyObject *kerp = SpecFun_UFunc<special::kerp<float>, special::kerp<double>>("kerp", kerp_doc);
     PyModule_AddObjectRef(specfun2, "kerp", kerp);
 
     PyObject *mathieu_a = SpecFun_UFunc<special::cem_cva>("mathieu_a", mathieu_a_doc);
