@@ -110,7 +110,7 @@ UFUNCS_EXTRA_CODE_BOTTOM = f"""\
 #
 jn = jv
 
-from ._specfun2 import ({', '.join(special_ufuncs)})
+from ._special_ufuncs import ({', '.join(special_ufuncs)})
 """
 
 CYTHON_SPECIAL_PXD = """\

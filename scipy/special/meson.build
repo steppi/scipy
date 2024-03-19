@@ -134,8 +134,8 @@ cephes_lib = static_library('cephes',
   dependencies: [py3_dep, np_dep],
 )
 
-py3.extension_module('_specfun2',
-  ['_specfun2.cpp', '_specfun2_docs.cpp', 'amos_wrappers.c', '_cosine.c', 'sf_error.c'],
+py3.extension_module('_special_ufuncs',
+  ['_special_ufuncs.cpp', '_special_ufuncs_docs.cpp', 'amos_wrappers.c', '_cosine.c', 'sf_error.c'],
   c_args: use_math_defines,
   include_directories: ['../_lib', '../_build_utils/src'],
   dependencies: [np_dep],
