@@ -9,21 +9,7 @@
 #include <numpy/npy_3kcompat.h>
 #include <numpy/ufuncobject.h>
 
-inline void sf_error_check_fpe(const char *func_name) {
-    int status = PyUFunc_getfperr();
-    if (status & UFUNC_FPE_DIVIDEBYZERO) {
-        special::set_error(func_name, SF_ERROR_SINGULAR, "floating point division by zero");
-    }
-    if (status & UFUNC_FPE_UNDERFLOW) {
-        special::set_error(func_name, SF_ERROR_UNDERFLOW, "floating point underflow");
-    }
-    if (status & UFUNC_FPE_OVERFLOW) {
-        special::set_error(func_name, SF_ERROR_OVERFLOW, "floating point overflow");
-    }
-    if (status & UFUNC_FPE_INVALID) {
-        special::set_error(func_name, SF_ERROR_DOMAIN, "floating point invalid value");
-    }
-}
+#include "sf_error.h"
 
 // Just initializes everything needed, can also go in a common header
 bool SpecFun_Initialize() {

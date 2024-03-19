@@ -726,13 +726,14 @@ inline void sem(float mf, float qf, float xf, float *csff, float *csdf) {
     *csdf = csd;
 }
 
-inline void mcm1(double m, double q, double x, double *f1r, double *d1r) {
+template <typename T>
+void mcm1(T m, T q, T x, T *f1r, T *d1r) {
     int int_m, kf = 1, kc = 1;
-    double f2r = 0.0, d2r = 0.0;
+    T f2r = 0.0, d2r = 0.0;
 
     if ((m < 0) || (m != floor(m)) || (q < 0)) {
-        *f1r = std::numeric_limits<double>::quiet_NaN();
-        *d1r = std::numeric_limits<double>::quiet_NaN();
+        *f1r = std::numeric_limits<T>::quiet_NaN();
+        *d1r = std::numeric_limits<T>::quiet_NaN();
         set_error("mcm1", SF_ERROR_DOMAIN, NULL);
     } else {
         int_m = (int) m;
@@ -740,13 +741,27 @@ inline void mcm1(double m, double q, double x, double *f1r, double *d1r) {
     }
 }
 
-inline void msm1(double m, double q, double x, double *f1r, double *d1r) {
+template <>
+inline void mcm1(float mf, float qf, float xf, float *f1rf, float *d1rf) {
+    double m = mf;
+    double q = qf;
+    double x = xf;
+    double f1r;
+    double d1r;
+    mcm1(m, q, x, &f1r, &d1r);
+
+    *f1rf = f1r;
+    *d1rf = d1r;
+}
+
+template <typename T>
+void msm1(T m, T q, T x, T *f1r, T *d1r) {
     int int_m, kf = 2, kc = 1;
-    double f2r = 0.0, d2r = 0.0;
+    T f2r = 0.0, d2r = 0.0;
 
     if ((m < 1) || (m != floor(m)) || (q < 0)) {
-        *f1r = std::numeric_limits<double>::quiet_NaN();
-        *d1r = std::numeric_limits<double>::quiet_NaN();
+        *f1r = std::numeric_limits<T>::quiet_NaN();
+        *d1r = std::numeric_limits<T>::quiet_NaN();
         set_error("msm1", SF_ERROR_DOMAIN, NULL);
     } else {
         int_m = (int) m;
@@ -754,13 +769,27 @@ inline void msm1(double m, double q, double x, double *f1r, double *d1r) {
     }
 }
 
-inline void mcm2(double m, double q, double x, double *f2r, double *d2r) {
+template <>
+inline void msm1(float mf, float qf, float xf, float *f1rf, float *d1rf) {
+    double m = mf;
+    double q = qf;
+    double x = xf;
+    double f1r;
+    double d1r;
+    msm1(m, q, x, &f1r, &d1r);
+
+    *f1rf = f1r;
+    *d1rf = d1r;
+}
+
+template <typename T>
+void mcm2(T m, T q, T x, T *f2r, T *d2r) {
     int int_m, kf = 1, kc = 2;
-    double f1r = 0.0, d1r = 0.0;
+    T f1r = 0.0, d1r = 0.0;
 
     if ((m < 0) || (m != floor(m)) || (q < 0)) {
-        *f2r = std::numeric_limits<double>::quiet_NaN();
-        *d2r = std::numeric_limits<double>::quiet_NaN();
+        *f2r = std::numeric_limits<T>::quiet_NaN();
+        *d2r = std::numeric_limits<T>::quiet_NaN();
         set_error("mcm2", SF_ERROR_DOMAIN, NULL);
     } else {
         int_m = (int) m;
@@ -768,18 +797,45 @@ inline void mcm2(double m, double q, double x, double *f2r, double *d2r) {
     }
 }
 
-inline void msm2(double m, double q, double x, double *f2r, double *d2r) {
+template <>
+inline void mcm2(float mf, float qf, float xf, float *f2rf, float *d2rf) {
+    double m = mf;
+    double q = qf;
+    double x = xf;
+    double f2r;
+    double d2r;
+    mcm2(m, q, x, &f2r, &d2r);
+
+    *f2rf = f2r;
+    *d2rf = d2r;
+}
+
+template <typename T>
+inline void msm2(T m, T q, T x, T *f2r, T *d2r) {
     int int_m, kf = 2, kc = 2;
-    double f1r = 0.0, d1r = 0.0;
+    T f1r = 0.0, d1r = 0.0;
 
     if ((m < 1) || (m != floor(m)) || (q < 0)) {
-        *f2r = std::numeric_limits<double>::quiet_NaN();
-        *d2r = std::numeric_limits<double>::quiet_NaN();
+        *f2r = std::numeric_limits<T>::quiet_NaN();
+        *d2r = std::numeric_limits<T>::quiet_NaN();
         set_error("msm2", SF_ERROR_DOMAIN, NULL);
     } else {
         int_m = (int) m;
         specfun::mtu12(kf, kc, int_m, q, x, &f1r, &d1r, f2r, d2r);
     }
+}
+
+template <>
+inline void msm2(float mf, float qf, float xf, float *f2rf, float *d2rf) {
+    double m = mf;
+    double q = qf;
+    double x = xf;
+    double f2r;
+    double d2r;
+    msm2(m, q, x, &f2r, &d2r);
+
+    *f2rf = f2r;
+    *d2rf = d2r;
 }
 
 inline double pmv(double m, double v, double x) {

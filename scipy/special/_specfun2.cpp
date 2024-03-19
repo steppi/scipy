@@ -1,18 +1,13 @@
 #include <cmath>
 
-extern "C" {
-
-#include "_cosine.h"
-#include "amos_wrappers.h"
-}
-
 #include "_special.h"
-#include "special/cephes/beta.h"
-#include "special/cephes/gamma.h"
-#include "special/cephes/zeta.h"
+#include "amos_wrappers.h"
+#include "special/beta.h"
+#include "special/gamma.h"
 #include "special/lgamma.h"
 #include "special/specfun.h"
 #include "special/trig.h"
+#include "special/zeta.h"
 #include "ufunc.h"
 
 // This is needed by sf_error, it is defined in "_ufuncs_extra_code_common.pxi" for "_generate_pyx.py".
@@ -22,14 +17,21 @@ extern "C" int wrap_PyUFunc_getfperr() { return PyUFunc_getfperr(); }
 
 extern const char *_cosine_cdf_doc;
 extern const char *_cosine_invcdf_doc;
+extern const char *_cospi_doc;
+extern const char *_sinpi_doc;
+extern const char *_zeta_doc;
 extern const char *airy_doc;
 extern const char *airye_doc;
 extern const char *bei_doc;
 extern const char *beip_doc;
 extern const char *ber_doc;
 extern const char *berp_doc;
+extern const char *beta_doc;
+extern const char *betaln_doc;
 extern const char *exp1_doc;
 extern const char *expi_doc;
+extern const char *gamma_doc;
+extern const char *gammaln_doc;
 extern const char *hankel1_doc;
 extern const char *hankel1e_doc;
 extern const char *hankel2_doc;
@@ -72,17 +74,16 @@ PyMODINIT_FUNC PyInit__specfun2() {
         return nullptr;
     }
 
-    PyObject *_cosine_cdf = SpecFun_UFunc<cosine_cdf>("_cosine_cdf", _cosine_cdf_doc);
-    PyModule_AddObjectRef(specfun2, "_cosine_cdf", _cosine_cdf);
+    PyObject *_cospi = SpecFun_UFunc<special::cephes::cospi<float>, special::cephes::cospi<double>,
+                                     special::cospi<float>, special::cospi<double>>("_cospi", _cospi_doc);
+    PyModule_AddObjectRef(specfun2, "_cospi", _cospi);
 
-    PyObject *_cosine_invcdf = SpecFun_UFunc<cosine_invcdf>("_cosine_invcdf", _cosine_invcdf_doc);
-    PyModule_AddObjectRef(specfun2, "_cosine_invcdf", _cosine_invcdf);
+    PyObject *_sinpi = SpecFun_UFunc<special::cephes::sinpi<float>, special::cephes::sinpi<double>,
+                                     special::sinpi<float>, special::sinpi<double>>("_sinpi", _sinpi_doc);
+    PyModule_AddObjectRef(specfun2, "_sinpi", _sinpi);
 
-    PyObject *airy = SpecFun_UFunc<airy_wrap_v, cairy_wrap_v>("airy", airy_doc, 4);
-    PyModule_AddObjectRef(specfun2, "airy", airy);
-
-    PyObject *airye = SpecFun_UFunc<cairy_wrap_e_real_v, cairy_wrap_e_v>("airye", airye_doc, 4);
-    PyModule_AddObjectRef(specfun2, "airye", airye);
+    PyObject *_zeta = SpecFun_UFunc<special::zeta<float>, special::zeta<double>>("_zeta", _zeta_doc);
+    PyModule_AddObjectRef(specfun2, "_zeta", _zeta);
 
     PyObject *bei = SpecFun_UFunc<special::bei<float>, special::bei<double>>("bei", bei_doc);
     PyModule_AddObjectRef(specfun2, "bei", bei);
@@ -96,14 +97,11 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *berp = SpecFun_UFunc<special::berp<float>, special::berp<double>>("berp", berp_doc);
     PyModule_AddObjectRef(specfun2, "berp", berp);
 
-    PyObject *beta = SpecFun_UFunc<special::cephes::beta>("beta", nullptr);
+    PyObject *beta = SpecFun_UFunc<special::beta<float>, special::beta<double>>("beta", beta_doc);
     PyModule_AddObjectRef(specfun2, "beta", beta);
 
-    PyObject *betaln = SpecFun_UFunc<special::cephes::lbeta>("betaln", nullptr);
+    PyObject *betaln = SpecFun_UFunc<special::lbeta<float>, special::lbeta<double>>("betaln", betaln_doc);
     PyModule_AddObjectRef(specfun2, "betaln", betaln);
-
-    PyObject *cospi = SpecFun_UFunc<special::cephes::cospi, special::cospi>("cospi", nullptr);
-    PyModule_AddObjectRef(specfun2, "cospi", cospi);
 
     PyObject *exp1 = SpecFun_UFunc<special::exp1<float>, special::exp1<double>, special::cexp1>("exp1", exp1_doc);
     PyModule_AddObjectRef(specfun2, "exp1", exp1);
@@ -111,23 +109,11 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *expi = SpecFun_UFunc<special::expi<float>, special::expi<double>, special::cexpi>("expi", expi_doc);
     PyModule_AddObjectRef(specfun2, "expi", expi);
 
-    PyObject *gamma = SpecFun_UFunc<special::cephes::Gamma, cgamma>("gamma", nullptr);
+    PyObject *gamma = SpecFun_UFunc<special::gamma<float>, special::gamma<double>, cgamma>("gamma", gamma_doc);
     PyModule_AddObjectRef(specfun2, "gamma", gamma);
 
-    PyObject *gammaln = SpecFun_UFunc<special::lgam<float>, special::lgam<double>>("gammaln", nullptr);
+    PyObject *gammaln = SpecFun_UFunc<special::lgam<float>, special::lgam<double>>("gammaln", gammaln_doc);
     PyModule_AddObjectRef(specfun2, "gammaln", gammaln);
-
-    PyObject *hankel1 = SpecFun_UFunc<cbesh_wrap1>("hankel1", hankel1_doc);
-    PyModule_AddObjectRef(specfun2, "hankel1", hankel1);
-
-    PyObject *hankel1e = SpecFun_UFunc<cbesh_wrap1_e>("hankel1e", hankel1e_doc);
-    PyModule_AddObjectRef(specfun2, "hankel1e", hankel1e);
-
-    PyObject *hankel2 = SpecFun_UFunc<cbesh_wrap2>("hankel2", hankel2_doc);
-    PyModule_AddObjectRef(specfun2, "hankel2", hankel2);
-
-    PyObject *hankel2e = SpecFun_UFunc<cbesh_wrap2_e>("hankel2e", hankel2e_doc);
-    PyModule_AddObjectRef(specfun2, "hankel2e", hankel2e);
 
     PyObject *it2i0k0 = SpecFun_UFunc<special::it2i0k0<float>, special::it2i0k0<double>>("it2i0k0", it2i0k0_doc, 2);
     PyModule_AddObjectRef(specfun2, "it2i0k0", it2i0k0);
@@ -180,16 +166,20 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *mathieu_cem = SpecFun_UFunc<special::cem<float>, special::cem<double>>("mathieu_cem", mathieu_cem_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_cem", mathieu_cem);
 
-    PyObject *mathieu_modcem1 = SpecFun_UFunc<special::mcm1>("mathieu_modcem1", mathieu_modcem1_doc, 2);
+    PyObject *mathieu_modcem1 =
+        SpecFun_UFunc<special::mcm1<float>, special::mcm1<double>>("mathieu_modcem1", mathieu_modcem1_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_modcem1", mathieu_modcem1);
 
-    PyObject *mathieu_modcem2 = SpecFun_UFunc<special::mcm2>("mathieu_modcem2", mathieu_modcem2_doc, 2);
+    PyObject *mathieu_modcem2 =
+        SpecFun_UFunc<special::mcm2<float>, special::mcm2<double>>("mathieu_modcem2", mathieu_modcem2_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_modcem2", mathieu_modcem2);
 
-    PyObject *mathieu_modsem1 = SpecFun_UFunc<special::msm1>("mathieu_modsem1", mathieu_modsem1_doc, 2);
+    PyObject *mathieu_modsem1 =
+        SpecFun_UFunc<special::msm1<float>, special::msm1<double>>("mathieu_modsem1", mathieu_modsem1_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_modsem1", mathieu_modsem1);
 
-    PyObject *mathieu_modsem2 = SpecFun_UFunc<special::msm2>("mathieu_modsem2", mathieu_modsem2_doc, 2);
+    PyObject *mathieu_modsem2 =
+        SpecFun_UFunc<special::msm2<float>, special::msm2<double>>("mathieu_modsem2", mathieu_modsem2_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_modsem2", mathieu_modsem2);
 
     PyObject *mathieu_sem = SpecFun_UFunc<special::sem<float>, special::sem<double>>("mathieu_sem", mathieu_sem_doc, 2);
@@ -204,12 +194,6 @@ PyMODINIT_FUNC PyInit__specfun2() {
         SpecFun_UFunc<special::modified_fresnel_plus<float>, special::modified_fresnel_plus<double>>(
             "modfresnelp", modfresnelp_doc, 2);
     PyModule_AddObjectRef(specfun2, "modfresnelp", modfresnelp);
-
-    PyObject *sinpi = SpecFun_UFunc<special::cephes::sinpi, special::sinpi>("sinpi", nullptr);
-    PyModule_AddObjectRef(specfun2, "sinpi", sinpi);
-
-    PyObject *_zeta = SpecFun_UFunc<special::cephes::zeta>("_zeta", nullptr);
-    PyModule_AddObjectRef(specfun2, "_zeta", _zeta);
 
     return specfun2;
 }

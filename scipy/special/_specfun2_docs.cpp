@@ -48,6 +48,17 @@ const char *_cospi_doc = R"(
     Internal function, do not use.
     )";
 
+const char *_sinpi_doc = R"(
+    Internal function, do not use.
+    )";
+
+const char *_zeta_doc = R"(
+    _zeta(x, q)
+
+    Internal function, Hurwitz zeta.
+
+    )";
+
 const char *bei_doc = R"(
     bei(x, out=None)
 
@@ -361,6 +372,125 @@ const char *berp_doc = R"(
 
     )";
 
+const char *beta_doc = R"(
+    beta(a, b, out=None)
+
+    Beta function.
+
+    This function is defined in [1]_ as
+
+    .. math::
+
+        B(a, b) = \int_0^1 t^{a-1}(1-t)^{b-1}dt
+                = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)},
+
+    where :math:`\Gamma` is the gamma function.
+
+    Parameters
+    ----------
+    a, b : array_like
+        Real-valued arguments
+    out : ndarray, optional
+        Optional output array for the function result
+
+    Returns
+    -------
+    scalar or ndarray
+        Value of the beta function
+
+    See Also
+    --------
+    gamma : the gamma function
+    betainc :  the regularized incomplete beta function
+    betaln : the natural logarithm of the absolute
+             value of the beta function
+
+    References
+    ----------
+    .. [1] NIST Digital Library of Mathematical Functions,
+           Eq. 5.12.1. https://dlmf.nist.gov/5.12
+
+    Examples
+    --------
+    >>> import scipy.special as sc
+
+    The beta function relates to the gamma function by the
+    definition given above:
+
+    >>> sc.beta(2, 3)
+    0.08333333333333333
+    >>> sc.gamma(2)*sc.gamma(3)/sc.gamma(2 + 3)
+    0.08333333333333333
+
+    As this relationship demonstrates, the beta function
+    is symmetric:
+
+    >>> sc.beta(1.7, 2.4)
+    0.16567527689031739
+    >>> sc.beta(2.4, 1.7)
+    0.16567527689031739
+
+    This function satisfies :math:`B(1, b) = 1/b`:
+
+    >>> sc.beta(1, 4)
+    0.25
+
+    )";
+
+const char *betaln_doc = R"(
+    betaln(a, b, out=None)
+
+    Natural logarithm of absolute value of beta function.
+
+    Computes ``ln(abs(beta(a, b)))``.
+
+    Parameters
+    ----------
+    a, b : array_like
+        Positive, real-valued parameters
+    out : ndarray, optional
+        Optional output array for function values
+
+    Returns
+    -------
+    scalar or ndarray
+        Value of the betaln function
+
+    See Also
+    --------
+    gamma : the gamma function
+    betainc :  the regularized incomplete beta function
+    beta : the beta function
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.special import betaln, beta
+
+    Verify that, for moderate values of ``a`` and ``b``, ``betaln(a, b)``
+    is the same as ``log(beta(a, b))``:
+
+    >>> betaln(3, 4)
+    -4.0943445622221
+
+    >>> np.log(beta(3, 4))
+    -4.0943445622221
+
+    In the following ``beta(a, b)`` underflows to 0, so we can't compute
+    the logarithm of the actual value.
+
+    >>> a = 400
+    >>> b = 900
+    >>> beta(a, b)
+    0.0
+
+    We can compute the logarithm of ``beta(a, b)`` by using `betaln`:
+
+    >>> betaln(a, b)
+    -804.3069951764146
+
+    )";
+
 const char *exp1_doc = R"(
     exp1(z, out=None)
 
@@ -525,6 +655,157 @@ const char *expi_doc = R"(
     (-0.21938393439552062-0j)
     >>> sc.expi(complex(-1, -0.0))
     (-0.21938393439552062-0j)
+
+    )";
+
+
+const char *gamma_doc = R"(
+    gamma(z, out=None)
+
+    gamma function.
+
+    The gamma function is defined as
+
+    .. math::
+
+       \Gamma(z) = \int_0^\infty t^{z-1} e^{-t} dt
+
+    for :math:`\Re(z) > 0` and is extended to the rest of the complex
+    plane by analytic continuation. See [dlmf]_ for more details.
+
+    Parameters
+    ----------
+    z : array_like
+        Real or complex valued argument
+    out : ndarray, optional
+        Optional output array for the function values
+
+    Returns
+    -------
+    scalar or ndarray
+        Values of the gamma function
+
+    Notes
+    -----
+    The gamma function is often referred to as the generalized
+    factorial since :math:`\Gamma(n + 1) = n!` for natural numbers
+    :math:`n`. More generally it satisfies the recurrence relation
+    :math:`\Gamma(z + 1) = z \cdot \Gamma(z)` for complex :math:`z`,
+    which, combined with the fact that :math:`\Gamma(1) = 1`, implies
+    the above identity for :math:`z = n`.
+
+    References
+    ----------
+    .. [dlmf] NIST Digital Library of Mathematical Functions
+              https://dlmf.nist.gov/5.2#E1
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.special import gamma, factorial
+
+    >>> gamma([0, 0.5, 1, 5])
+    array([         inf,   1.77245385,   1.        ,  24.        ])
+
+    >>> z = 2.5 + 1j
+    >>> gamma(z)
+    (0.77476210455108352+0.70763120437959293j)
+    >>> gamma(z+1), z*gamma(z)  # Recurrence property
+    ((1.2292740569981171+2.5438401155000685j),
+     (1.2292740569981158+2.5438401155000658j))
+
+    >>> gamma(0.5)**2  # gamma(0.5) = sqrt(pi)
+    3.1415926535897927
+
+    Plot gamma(x) for real x
+
+    >>> x = np.linspace(-3.5, 5.5, 2251)
+    >>> y = gamma(x)
+
+    >>> import matplotlib.pyplot as plt
+    >>> plt.plot(x, y, 'b', alpha=0.6, label='gamma(x)')
+    >>> k = np.arange(1, 7)
+    >>> plt.plot(k, factorial(k-1), 'k*', alpha=0.6,
+    ...          label='(x-1)!, x = 1, 2, ...')
+    >>> plt.xlim(-3.5, 5.5)
+    >>> plt.ylim(-10, 25)
+    >>> plt.grid()
+    >>> plt.xlabel('x')
+    >>> plt.legend(loc='lower right')
+    >>> plt.show()
+
+    )";
+
+const char *gammaln_doc = R"(
+    gammaln(x, out=None)
+
+    Logarithm of the absolute value of the gamma function.
+
+    Defined as
+
+    .. math::
+
+       \ln(\lvert\Gamma(x)\rvert)
+
+    where :math:`\Gamma` is the gamma function. For more details on
+    the gamma function, see [dlmf]_.
+
+    Parameters
+    ----------
+    x : array_like
+        Real argument
+    out : ndarray, optional
+        Optional output array for the function results
+
+    Returns
+    -------
+    scalar or ndarray
+        Values of the log of the absolute value of gamma
+
+    See Also
+    --------
+    gammasgn : sign of the gamma function
+    loggamma : principal branch of the logarithm of the gamma function
+
+    Notes
+    -----
+    It is the same function as the Python standard library function
+    :func:`math.lgamma`.
+
+    When used in conjunction with `gammasgn`, this function is useful
+    for working in logspace on the real axis without having to deal
+    with complex numbers via the relation ``exp(gammaln(x)) =
+    gammasgn(x) * gamma(x)``.
+
+    For complex-valued log-gamma, use `loggamma` instead of `gammaln`.
+
+    References
+    ----------
+    .. [dlmf] NIST Digital Library of Mathematical Functions
+              https://dlmf.nist.gov/5
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import scipy.special as sc
+
+    It has two positive zeros.
+
+    >>> sc.gammaln([1, 2])
+    array([0., 0.])
+
+    It has poles at nonpositive integers.
+
+    >>> sc.gammaln([0, -1, -2, -3, -4])
+    array([inf, inf, inf, inf, inf])
+
+    It asymptotically approaches ``x * log(x)`` (Stirling's formula).
+
+    >>> x = np.array([1e10, 1e20, 1e40, 1e80])
+    >>> sc.gammaln(x)
+    array([2.20258509e+11, 4.50517019e+21, 9.11034037e+41, 1.83206807e+82])
+    >>> x * np.log(x)
+    array([2.30258509e+11, 4.60517019e+21, 9.21034037e+41, 1.84206807e+82])
 
     )";
 
