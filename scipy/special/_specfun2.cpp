@@ -105,7 +105,7 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *cospi = SpecFun_UFunc<special::cephes::cospi, special::cospi>("cospi", nullptr);
     PyModule_AddObjectRef(specfun2, "cospi", cospi);
 
-    PyObject *exp1 = SpecFun_UFunc<special::exp1, special::cexp1>("exp1", exp1_doc);
+    PyObject *exp1 = SpecFun_UFunc<special::exp1<float>, special::exp1<double>, special::cexp1>("exp1", exp1_doc);
     PyModule_AddObjectRef(specfun2, "exp1", exp1);
 
     PyObject *expi = SpecFun_UFunc<special::expi, special::cexpi>("expi", expi_doc);

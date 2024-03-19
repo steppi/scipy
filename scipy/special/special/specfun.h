@@ -126,10 +126,9 @@ inline void itairy(double x, double *apt, double *bpt, double *ant, double *bnt)
     }
 }
 
-inline double exp1(double x) {
-    double out;
-
-    out = specfun::e1xb(x);
+template <typname T>
+inline T exp1(T x) {
+    T out = specfun::e1xb(x);
     SPECFUN_CONVINF("exp1", out);
     return out;
 }
