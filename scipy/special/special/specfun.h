@@ -107,8 +107,9 @@ inline double hyp1f1(double a, double b, double x) {
     return outy;
 }
 
-inline void itairy(double x, double *apt, double *bpt, double *ant, double *bnt) {
-    double tmp;
+template <typename T>
+void itairy(T x, T *apt, T *bpt, T *ant, T *bnt) {
+    T tmp;
     int flag = 0;
 
     if (x < 0) {
@@ -124,6 +125,21 @@ inline void itairy(double x, double *apt, double *bpt, double *ant, double *bnt)
         *bpt = -*bnt;
         *bnt = -tmp;
     }
+}
+
+template <>
+inline void itairy(float xf, float *aptf, float *bptf, float *antf, float *bntf) {
+    double x = xf;
+    double apt;
+    double bpt;
+    double ant;
+    double bnt;
+    itairy(x, &apt, &bpt, &ant, &bnt);
+
+    *aptf = apt;
+    *bptf = bpt;
+    *antf = ant;
+    *bntf = bnt;
 }
 
 template <typename T>
@@ -438,7 +454,8 @@ inline void kelvin(float xf, std::complex<float> *Bef, std::complex<float> *Kef,
 /* int(j0(t),t=0..x) */
 /* int(y0(t),t=0..x) */
 
-inline void it1j0y0(double x, double *j0int, double *y0int) {
+template <typename T>
+void it1j0y0(T x, T *j0int, T *y0int) {
     int flag = 0;
 
     if (x < 0) {
@@ -448,8 +465,19 @@ inline void it1j0y0(double x, double *j0int, double *y0int) {
     specfun::itjya(x, j0int, y0int);
     if (flag) {
         *j0int = -(*j0int);
-        *y0int = std::numeric_limits<double>::quiet_NaN(); /* domain error */
+        *y0int = std::numeric_limits<T>::quiet_NaN(); /* domain error */
     }
+}
+
+template <>
+inline void it1j0y0(float xf, float *j0intf, float *y0intf) {
+    double x = xf;
+    double j0int;
+    double y0int;
+    it1j0y0(x, &j0int, &y0int);
+
+    *j0intf = j0int;
+    *y0intf = y0int;
 }
 
 /* int((1-j0(t))/t,t=0..x) */
@@ -481,7 +509,8 @@ inline void it2j0y0(float xf, float *j0intf, float *y0intf) {
 
 /* Integrals of modified bessel functions */
 
-inline void it1i0k0(double x, double *i0int, double *k0int) {
+template <typename T>
+void it1i0k0(T x, T *i0int, T *k0int) {
     int flag = 0;
 
     if (x < 0) {
@@ -491,8 +520,19 @@ inline void it1i0k0(double x, double *i0int, double *k0int) {
     specfun::itika(x, i0int, k0int);
     if (flag) {
         *i0int = -(*i0int);
-        *k0int = std::numeric_limits<double>::quiet_NaN(); /* domain error */
+        *k0int = std::numeric_limits<T>::quiet_NaN(); /* domain error */
     }
+}
+
+template <>
+inline void it1i0k0(float xf, float *i0intf, float *k0intf) {
+    double x = xf;
+    double i0int;
+    double k0int;
+    it1i0k0(x, &i0int, &k0int);
+
+    *i0intf = i0int;
+    *k0intf = k0int;
 }
 
 template <typename T>

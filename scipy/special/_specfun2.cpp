@@ -138,13 +138,13 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *it2struve0 = SpecFun_UFunc<special::it2struve0>("it2struve0", it2struve0_doc);
     PyModule_AddObjectRef(specfun2, "it2struve0", it2struve0);
 
-    PyObject *itairy = SpecFun_UFunc<special::itairy>("itairy", itairy_doc, 4);
+    PyObject *itairy = SpecFun_UFunc<special::itairy<float>, special::itairy<double>>("itairy", itairy_doc, 4);
     PyModule_AddObjectRef(specfun2, "itairy", itairy);
 
-    PyObject *iti0k0 = SpecFun_UFunc<special::it1i0k0>("iti0k0", iti0k0_doc, 2);
+    PyObject *iti0k0 = SpecFun_UFunc<special::it1i0k0<float>, special::it1i0k0<double>>("iti0k0", iti0k0_doc, 2);
     PyModule_AddObjectRef(specfun2, "iti0k0", iti0k0);
 
-    PyObject *itj0y0 = SpecFun_UFunc<special::it1j0y0>("itj0y0", itj0y0_doc, 2);
+    PyObject *itj0y0 = SpecFun_UFunc<special::it1j0y0<float>, special::it1j0y0<double>>("itj0y0", itj0y0_doc, 2);
     PyModule_AddObjectRef(specfun2, "itj0y0", itj0y0);
 
     PyObject *itmodstruve0 = SpecFun_UFunc<special::itmodstruve0>("itmodstruve0", itmodstruve0_doc);
