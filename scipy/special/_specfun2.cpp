@@ -84,16 +84,16 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *airye = SpecFun_UFunc<cairy_wrap_e_real_v, cairy_wrap_e_v>("airye", airye_doc, 4);
     PyModule_AddObjectRef(specfun2, "airye", airye);
 
-    PyObject *bei = SpecFun_UFunc<special::bei>("bei", bei_doc);
+    PyObject *bei = SpecFun_UFunc<special::bei<float>, special::bei<double>>("bei", bei_doc);
     PyModule_AddObjectRef(specfun2, "bei", bei);
 
-    PyObject *beip = SpecFun_UFunc<special::beip>("beip", beip_doc);
+    PyObject *beip = SpecFun_UFunc<special::beip<float>, special::beip<double>>("beip", beip_doc);
     PyModule_AddObjectRef(specfun2, "beip", beip);
 
-    PyObject *ber = SpecFun_UFunc<special::ber>("ber", ber_doc);
+    PyObject *ber = SpecFun_UFunc<special::ber<float>, special::ber<double>>("ber", ber_doc);
     PyModule_AddObjectRef(specfun2, "ber", ber);
 
-    PyObject *berp = SpecFun_UFunc<special::berp>("berp", berp_doc);
+    PyObject *berp = SpecFun_UFunc<special::berp<float>, special::berp<double>>("berp", berp_doc);
     PyModule_AddObjectRef(specfun2, "berp", berp);
 
     PyObject *beta = SpecFun_UFunc<special::cephes::beta>("beta", nullptr);
@@ -156,7 +156,7 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *kei = SpecFun_UFunc<special::kei<float>, special::kei<double>>("kei", kei_doc);
     PyModule_AddObjectRef(specfun2, "kei", kei);
 
-    PyObject *keip = SpecFun_UFunc<special::keip>("keip", keip_doc);
+    PyObject *keip = SpecFun_UFunc<special::keip<float>, special::keip<double>>("keip", keip_doc);
     PyModule_AddObjectRef(specfun2, "keip", keip);
 
     PyObject *kelvin = SpecFun_UFunc<special::kelvin>("kelvin", kelvin_doc, 4);
@@ -192,10 +192,14 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *mathieu_sem = SpecFun_UFunc<special::sem>("mathieu_sem", mathieu_sem_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_sem", mathieu_sem);
 
-    PyObject *modfresnelm = SpecFun_UFunc<special::modified_fresnel_minus>("modfresnelm", modfresnelm_doc, 2);
+    PyObject *modfresnelm =
+        SpecFun_UFunc<special::modified_fresnel_minus<float>, special::modified_fresnel_minus<double>>(
+            "modfresnelm", modfresnelm_doc, 2);
     PyModule_AddObjectRef(specfun2, "modfresnelm", modfresnelm);
 
-    PyObject *modfresnelp = SpecFun_UFunc<special::modified_fresnel_plus>("modfresnelp", modfresnelp_doc, 2);
+    PyObject *modfresnelp =
+        SpecFun_UFunc<special::modified_fresnel_plus<float>, special::modified_fresnel_plus<double>>(
+            "modfresnelp", modfresnelp_doc, 2);
     PyModule_AddObjectRef(specfun2, "modfresnelp", modfresnelp);
 
     PyObject *sinpi = SpecFun_UFunc<special::cephes::sinpi, special::sinpi>("sinpi", nullptr);

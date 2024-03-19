@@ -209,9 +209,10 @@ inline double itmodstruve0(double x) {
     return out;
 }
 
-inline double ber(double x) {
-    std::complex<double> Be;
-    double ber, bei, ger, gei, der, dei, her, hei;
+template <typename T>
+T ber(T x) {
+    std::complex<T> Be;
+    T ber, bei, ger, gei, der, dei, her, hei;
 
     if (x < 0) {
         x = -x;
@@ -223,9 +224,16 @@ inline double ber(double x) {
     return Be.real();
 }
 
-inline double bei(double x) {
-    std::complex<double> Be;
-    double ber, bei, ger, gei, der, dei, her, hei;
+template <>
+inline float ber(float xf) {
+    double x = xf;
+    return ber(x);
+}
+
+template <typename T>
+T bei(T x) {
+    std::complex<T> Be;
+    T ber, bei, ger, gei, der, dei, her, hei;
 
     if (x < 0) {
         x = -x;
@@ -235,6 +243,12 @@ inline double bei(double x) {
     Be.imag(bei);
     SPECFUN_ZCONVINF("bei", Be);
     return Be.imag();
+}
+
+template <>
+inline float bei(float xf) {
+    double x = xf;
+    return bei(x);
 }
 
 inline double ker(double x) {
@@ -269,9 +283,10 @@ float kei(float x) {
     return kei(static_cast<double>(x));
 }
 
-inline double berp(double x) {
-    std::complex<double> Bep;
-    double ber, bei, ger, gei, der, dei, her, hei;
+template <typename T>
+T berp(T x) {
+    std::complex<T> Bep;
+    T ber, bei, ger, gei, der, dei, her, hei;
     int flag = 0;
 
     if (x < 0) {
@@ -288,9 +303,16 @@ inline double berp(double x) {
     return Bep.real();
 }
 
-inline double beip(double x) {
-    std::complex<double> Bep;
-    double ber, bei, ger, gei, der, dei, her, hei;
+template <>
+inline float berp(float xf) {
+    double x = xf;
+    return berp(x);
+}
+
+template <typename T>
+T beip(T x) {
+    std::complex<T> Bep;
+    T ber, bei, ger, gei, der, dei, her, hei;
     int flag = 0;
 
     if (x < 0) {
@@ -307,6 +329,12 @@ inline double beip(double x) {
     return Bep.imag();
 }
 
+template <>
+float beip(float xf) {
+    double x = xf;
+    return beip(x);
+}
+
 inline double kerp(double x) {
     std::complex<double> Kep;
     double ber, bei, ger, gei, der, dei, her, hei;
@@ -321,18 +349,25 @@ inline double kerp(double x) {
     return Kep.real();
 }
 
-inline double keip(double x) {
-    std::complex<double> Kep;
-    double ber, bei, ger, gei, der, dei, her, hei;
+template <typename T>
+T keip(T x) {
+    std::complex<T> Kep;
+    T ber, bei, ger, gei, der, dei, her, hei;
 
     if (x < 0) {
-        return std::numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<T>::quiet_NaN();
     }
     specfun::klvna(x, &ber, &bei, &ger, &gei, &der, &dei, &her, &hei);
     Kep.real(her);
     Kep.imag(hei);
     SPECFUN_ZCONVINF("keip", Kep);
     return Kep.imag();
+}
+
+template <>
+inline float keip(float xf) {
+    double x = xf;
+    return keip(x);
 }
 
 inline void kelvin(double x, std::complex<double> *Be, std::complex<double> *Ke, std::complex<double> *Bep,
@@ -964,9 +999,10 @@ inline void oblate_radial2(double m, double n, double c, double cv, double x, do
     }
 }
 
-inline void modified_fresnel_plus(double x, std::complex<double> *Fplus, std::complex<double> *Kplus) {
+template <typename T>
+void modified_fresnel_plus(T x, std::complex<T> *Fplus, std::complex<T> *Kplus) {
     int ks = 0;
-    double fr = 0.0, gr = 0.0, fi = 0.0, gi = 0.0, fa = 0.0, ga = 0.0, fm = 0.0, gm = 0.0;
+    T fr = 0.0, gr = 0.0, fi = 0.0, gi = 0.0, fa = 0.0, ga = 0.0, fm = 0.0, gm = 0.0;
 
     specfun::ffk(ks, x, &fr, &fi, &fm, &fa, &gr, &gi, &gm, &ga);
     Fplus->real(fr);
@@ -975,15 +1011,38 @@ inline void modified_fresnel_plus(double x, std::complex<double> *Fplus, std::co
     Kplus->imag(gi);
 }
 
-inline void modified_fresnel_minus(double x, std::complex<double> *Fminus, std::complex<double> *Kminus) {
+template <>
+inline void modified_fresnel_plus(float xf, std::complex<float> *Fplusf, std::complex<float> *Kplusf) {
+    double x = xf;
+    std::complex<double> Fplus = *Fplusf;
+    std::complex<double> Kplus = *Kplusf;
+    modified_fresnel_plus(x, &Fplus, &Kplus);
+
+    *Fplusf = Fplus;
+    *Kplusf = Kplus;
+}
+
+template <typename T>
+void modified_fresnel_minus(T x, std::complex<T> *Fminus, std::complex<T> *Kminus) {
     int ks = 1;
-    double fr = 0.0, gr = 0.0, fi = 0.0, gi = 0.0, fa = 0.0, ga = 0.0, fm = 0.0, gm = 0.0;
+    T fr = 0.0, gr = 0.0, fi = 0.0, gi = 0.0, fa = 0.0, ga = 0.0, fm = 0.0, gm = 0.0;
 
     specfun::ffk(ks, x, &fr, &fi, &fm, &fa, &gr, &gi, &gm, &ga);
     Fminus->real(fr);
     Fminus->imag(fi);
     Kminus->real(gr);
     Kminus->imag(gi);
+}
+
+template <>
+inline void modified_fresnel_minus(float xf, std::complex<float> *Fminusf, std::complex<float> *Kminusf) {
+    double x = xf;
+    std::complex<double> Fminus = *Fminusf;
+    std::complex<double> Kminus = *Kminusf;
+    modified_fresnel_minus(x, &Fminus, &Kminus);
+
+    *Fminusf = Fminus;
+    *Kminusf = Kminus;
 }
 
 } // namespace special

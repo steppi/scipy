@@ -98,6 +98,11 @@ struct npy_type<T *> {
 };
 
 template <>
+struct npy_type<std::complex<float>> {
+    static constexpr int value = NPY_COMPLEX64;
+};
+
+template <>
 struct npy_type<std::complex<double>> {
     static constexpr int value = NPY_COMPLEX128;
 };
