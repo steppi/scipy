@@ -126,8 +126,8 @@ inline void itairy(double x, double *apt, double *bpt, double *ant, double *bnt)
     }
 }
 
-template <typname T>
-inline T exp1(T x) {
+template <typename T>
+T exp1(T x) {
     T out = specfun::e1xb(x);
     SPECFUN_CONVINF("exp1", out);
     return out;
@@ -144,10 +144,9 @@ inline std::complex<double> cexp1(std::complex<double> z) {
     return outz;
 }
 
-inline double expi(double x) {
-    double out;
-
-    out = specfun::eix(x);
+template <typename T>
+T expi(T x) {
+    T out = specfun::eix(x);
     SPECFUN_CONVINF("expi", out);
     return out;
 }
@@ -251,17 +250,23 @@ inline double ker(double x) {
     return Ke.real();
 }
 
-inline double kei(double x) {
-    std::complex<double> Ke;
-    double ber, bei, ger, gei, der, dei, her, hei;
+template <typename T>
+T kei(T x) {
+    std::complex<T> Ke;
+    T ber, bei, ger, gei, der, dei, her, hei;
     if (x < 0) {
-        return std::numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<T>::quiet_NaN();
     }
     specfun::klvna(x, &ber, &bei, &ger, &gei, &der, &dei, &her, &hei);
     Ke.real(ger);
     Ke.imag(gei);
     SPECFUN_ZCONVINF("kei", Ke);
     return Ke.imag();
+}
+
+template <>
+float kei(float x) {
+    return kei(static_cast<double>(x));
 }
 
 inline double berp(double x) {

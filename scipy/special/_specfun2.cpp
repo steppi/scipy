@@ -108,7 +108,7 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *exp1 = SpecFun_UFunc<special::exp1<float>, special::exp1<double>, special::cexp1>("exp1", exp1_doc);
     PyModule_AddObjectRef(specfun2, "exp1", exp1);
 
-    PyObject *expi = SpecFun_UFunc<special::expi, special::cexpi>("expi", expi_doc);
+    PyObject *expi = SpecFun_UFunc<special::expi<float>, special::expi<double>, special::cexpi>("expi", expi_doc);
     PyModule_AddObjectRef(specfun2, "expi", expi);
 
     PyObject *gamma = SpecFun_UFunc<special::cephes::Gamma, cgamma>("gamma", nullptr);
@@ -153,7 +153,7 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *itstruve0 = SpecFun_UFunc<special::itstruve0>("itstruve0", itstruve0_doc);
     PyModule_AddObjectRef(specfun2, "itstruve0", itstruve0);
 
-    PyObject *kei = SpecFun_UFunc<special::kei>("kei", kei_doc);
+    PyObject *kei = SpecFun_UFunc<special::kei<float>, special::kei<double>>("kei", kei_doc);
     PyModule_AddObjectRef(specfun2, "kei", kei);
 
     PyObject *keip = SpecFun_UFunc<special::keip>("keip", keip_doc);
