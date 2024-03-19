@@ -4,8 +4,6 @@ extern "C" {
 
 #include "_cosine.h"
 
-#include "cephes.h"
-#undef cospi
 }
 
 #include "special/specfun.h"
@@ -64,9 +62,6 @@ PyMODINIT_FUNC PyInit__specfun2() {
 
     PyObject *_cosine_invcdf = SpecFun_UFunc<cosine_invcdf>("_cosine_invcdf", _cosine_invcdf_doc);
     PyModule_AddObjectRef(specfun2, "_cosine_invcdf", _cosine_invcdf);
-
-    PyObject *_cospi = SpecFun_UFunc<cephes_cospi, special::cospi>("_cospi", _cospi_doc);
-    PyModule_AddObjectRef(specfun2, "_cospi", _cospi);
 
     PyObject *bei = SpecFun_UFunc<special::bei>("bei", bei_doc);
     PyModule_AddObjectRef(specfun2, "bei", bei);
