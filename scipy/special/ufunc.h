@@ -97,6 +97,11 @@ struct npy_type<std::complex<double>> {
     static constexpr int value = NPY_COMPLEX128;
 };
 
+template <>
+struct npy_type<npy_cdouble> {
+    static constexpr int value = NPY_COMPLEX128;
+};
+
 template <typename T>
 void from_pointer(char *src, T *&dst) {
     dst = reinterpret_cast<T *>(src);

@@ -135,10 +135,11 @@ cephes_lib = static_library('cephes',
 )
 
 py3.extension_module('_specfun2',
-  ['_specfun2.cpp', '_specfun2_docs.cpp', '_cosine.c'],
+  ['_specfun2.cpp', '_specfun2_docs.cpp', 'amos_wrappers.c', '_cosine.c', 'sf_error.c'],
+  include_directories: ['../_lib', '../_build_utils/src'],
   dependencies: [np_dep],
   link_args: version_link_args,
-  link_with: [cephes_lib],
+  link_with: [amos_lib, cephes_lib],
   install: true,
   subdir: 'scipy/special'
 )

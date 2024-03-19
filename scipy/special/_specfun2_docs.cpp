@@ -99,6 +99,161 @@ const char *bei_doc = R"(
 
     )";
 
+const char *airy_doc = R"(
+    airy(z, out=None)
+
+    Airy functions and their derivatives.
+
+    Parameters
+    ----------
+    z : array_like
+        Real or complex argument.
+    out : tuple of ndarray, optional
+        Optional output arrays for the function values
+
+    Returns
+    -------
+    Ai, Aip, Bi, Bip : 4-tuple of scalar or ndarray
+        Airy functions Ai and Bi, and their derivatives Aip and Bip.
+
+    See Also
+    --------
+    airye : exponentially scaled Airy functions.
+
+    Notes
+    -----
+    The Airy functions Ai and Bi are two independent solutions of
+
+    .. math:: y''(x) = x y(x).
+
+    For real `z` in [-10, 10], the computation is carried out by calling
+    the Cephes [1]_ `airy` routine, which uses power series summation
+    for small `z` and rational minimax approximations for large `z`.
+
+    Outside this range, the AMOS [2]_ `zairy` and `zbiry` routines are
+    employed.  They are computed using power series for :math:`|z| < 1` and
+    the following relations to modified Bessel functions for larger `z`
+    (where :math:`t \equiv 2 z^{3/2}/3`):
+
+    .. math::
+
+        Ai(z) = \frac{1}{\pi \sqrt{3}} K_{1/3}(t)
+
+        Ai'(z) = -\frac{z}{\pi \sqrt{3}} K_{2/3}(t)
+
+        Bi(z) = \sqrt{\frac{z}{3}} \left(I_{-1/3}(t) + I_{1/3}(t) \right)
+
+        Bi'(z) = \frac{z}{\sqrt{3}} \left(I_{-2/3}(t) + I_{2/3}(t)\right)
+
+    References
+    ----------
+    .. [1] Cephes Mathematical Functions Library,
+           http://www.netlib.org/cephes/
+    .. [2] Donald E. Amos, "AMOS, A Portable Package for Bessel Functions
+           of a Complex Argument and Nonnegative Order",
+           http://netlib.org/amos/
+
+    Examples
+    --------
+    Compute the Airy functions on the interval [-15, 5].
+
+    >>> import numpy as np
+    >>> from scipy import special
+    >>> x = np.linspace(-15, 5, 201)
+    >>> ai, aip, bi, bip = special.airy(x)
+
+    Plot Ai(x) and Bi(x).
+
+    >>> import matplotlib.pyplot as plt
+    >>> plt.plot(x, ai, 'r', label='Ai(x)')
+    >>> plt.plot(x, bi, 'b--', label='Bi(x)')
+    >>> plt.ylim(-0.5, 1.0)
+    >>> plt.grid()
+    >>> plt.legend(loc='upper left')
+    >>> plt.show()
+
+    )";
+
+const char *airye_doc = R"(
+    airye(z, out=None)
+
+    Exponentially scaled Airy functions and their derivatives.
+
+    Scaling::
+
+        eAi  = Ai  * exp(2.0/3.0*z*sqrt(z))
+        eAip = Aip * exp(2.0/3.0*z*sqrt(z))
+        eBi  = Bi  * exp(-abs(2.0/3.0*(z*sqrt(z)).real))
+        eBip = Bip * exp(-abs(2.0/3.0*(z*sqrt(z)).real))
+
+    Parameters
+    ----------
+    z : array_like
+        Real or complex argument.
+    out : tuple of ndarray, optional
+        Optional output arrays for the function values
+
+    Returns
+    -------
+    eAi, eAip, eBi, eBip : 4-tuple of scalar or ndarray
+        Exponentially scaled Airy functions eAi and eBi, and their derivatives
+        eAip and eBip
+
+    See Also
+    --------
+    airy
+
+    Notes
+    -----
+    Wrapper for the AMOS [1]_ routines `zairy` and `zbiry`.
+
+    References
+    ----------
+    .. [1] Donald E. Amos, "AMOS, A Portable Package for Bessel Functions
+           of a Complex Argument and Nonnegative Order",
+           http://netlib.org/amos/
+
+    Examples
+    --------
+    We can compute exponentially scaled Airy functions and their derivatives:
+
+    >>> import numpy as np
+    >>> from scipy.special import airye
+    >>> import matplotlib.pyplot as plt
+    >>> z = np.linspace(0, 50, 500)
+    >>> eAi, eAip, eBi, eBip = airye(z)
+    >>> f, ax = plt.subplots(2, 1, sharex=True)
+    >>> for ind, data in enumerate([[eAi, eAip, ["eAi", "eAip"]],
+    ...                             [eBi, eBip, ["eBi", "eBip"]]]):
+    ...     ax[ind].plot(z, data[0], "-r", z, data[1], "-b")
+    ...     ax[ind].legend(data[2])
+    ...     ax[ind].grid(True)
+    >>> plt.show()
+
+    We can compute these using usual non-scaled Airy functions by:
+
+    >>> from scipy.special import airy
+    >>> Ai, Aip, Bi, Bip = airy(z)
+    >>> np.allclose(eAi, Ai * np.exp(2.0 / 3.0 * z * np.sqrt(z)))
+    True
+    >>> np.allclose(eAip, Aip * np.exp(2.0 / 3.0 * z * np.sqrt(z)))
+    True
+    >>> np.allclose(eBi, Bi * np.exp(-abs(np.real(2.0 / 3.0 * z * np.sqrt(z)))))
+    True
+    >>> np.allclose(eBip, Bip * np.exp(-abs(np.real(2.0 / 3.0 * z * np.sqrt(z)))))
+    True
+
+    Comparing non-scaled and exponentially scaled ones, the usual non-scaled
+    function quickly underflows for large values, whereas the exponentially
+    scaled function does not.
+
+    >>> airy(200)
+    (0.0, 0.0, nan, nan)
+    >>> airye(200)
+    (0.07501041684381093, -1.0609012305109042, 0.15003188417418148, 2.1215836725571093)
+
+    )";
+
 const char *beip_doc = R"(
     beip(x, out=None)
 

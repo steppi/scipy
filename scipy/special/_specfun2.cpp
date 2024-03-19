@@ -3,16 +3,20 @@
 extern "C" {
 
 #include "_cosine.h"
-
+#include "amos_wrappers.h"
 }
 
 #include "special/specfun.h"
 #include "special/trig.h"
 #include "ufunc.h"
 
+// This is needed by sf_error
+extern "C" int wrap_PyUFunc_getfperr() { return PyUFunc_getfperr(); }
+
 extern const char *_cosine_cdf_doc;
 extern const char *_cosine_invcdf_doc;
-extern const char *_cospi_doc;
+extern const char *airy_doc;
+extern const char *airye_doc;
 extern const char *bei_doc;
 extern const char *beip_doc;
 extern const char *ber_doc;
@@ -62,6 +66,12 @@ PyMODINIT_FUNC PyInit__specfun2() {
 
     PyObject *_cosine_invcdf = SpecFun_UFunc<cosine_invcdf>("_cosine_invcdf", _cosine_invcdf_doc);
     PyModule_AddObjectRef(specfun2, "_cosine_invcdf", _cosine_invcdf);
+
+    PyObject *airy = SpecFun_UFunc<airy_wrap_v, cairy_wrap_v>("airy", airy_doc, 4);
+    PyModule_AddObjectRef(specfun2, "airy", airy);
+
+    PyObject *airye = SpecFun_UFunc<cairy_wrap_e_real_v, cairy_wrap_e_v>("airye", airye_doc, 4);
+    PyModule_AddObjectRef(specfun2, "airye", airye);
 
     PyObject *bei = SpecFun_UFunc<special::bei>("bei", bei_doc);
     PyModule_AddObjectRef(specfun2, "bei", bei);
