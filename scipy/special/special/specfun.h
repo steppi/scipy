@@ -28,9 +28,11 @@
 
 namespace special {
 
-inline void cem(double m, double q, double x, double *csf, double *csd);
-inline double sem_cva(double m, double q);
-inline void sem(double m, double q, double x, double *csf, double *csd);
+template <typename T>
+T sem_cva(T m, T q);
+
+template <typename T>
+void sem(T m, T q, T x, T *csf, T *csd);
 
 inline std::complex<double> chyp2f1(double a, double b, double c, std::complex<double> z) {
     std::complex<double> outz;
@@ -188,25 +190,27 @@ inline std::complex<double> cerf(std::complex<double> z) {
     return outz;
 }
 
-inline double itstruve0(double x) {
-    double out;
-
-    if (x < 0)
+template <typename T>
+T itstruve0(T x) {
+    if (x < 0) {
         x = -x;
-    out = specfun::itsh0(x);
+    }
+
+    T out = specfun::itsh0(x);
     SPECFUN_CONVINF("itstruve0", out);
     return out;
 }
 
-inline double it2struve0(double x) {
-    double out;
+template <typename T>
+T it2struve0(T x) {
     int flag = 0;
 
     if (x < 0) {
         x = -x;
         flag = 1;
     }
-    out = specfun::itth0(x);
+
+    T out = specfun::itth0(x);
     SPECFUN_CONVINF("it2struve0", out);
     if (flag) {
         out = M_PI - out;
@@ -214,13 +218,13 @@ inline double it2struve0(double x) {
     return out;
 }
 
-inline double itmodstruve0(double x) {
-    double out;
-
+template <typename T>
+T itmodstruve0(T x) {
     if (x < 0) {
         x = -x;
     }
-    out = specfun::itsl0(x);
+
+    T out = specfun::itsl0(x);
     SPECFUN_CONVINF("itmodstruve0", out);
     return out;
 }
@@ -570,13 +574,13 @@ inline void cfresnl(std::complex<double> z, std::complex<double> *zfs, std::comp
 
 /* Mathieu functions */
 /* Characteristic values */
-inline double cem_cva(double m, double q) {
+template <typename T>
+T cem_cva(T m, T q) {
     int int_m, kd = 1;
-    double out;
 
     if ((m < 0) || (m != floor(m))) {
         set_error("cem_cva", SF_ERROR_DOMAIN, NULL);
-        return std::numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<T>::quiet_NaN();
     }
     int_m = (int) m;
     if (q < 0) {
@@ -591,17 +595,24 @@ inline double cem_cva(double m, double q) {
     if (int_m % 2) {
         kd = 2;
     }
-    out = specfun::cva2(kd, int_m, q);
-    return out;
+    return specfun::cva2(kd, int_m, q);
 }
 
-inline double sem_cva(double m, double q) {
+template <>
+inline float cem_cva(float mf, float qf) {
+    double m = mf;
+    double q = qf;
+
+    return cem_cva(m, q);
+}
+
+template <typename T>
+T sem_cva(T m, T q) {
     int int_m, kd = 4;
-    double out;
 
     if ((m <= 0) || (m != floor(m))) {
         set_error("cem_cva", SF_ERROR_DOMAIN, NULL);
-        return std::numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<T>::quiet_NaN();
     }
     int_m = (int) m;
     if (q < 0) {
@@ -615,17 +626,25 @@ inline double sem_cva(double m, double q) {
     if (int_m % 2) {
         kd = 3;
     }
-    out = specfun::cva2(kd, int_m, q);
-    return out;
+    return specfun::cva2(kd, int_m, q);
+}
+
+template <>
+inline float sem_cva(float mf, float qf) {
+    double m = mf;
+    double q = qf;
+
+    return sem_cva(m, q);
 }
 
 /* Mathieu functions */
-inline void cem(double m, double q, double x, double *csf, double *csd) {
+template <typename T>
+inline void cem(T m, T q, T x, T *csf, T *csd) {
     int int_m, kf = 1, sgn;
-    double f = 0.0, d = 0.0;
+    T f = 0.0, d = 0.0;
     if ((m < 0) || (m != floor(m))) {
-        *csf = std::numeric_limits<double>::quiet_NaN();
-        *csd = std::numeric_limits<double>::quiet_NaN();
+        *csf = std::numeric_limits<T>::quiet_NaN();
+        *csd = std::numeric_limits<T>::quiet_NaN();
         set_error("cem", SF_ERROR_DOMAIN, NULL);
     } else {
         int_m = (int) m;
@@ -649,12 +668,26 @@ inline void cem(double m, double q, double x, double *csf, double *csd) {
     }
 }
 
-inline void sem(double m, double q, double x, double *csf, double *csd) {
+template <>
+inline void cem(float mf, float qf, float xf, float *csff, float *csdf) {
+    double m = mf;
+    double q = qf;
+    double x = xf;
+    double csf;
+    double csd;
+    cem(m, q, x, &csf, &csd);
+
+    *csff = csf;
+    *csdf = csd;
+}
+
+template <typename T>
+void sem(T m, T q, T x, T *csf, T *csd) {
     int int_m, kf = 2, sgn;
-    double f = 0.0, d = 0.0;
+    T f = 0.0, d = 0.0;
     if ((m < 0) || (m != floor(m))) {
-        *csf = std::numeric_limits<double>::quiet_NaN();
-        *csd = std::numeric_limits<double>::quiet_NaN();
+        *csf = std::numeric_limits<T>::quiet_NaN();
+        *csd = std::numeric_limits<T>::quiet_NaN();
         set_error("sem", SF_ERROR_DOMAIN, NULL);
     } else {
         int_m = (int) m;
@@ -678,6 +711,19 @@ inline void sem(double m, double q, double x, double *csf, double *csd) {
             specfun::mtu0(kf, int_m, q, x, csf, csd);
         }
     }
+}
+
+template <>
+inline void sem(float mf, float qf, float xf, float *csff, float *csdf) {
+    double m = mf;
+    double q = qf;
+    double x = xf;
+    double csf;
+    double csd;
+    sem(m, q, x, &csf, &csd);
+
+    *csff = csf;
+    *csdf = csd;
 }
 
 inline void mcm1(double m, double q, double x, double *f1r, double *d1r) {

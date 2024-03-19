@@ -135,7 +135,8 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *it2j0y0 = SpecFun_UFunc<special::it2j0y0<float>, special::it2j0y0<double>>("it2j0y0", it2j0y0_doc, 2);
     PyModule_AddObjectRef(specfun2, "it2j0y0", it2j0y0);
 
-    PyObject *it2struve0 = SpecFun_UFunc<special::it2struve0>("it2struve0", it2struve0_doc);
+    PyObject *it2struve0 =
+        SpecFun_UFunc<special::it2struve0<float>, special::it2struve0<double>>("it2struve0", it2struve0_doc);
     PyModule_AddObjectRef(specfun2, "it2struve0", it2struve0);
 
     PyObject *itairy = SpecFun_UFunc<special::itairy<float>, special::itairy<double>>("itairy", itairy_doc, 4);
@@ -147,10 +148,12 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *itj0y0 = SpecFun_UFunc<special::it1j0y0<float>, special::it1j0y0<double>>("itj0y0", itj0y0_doc, 2);
     PyModule_AddObjectRef(specfun2, "itj0y0", itj0y0);
 
-    PyObject *itmodstruve0 = SpecFun_UFunc<special::itmodstruve0>("itmodstruve0", itmodstruve0_doc);
+    PyObject *itmodstruve0 =
+        SpecFun_UFunc<special::itmodstruve0<float>, special::itmodstruve0<double>>("itmodstruve0", itmodstruve0_doc);
     PyModule_AddObjectRef(specfun2, "itmodstruve0", itmodstruve0);
 
-    PyObject *itstruve0 = SpecFun_UFunc<special::itstruve0>("itstruve0", itstruve0_doc);
+    PyObject *itstruve0 =
+        SpecFun_UFunc<special::itstruve0<float>, special::itstruve0<double>>("itstruve0", itstruve0_doc);
     PyModule_AddObjectRef(specfun2, "itstruve0", itstruve0);
 
     PyObject *kei = SpecFun_UFunc<special::kei<float>, special::kei<double>>("kei", kei_doc);
@@ -168,13 +171,13 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *kerp = SpecFun_UFunc<special::kerp<float>, special::kerp<double>>("kerp", kerp_doc);
     PyModule_AddObjectRef(specfun2, "kerp", kerp);
 
-    PyObject *mathieu_a = SpecFun_UFunc<special::cem_cva>("mathieu_a", mathieu_a_doc);
+    PyObject *mathieu_a = SpecFun_UFunc<special::cem_cva<float>, special::cem_cva<double>>("mathieu_a", mathieu_a_doc);
     PyModule_AddObjectRef(specfun2, "mathieu_a", mathieu_a);
 
-    PyObject *mathieu_b = SpecFun_UFunc<special::sem_cva>("mathieu_b", mathieu_b_doc);
+    PyObject *mathieu_b = SpecFun_UFunc<special::sem_cva<float>, special::sem_cva<double>>("mathieu_b", mathieu_b_doc);
     PyModule_AddObjectRef(specfun2, "mathieu_b", mathieu_b);
 
-    PyObject *mathieu_cem = SpecFun_UFunc<special::cem>("mathieu_cem", mathieu_cem_doc, 2);
+    PyObject *mathieu_cem = SpecFun_UFunc<special::cem<float>, special::cem<double>>("mathieu_cem", mathieu_cem_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_cem", mathieu_cem);
 
     PyObject *mathieu_modcem1 = SpecFun_UFunc<special::mcm1>("mathieu_modcem1", mathieu_modcem1_doc, 2);
@@ -189,7 +192,7 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *mathieu_modsem2 = SpecFun_UFunc<special::msm2>("mathieu_modsem2", mathieu_modsem2_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_modsem2", mathieu_modsem2);
 
-    PyObject *mathieu_sem = SpecFun_UFunc<special::sem>("mathieu_sem", mathieu_sem_doc, 2);
+    PyObject *mathieu_sem = SpecFun_UFunc<special::sem<float>, special::sem<double>>("mathieu_sem", mathieu_sem_doc, 2);
     PyModule_AddObjectRef(specfun2, "mathieu_sem", mathieu_sem);
 
     PyObject *modfresnelm =
