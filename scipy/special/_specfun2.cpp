@@ -6,6 +6,11 @@ extern "C" {
 #include "amos_wrappers.h"
 }
 
+#include "_special.h"
+#include "special/cephes/beta.h"
+#include "special/cephes/gamma.h"
+#include "special/cephes/zeta.h"
+#include "special/lgamma.h"
 #include "special/specfun.h"
 #include "special/trig.h"
 #include "ufunc.h"
@@ -91,11 +96,26 @@ PyMODINIT_FUNC PyInit__specfun2() {
     PyObject *berp = SpecFun_UFunc<special::berp>("berp", berp_doc);
     PyModule_AddObjectRef(specfun2, "berp", berp);
 
+    PyObject *beta = SpecFun_UFunc<special::cephes::beta>("beta", nullptr);
+    PyModule_AddObjectRef(specfun2, "beta", beta);
+
+    PyObject *betaln = SpecFun_UFunc<special::cephes::lbeta>("betaln", nullptr);
+    PyModule_AddObjectRef(specfun2, "betaln", betaln);
+
+    PyObject *cospi = SpecFun_UFunc<special::cephes::cospi, special::cospi>("cospi", nullptr);
+    PyModule_AddObjectRef(specfun2, "cospi", cospi);
+
     PyObject *exp1 = SpecFun_UFunc<special::exp1, special::cexp1>("exp1", exp1_doc);
     PyModule_AddObjectRef(specfun2, "exp1", exp1);
 
     PyObject *expi = SpecFun_UFunc<special::expi, special::cexpi>("expi", expi_doc);
     PyModule_AddObjectRef(specfun2, "expi", expi);
+
+    PyObject *gamma = SpecFun_UFunc<special::cephes::Gamma, cgamma>("gamma", nullptr);
+    PyModule_AddObjectRef(specfun2, "gamma", gamma);
+
+    PyObject *gammaln = SpecFun_UFunc<special::lgam<float>, special::lgam<double>>("gammaln", nullptr);
+    PyModule_AddObjectRef(specfun2, "gammaln", gammaln);
 
     PyObject *hankel1 = SpecFun_UFunc<cbesh_wrap1>("hankel1", hankel1_doc);
     PyModule_AddObjectRef(specfun2, "hankel1", hankel1);
@@ -177,6 +197,12 @@ PyMODINIT_FUNC PyInit__specfun2() {
 
     PyObject *modfresnelp = SpecFun_UFunc<special::modified_fresnel_plus>("modfresnelp", modfresnelp_doc, 2);
     PyModule_AddObjectRef(specfun2, "modfresnelp", modfresnelp);
+
+    PyObject *sinpi = SpecFun_UFunc<special::cephes::sinpi, special::sinpi>("sinpi", nullptr);
+    PyModule_AddObjectRef(specfun2, "sinpi", sinpi);
+
+    PyObject *_zeta = SpecFun_UFunc<special::cephes::zeta>("_zeta", nullptr);
+    PyModule_AddObjectRef(specfun2, "_zeta", _zeta);
 
     return specfun2;
 }
