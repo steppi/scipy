@@ -1,3 +1,6 @@
+#include <complex.h>
+#include <math.h>
+
 #include "_amos.h"
 #include "amos_wrappers.h"
 #include "Python.h"
