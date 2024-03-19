@@ -78,6 +78,15 @@ import textwrap
 
 import numpy
 
+special_ufuncs = [
+    '_cospi', '_sinpi', 'bei', 'beip', 'ber', 'berp',
+    'beta', 'betaln', 'exp1', 'expi', 'gamma', 'gammaln', 'it2i0k0', 'it2j0y0',
+    'it2struve0', 'itairy', 'iti0k0', 'itj0y0', 'itmodstruve0', 'itstruve0', 'kei', 'keip',
+    'kelvin', 'ker', 'kerp', 'mathieu_a', 'mathieu_b', 'mathieu_cem', 'mathieu_modcem1',
+    'mathieu_modcem2', 'mathieu_modsem1', 'mathieu_modsem2', 'mathieu_sem', 'modfresnelm',
+    'modfresnelp', '_zeta'
+]
+
 # -----------------------------------------------------------------------------
 # Extra code
 # -----------------------------------------------------------------------------
@@ -95,18 +104,13 @@ UFUNCS_EXTRA_CODE = """\
 include "_ufuncs_extra_code.pxi"
 """
 
-UFUNCS_EXTRA_CODE_BOTTOM = """\
+UFUNCS_EXTRA_CODE_BOTTOM = f"""\
 #
 # Aliases
 #
 jn = jv
 
-from ._specfun2 import (_cospi, _sinpi, bei, beip,
-    ber, berp, beta, betaln, exp1, expi, gamma, gammaln, it2i0k0, it2j0y0,
-    it2struve0, itairy, iti0k0, itj0y0, itmodstruve0, itstruve0, kei, keip,
-    kelvin, ker, kerp, mathieu_a, mathieu_b, mathieu_cem, mathieu_modcem1,
-    mathieu_modcem2, mathieu_modsem1, mathieu_modsem2, mathieu_sem, modfresnelm,
-    modfresnelp, _zeta)
+from ._specfun2 import ({', '.join(special_ufuncs)})
 """
 
 CYTHON_SPECIAL_PXD = """\
