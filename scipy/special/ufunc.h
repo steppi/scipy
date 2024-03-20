@@ -11,33 +11,32 @@
 
 #include "sf_error.h"
 
-// Just initializes everything needed, can also go in a common header
+// Initializes Python and NumPy.
 inline bool SpecFun_Initialize() {
     Py_Initialize();
 
     import_array();
     if (PyErr_Occurred()) {
-        // import array failed
-        return false;
+        return false; // import array failed
     }
 
     import_umath();
     if (PyErr_Occurred()) {
-        // import umath failed
-        return false;
+        return false; // import umath failed
     }
 
     return true;
 }
 
 #if (PY_VERSION_HEX < 0x030a00f0)
-// this is in Python >=3.10
+// This function is standard in Python >=3.10, we just add it here for convenience.
 inline int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *value) {
     Py_INCREF(value);
     return PyModule_AddObject(module, name, value);
 }
 #endif
 
+// Deduces the number of arguments of a callable F.
 template <auto F>
 struct arity_of;
 
@@ -49,6 +48,7 @@ struct arity_of<F> {
 template <auto F>
 constexpr size_t arity_of_v = arity_of<F>::value;
 
+// Deduces whether or not a callable returns something or is void.
 template <auto F>
 struct has_result;
 
@@ -60,6 +60,7 @@ struct has_result<F> {
 template <auto F>
 constexpr bool has_result_v = has_result<F>::value;
 
+// Maps a C++ type to a NumPy type identifier.
 template <typename T>
 struct npy_type;
 
@@ -98,14 +99,16 @@ struct npy_type<npy_cdouble> {
     static constexpr int value = NPY_COMPLEX128;
 };
 
-template <typename T>
-void from_pointer(char *src, T *&dst) {
-    dst = reinterpret_cast<T *>(src);
-}
-
+// Sets the value dst to be the value of type T at src
 template <typename T>
 void from_pointer(char *src, T &dst) {
     dst = *reinterpret_cast<T *>(src);
+}
+
+// Sets the pointer dst to be the pointer of type T at src (helps for out arguments)
+template <typename T>
+void from_pointer(char *src, T *&dst) {
+    dst = reinterpret_cast<T *>(src);
 }
 
 template <typename T>
@@ -178,7 +181,7 @@ struct SpecFun_UFuncFuncAndData {
     }
 };
 
-// This function now generates a ufunc
+// Generates a ufunc given a sequence of functions, a name, and a doc string
 template <auto F0, auto... F>
 PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout) {
     static_assert(((arity_of_v<F0> == arity_of_v<F>) && ... && true),
