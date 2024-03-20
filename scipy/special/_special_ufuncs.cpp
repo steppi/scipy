@@ -2,7 +2,6 @@
 
 #include "_special.h"
 #include "amos_wrappers.h"
-#include "special/beta.h"
 #include "special/gamma.h"
 #include "special/lgamma.h"
 #include "special/specfun.h"
@@ -98,12 +97,6 @@ PyMODINIT_FUNC PyInit__special_ufuncs() {
 
     PyObject *berp = SpecFun_UFunc<special::berp<float>, special::berp<double>>("berp", berp_doc);
     PyModule_AddObjectRef(_special_ufuncs, "berp", berp);
-
-    PyObject *beta = SpecFun_UFunc<special::beta<float>, special::beta<double>>("beta", beta_doc);
-    PyModule_AddObjectRef(_special_ufuncs, "beta", beta);
-
-    PyObject *betaln = SpecFun_UFunc<special::lbeta<float>, special::lbeta<double>>("betaln", betaln_doc);
-    PyModule_AddObjectRef(_special_ufuncs, "betaln", betaln);
 
     PyObject *exp1 = SpecFun_UFunc<special::exp1<float>, special::exp1<double>, special::cexp1>("exp1", exp1_doc);
     PyModule_AddObjectRef(_special_ufuncs, "exp1", exp1);
