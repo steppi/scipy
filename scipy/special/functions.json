@@ -824,6 +824,11 @@
             "iv": "dd->d"
         }
     },
+    "_iv_ratio": {
+        "_iv_ratio.h++": {
+            "iv_ratio": "dd->d"
+        }
+    },
     "ive": {
         "amos_wrappers.h": {
             "cbesi_wrap_e": "dD->D",

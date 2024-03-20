@@ -14578,3 +14578,8 @@ add_newdoc("_stirling2_inexact",
     r"""
     Internal function, do not use.
     """)
+
+add_newdoc("_iv_ratio",
+    """
+    Internal function, use `ellip_harm` instead.
+    """)
