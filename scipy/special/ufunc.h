@@ -16,12 +16,12 @@ inline bool SpecFun_Initialize() {
     Py_Initialize();
 
     import_array();
-    if (PyErr_Occurred()) {
+    if (PyErr_Occurred() != nullptr) {
         return false; // import array failed
     }
 
     import_umath();
-    if (PyErr_Occurred()) {
+    if (PyErr_Occurred() != nullptr) {
         return false; // import umath failed
     }
 

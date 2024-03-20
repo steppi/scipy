@@ -67,7 +67,9 @@ static PyModuleDef _special_ufuncs_def = {
 };
 
 PyMODINIT_FUNC PyInit__special_ufuncs() {
-    SpecFun_Initialize();
+    if (!SpecFun_Initialize()) {
+        return nullptr;
+    }
 
     PyObject *_special_ufuncs = PyModule_Create(&_special_ufuncs_def);
     if (_special_ufuncs == nullptr) {
