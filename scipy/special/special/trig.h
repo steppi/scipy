@@ -18,6 +18,11 @@
 namespace special {
 
 template <typename T>
+SPECFUN_HOST_DEVICE T sinpi(T x) {
+    return cephes::sinpi(x);
+}
+
+template <typename T>
 SPECFUN_HOST_DEVICE std::complex<T> sinpi(std::complex<T> z) {
     T x = z.real();
     T piy = M_PI * z.imag();
@@ -59,6 +64,11 @@ SPECFUN_HOST_DEVICE std::complex<T> sinpi(std::complex<T> z) {
     coshfac = 0.5 * sinpix * exphpiy;
     sinhfac = 0.5 * cospix * exphpiy;
     return {coshfac * exphpiy, sinhfac * exphpiy};
+}
+
+template <typename T>
+SPECFUN_HOST_DEVICE T cospi(T x) {
+    return cephes::cospi(x);
 }
 
 template <typename T>

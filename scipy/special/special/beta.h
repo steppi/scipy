@@ -18,16 +18,16 @@ SPECFUN_HOST_DEVICE inline float beta(float af, float bf) {
 }
 
 template <typename T>
-SPECFUN_HOST_DEVICE T lbeta(T a, T b) {
+SPECFUN_HOST_DEVICE T betaln(T a, T b) {
     return cephes::lbeta(a, b);
 }
 
 template <>
-SPECFUN_HOST_DEVICE inline float lbeta(float af, float bf) {
+SPECFUN_HOST_DEVICE inline float betaln(float af, float bf) {
     double a = af;
     double b = bf;
 
-    return lbeta(a, b);
+    return betaln(a, b);
 }
 
 } // namespace special

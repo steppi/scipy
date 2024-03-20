@@ -3,11 +3,14 @@
 #include "_special.h"
 #include "amos_wrappers.h"
 #include "special/gamma.h"
-#include "special/lgamma.h"
+#include "special/lambertw.h"
+#include "special/loggamma.h"
 #include "special/specfun.h"
 #include "special/trig.h"
 #include "special/zeta.h"
 #include "ufunc.h"
+
+using namespace std;
 
 // This is needed by sf_error, it is defined in the Cython "_ufuncs_extra_code_common.pxi" for "_generate_pyx.py".
 // It exists to "call PyUFunc_getfperr in a context where PyUFunc_API array is initialized", but here we are
@@ -75,12 +78,16 @@ PyMODINIT_FUNC PyInit__special_ufuncs() {
         return nullptr;
     }
 
-    PyObject *_cospi = SpecFun_UFunc<special::cephes::cospi<float>, special::cephes::cospi<double>,
-                                     special::cospi<float>, special::cospi<double>>("_cospi", _cospi_doc);
+    PyObject *_cospi =
+        SpecFun_UFunc<static_cast<float (*)(float)>(special::cospi), static_cast<double (*)(double)>(special::cospi),
+                      static_cast<complex<float> (*)(complex<float>)>(special::cospi),
+                      static_cast<complex<double> (*)(complex<double>)>(special::cospi)>("_cospi", _cospi_doc);
     PyModule_AddObjectRef(_special_ufuncs, "_cospi", _cospi);
 
-    PyObject *_sinpi = SpecFun_UFunc<special::cephes::sinpi<float>, special::cephes::sinpi<double>,
-                                     special::sinpi<float>, special::sinpi<double>>("_sinpi", _sinpi_doc);
+    PyObject *_sinpi =
+        SpecFun_UFunc<static_cast<float (*)(float)>(special::sinpi), static_cast<double (*)(double)>(special::sinpi),
+                      static_cast<complex<float> (*)(complex<float>)>(special::sinpi),
+                      static_cast<complex<double> (*)(complex<double>)>(special::sinpi)>("_sinpi", _sinpi_doc);
     PyModule_AddObjectRef(_special_ufuncs, "_sinpi", _sinpi);
 
     PyObject *_zeta = SpecFun_UFunc<special::zeta<float>, special::zeta<double>>("_zeta", _zeta_doc);
@@ -104,10 +111,10 @@ PyMODINIT_FUNC PyInit__special_ufuncs() {
     PyObject *expi = SpecFun_UFunc<special::expi<float>, special::expi<double>, special::cexpi>("expi", expi_doc);
     PyModule_AddObjectRef(_special_ufuncs, "expi", expi);
 
-    PyObject *gamma = SpecFun_UFunc<special::gamma<float>, special::gamma<double>, cgamma>("gamma", gamma_doc);
-    PyModule_AddObjectRef(_special_ufuncs, "gamma", gamma);
+    //    PyObject *gamma = SpecFun_UFunc<special::gamma<float>, special::gamma<double>, cgamma>("gamma", gamma_doc);
+    //  PyModule_AddObjectRef(_special_ufuncs, "gamma", gamma);
 
-    PyObject *gammaln = SpecFun_UFunc<special::lgam<float>, special::lgam<double>>("gammaln", gammaln_doc);
+    PyObject *gammaln = SpecFun_UFunc<special::gammaln<float>, special::gammaln<double>>("gammaln", gammaln_doc);
     PyModule_AddObjectRef(_special_ufuncs, "gammaln", gammaln);
 
     PyObject *it2i0k0 = SpecFun_UFunc<special::it2i0k0<float>, special::it2i0k0<double>>("it2i0k0", it2i0k0_doc, 2);

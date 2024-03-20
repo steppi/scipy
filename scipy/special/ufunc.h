@@ -65,6 +65,11 @@ template <typename T>
 struct npy_type;
 
 template <>
+struct npy_type<long int> {
+    static constexpr int value = NPY_LONG;
+};
+
+template <>
 struct npy_type<float> {
     static constexpr int value = NPY_FLOAT32;
 };
