@@ -1,9 +1,7 @@
 #include <cmath>
 
-#include "_special.h"
+
 #include "special/gamma.h"
-#include "special/lambertw.h"
-#include "special/loggamma.h"
 #include "special/specfun.h"
 #include "special/trig.h"
 #include "special/zeta.h"
