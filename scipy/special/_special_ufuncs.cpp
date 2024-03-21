@@ -1,7 +1,6 @@
 #include <cmath>
 
 #include "_special.h"
-#include "amos_wrappers.h"
 #include "special/gamma.h"
 #include "special/lambertw.h"
 #include "special/loggamma.h"

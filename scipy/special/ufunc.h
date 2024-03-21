@@ -172,12 +172,11 @@ class SpecFun_Func {
 
   public:
     template <typename Res, typename... Args>
-    SpecFun_Func(Res (*f)(Args... args))
+    SpecFun_Func(Res (*func)(Args... args))
         : m_has_return(!std::is_void_v<Res>), m_nin_and_nout(sizeof...(Args) + m_has_return),
-          m_func(reinterpret_cast<void *>(f)), m_loop_func(ufunc_traits<Res(Args...)>::loop_func),
-          m_types(new char[sizeof...(Args) + 1]) {
-        std::copy(std::begin(ufunc_traits<Res(Args...)>::types), std::end(ufunc_traits<Res(Args...)>::types),
-                  m_types.get());
+          m_func(reinterpret_cast<void *>(func)), m_loop_func(ufunc_traits<Res(Args...)>::loop_func),
+          m_types(new char[m_nin_and_nout]) {
+        std::copy(ufunc_traits<Res(Args...)>::types, ufunc_traits<Res(Args...)>::types + m_nin_and_nout, m_types.get());
     }
 
     int nin_and_nout() const { return m_nin_and_nout; }
