@@ -37,28 +37,16 @@ inline int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *v
 #endif
 
 // Deduces the number of arguments of a callable F.
-template <auto F>
+template <typename F>
 struct arity_of;
 
-template <typename Res, typename... Args, Res (*F)(Args...)>
-struct arity_of<F> {
+template <typename Res, typename... Args>
+struct arity_of<Res(Args...)> {
     static constexpr size_t value = sizeof...(Args);
 };
 
-template <auto F>
+template <typename F>
 constexpr size_t arity_of_v = arity_of<F>::value;
-
-// Deduces whether or not a callable returns something or is void.
-template <auto F>
-struct has_result;
-
-template <typename Res, typename... Args, Res (*F)(Args...)>
-struct has_result<F> {
-    static constexpr bool value = !std::is_void_v<Res>;
-};
-
-template <auto F>
-constexpr bool has_result_v = has_result<F>::value;
 
 // Maps a C++ type to a NumPy type identifier.
 template <typename T>
@@ -124,17 +112,24 @@ T from_pointer(char *src) {
     return dst;
 }
 
-template <auto F, typename Signature = std::remove_pointer_t<decltype(F)>,
-          typename IndexSequence = std::make_index_sequence<arity_of_v<F>>>
+struct SpecFun_UFuncData {
+    const char *name;
+    void *func;
+};
+
+template <typename F, typename I = std::make_index_sequence<arity_of<F>::value>>
 struct ufunc_traits;
 
-template <typename Res, typename... Args, auto F, size_t... I>
-struct ufunc_traits<F, Res(Args...), std::index_sequence<I...>> {
-    static constexpr char type[sizeof...(Args) + 1] = {npy_type<Args>::value..., npy_type<Res>::value};
+template <typename Res, typename... Args, size_t... I>
+struct ufunc_traits<Res(Args...), std::index_sequence<I...>> {
+    static constexpr char types[sizeof...(Args) + 1] = {npy_type<Args>::value..., npy_type<Res>::value};
 
-    static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
+    static void loop_func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
+        Res (*func)(Args...) = reinterpret_cast<Res (*)(Args...)>(static_cast<SpecFun_UFuncData *>(data)->func);
+        const char *func_name = static_cast<SpecFun_UFuncData *>(data)->name;
+
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
-            *reinterpret_cast<Res *>(args[sizeof...(Args)]) = F(from_pointer<Args>(args[I])...);
+            *reinterpret_cast<Res *>(args[sizeof...(Args)]) = func(from_pointer<Args>(args[I])...);
 
             for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
@@ -142,71 +137,111 @@ struct ufunc_traits<F, Res(Args...), std::index_sequence<I...>> {
             args[sizeof...(Args)] += steps[sizeof...(Args)]; // output
         }
 
-        const char *func_name = static_cast<char *>(data);
         sf_error_check_fpe(func_name);
     }
 };
 
-template <auto F, typename... Args, size_t... I>
-struct ufunc_traits<F, void(Args...), std::index_sequence<I...>> {
-    static constexpr char type[sizeof...(Args)] = {npy_type<Args>::value...};
+template <typename... Args, size_t... I>
+struct ufunc_traits<void(Args...), std::index_sequence<I...>> {
+    static constexpr char types[sizeof...(Args)] = {npy_type<Args>::value...};
 
-    static void func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
+    static void loop_func(char **args, const npy_intp *dimensions, const npy_intp *steps, void *data) {
+        void (*func)(Args...) = reinterpret_cast<void (*)(Args...)>(static_cast<SpecFun_UFuncData *>(data)->func);
+        const char *func_name = static_cast<SpecFun_UFuncData *>(data)->name;
+
         for (npy_intp i = 0; i < dimensions[0]; ++i) {
-            F(from_pointer<Args>(args[I])...);
+            func(from_pointer<Args>(args[I])...);
 
             for (npy_uintp j = 0; j < sizeof...(Args); ++j) {
                 args[j] += steps[j];
             }
         }
 
-        const char *func_name = static_cast<char *>(data);
         sf_error_check_fpe(func_name);
     }
 };
 
-template <int NTypes, int NInAndNOut>
-struct SpecFun_UFuncFuncAndData {
-    static constexpr int ntypes = NTypes;
-    static constexpr int nin_and_nout = NInAndNOut;
+class SpecFun_Func {
+    bool m_has_return;
+    int m_nin_and_nout;
+    void *m_func;
+    PyUFuncGenericFunction m_loop_func;
+    std::unique_ptr<char[]> m_types;
 
-    PyUFuncGenericFunction func[ntypes];
-    char types[ntypes * nin_and_nout];
-    void *data[ntypes];
-
-    SpecFun_UFuncFuncAndData(std::initializer_list<PyUFuncGenericFunction> func,
-                             std::initializer_list<const char *> types, const char *name) {
-        std::copy(func.begin(), func.end(), this->func);
-
-        for (auto it = types.begin(); it != types.end(); ++it) {
-            std::copy(*it, *it + nin_and_nout, this->types + (it - types.begin()) * nin_and_nout);
-        }
-
-        std::fill_n(data, ntypes, const_cast<char *>(name));
+  public:
+    template <typename Res, typename... Args>
+    SpecFun_Func(Res (*f)(Args... args))
+        : m_has_return(!std::is_void_v<Res>), m_nin_and_nout(sizeof...(Args) + m_has_return),
+          m_func(reinterpret_cast<void *>(f)), m_loop_func(ufunc_traits<Res(Args...)>::loop_func),
+          m_types(new char[sizeof...(Args) + 1]) {
+        std::copy(std::begin(ufunc_traits<Res(Args...)>::types), std::end(ufunc_traits<Res(Args...)>::types),
+                  m_types.get());
     }
+
+    int nin_and_nout() const { return m_nin_and_nout; }
+
+    bool has_return() const { return m_has_return; }
+
+    void *func() const { return m_func; }
+
+    PyUFuncGenericFunction loop_func() const { return m_loop_func; }
+
+    char *types() const { return m_types.get(); }
 };
 
-// Generates a ufunc given a sequence of functions, a name, and a doc string
-template <auto F0, auto... F>
-PyObject *SpecFun_UFunc(const char *name, const char *doc, int nout) {
-    static_assert(((arity_of_v<F0> == arity_of_v<F>) && ... && true),
-                  "all functions must have the same number of arguments");
-    static_assert(((has_result_v<F0> == has_result_v<F>) && ... && true),
-                  "all functions must be void if any function is");
+class SpecFun_UFunc {
+    int m_ntypes;
+    int m_nin_and_nout;
+    std::unique_ptr<PyUFuncGenericFunction[]> m_func;
+    std::unique_ptr<void *[]> m_data;
+    std::unique_ptr<char[]> m_types;
+    std::unique_ptr<SpecFun_UFuncData[]> m_data_alloc;
 
-    using func_and_data_type = SpecFun_UFuncFuncAndData<sizeof...(F) + 1, arity_of_v<F0> + has_result_v<F0>>;
+  public:
+    SpecFun_UFunc(std::initializer_list<SpecFun_Func> func, const char *name)
+        : m_ntypes(func.size()), m_nin_and_nout(func.begin()->nin_and_nout()),
+          m_func(new PyUFuncGenericFunction[m_ntypes]), m_data(new void *[m_ntypes]),
+          m_types(new char[m_ntypes * m_nin_and_nout]), m_data_alloc(new SpecFun_UFuncData[m_ntypes]) {
 
-    static std::vector<func_and_data_type> entries;
-    entries.push_back(
-        {{ufunc_traits<F0>::func, ufunc_traits<F>::func...}, {ufunc_traits<F0>::type, ufunc_traits<F>::type...}, name});
+        /*
+            static_assert(((arity_of_v<F0> == arity_of_v<F>) && ... && true),
+                          "all functions must have the same number of arguments");
+            static_assert(((has_result_v<F0> == has_result_v<F>) && ... && true),
+                          "all functions must be void if any function is");
+        */
 
-    func_and_data_type &func_and_data = entries.back();
-    return PyUFunc_FromFuncAndData(func_and_data.func, func_and_data.data, func_and_data.types,
-                                   func_and_data_type::ntypes, func_and_data_type::nin_and_nout - nout, nout,
-                                   PyUFunc_None, name, doc, 0);
+        for (auto it = func.begin(); it != func.end(); ++it) {
+            size_t i = it - func.begin();
+
+            m_func[i] = it->loop_func();
+            m_data[i] = m_data_alloc.get() + i;
+            std::copy(it->types(), it->types() + m_nin_and_nout, m_types.get() + i * m_nin_and_nout);
+
+            m_data_alloc[i] = {name, it->func()};
+        }
+    }
+
+    int nin_and_nout() const { return m_nin_and_nout; }
+
+    int ntypes() const { return m_ntypes; }
+
+    PyUFuncGenericFunction *func() { return m_func.get(); }
+
+    void **data() { return m_data.get(); }
+
+    char *types() { return m_types.get(); }
+};
+
+PyObject *SpecFun_NewUFunc(std::initializer_list<SpecFun_Func> func, const char *name, const char *doc, int nout) {
+    static std::vector<SpecFun_UFunc> entries;
+    entries.emplace_back(func, name);
+
+    auto &func_and_data = entries.back();
+    return PyUFunc_FromFuncAndData(func_and_data.func(), func_and_data.data(), func_and_data.types(),
+                                   func_and_data.ntypes(), func_and_data.nin_and_nout() - nout, nout, PyUFunc_None,
+                                   name, doc, 0);
 }
 
-template <auto F0, auto... F>
-PyObject *SpecFun_UFunc(const char *name, const char *doc) {
-    return SpecFun_UFunc<F0, F...>(name, doc, has_result_v<F0>);
+PyObject *SpecFun_NewUFunc(std::initializer_list<SpecFun_Func> func, const char *name, const char *doc) {
+    return SpecFun_NewUFunc(func, name, doc, func.begin()->has_return());
 }
