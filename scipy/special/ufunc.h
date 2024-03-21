@@ -233,7 +233,7 @@ class SpecFun_UFunc {
     char *types() { return m_types.get(); }
 };
 
-PyObject *SpecFun_NewUFunc(std::initializer_list<SpecFun_Func> func, const char *name, const char *doc, int nout) {
+PyObject *SpecFun_NewUFunc(std::initializer_list<SpecFun_Func> func, int nout, const char *name, const char *doc) {
     static std::vector<SpecFun_UFunc> entries;
     entries.emplace_back(func, name);
 
@@ -244,5 +244,5 @@ PyObject *SpecFun_NewUFunc(std::initializer_list<SpecFun_Func> func, const char 
 }
 
 PyObject *SpecFun_NewUFunc(std::initializer_list<SpecFun_Func> func, const char *name, const char *doc) {
-    return SpecFun_NewUFunc(func, name, doc, func.begin()->has_return());
+    return SpecFun_NewUFunc(func, func.begin()->has_return(), name, doc);
 }
