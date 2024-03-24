@@ -155,7 +155,8 @@ PyMODINIT_FUNC PyInit__special_ufuncs() {
     PyObject *kerp = SpecFun_NewUFunc({special::kerp<float>, special::kerp<double>}, "kerp", kerp_doc);
     PyModule_AddObjectRef(_special_ufuncs, "kerp", kerp);
 
-    PyObject *_lpn = SpecFun_NewGUFunc({special::lpn, special::clpn}, 2, "_lpn", lpn_doc, "()->(np1),(np1)");
+    PyObject *_lpn =
+        SpecFun_NewGUFunc({special::lpn<double>, special::lpn<complex<double>>}, 2, "_lpn", lpn_doc, "()->(np1),(np1)");
     PyModule_AddObjectRef(_special_ufuncs, "_lpn", _lpn);
 
     PyObject *mathieu_a =
