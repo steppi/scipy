@@ -3,10 +3,6 @@ from libcpp.complex cimport complex as ccomplex
 cimport numpy as cnp
 cnp.import_array()
 
-import numpy as np
-
-from ._special_ufuncs import _lpn
-
 cdef extern from "special/specfun/specfun.h" nogil:
     void specfun_airyzo 'special::specfun::airyzo'(int nt, int kf, double *xa, double *xb, double *xc, double *xd)
     void specfun_bernob 'special::specfun::bernob'(int n, double *bn)
@@ -118,25 +114,6 @@ def clpmn(int m, int n, ccomplex[double] z, int ntype):
     ccpd = <ccomplex[double] *>cnp.PyArray_DATA(cpd)
     specfun_clpmn(z, m, n, ntype, ccpm, ccpd)
     return cpm, cpd
-
-
-def clpn(int n1, ccomplex[double] z):
-    """
-    Compute Legendre polynomials Pn(z) and their derivatives Pn'(z) for
-    a complex argument. This is a wrapper for the function 'specfun_clpn'.
-    """
-    cdef ccomplex[double] *ccpn
-    cdef ccomplex[double] *ccpd
-    cdef cnp.npy_intp dims[1]
-    dims[0] = n1 + 1
-
-    # specfun_clpn initializes the array internally
-    cpn = cnp.PyArray_SimpleNew(1, dims, cnp.NPY_COMPLEX128)
-    cpd = cnp.PyArray_SimpleNew(1, dims, cnp.NPY_COMPLEX128)
-    ccpn = <ccomplex[double] *>cnp.PyArray_DATA(cpn)
-    ccpd = <ccomplex[double] *>cnp.PyArray_DATA(cpd)
-    specfun_clpn(n1, z, ccpn, ccpd)
-    return cpn, cpd
 
 
 def clqmn(int m, int n, ccomplex[double] z):
