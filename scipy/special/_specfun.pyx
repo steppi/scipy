@@ -3,10 +3,6 @@ from libcpp.complex cimport complex as ccomplex
 cimport numpy as cnp
 cnp.import_array()
 
-import numpy as np
-
-from ._special_ufuncs import _lqn
-
 cdef extern from "special/specfun/specfun.h" nogil:
     void specfun_airyzo 'special::specfun::airyzo'(int nt, int kf, double *xa, double *xb, double *xc, double *xd)
     void specfun_bernob 'special::specfun::bernob'(int n, double *bn)
