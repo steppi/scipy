@@ -164,6 +164,9 @@ PyMODINIT_FUNC PyInit__special_ufuncs() {
                                        "_lpn", lpn_doc, "()->(np1),(np1)");
     PyModule_AddObjectRef(_special_ufuncs, "_lpn", _lpn);
 
+    PyObject *_lpmn = SpecFun_NewGUFunc({special::lpmn}, 2, "_lpmn", nullptr, "()->(m,np1),(m,np1)");
+    PyModule_AddObjectRef(_special_ufuncs, "_lpmn", _lpmn);
+
     PyObject *mathieu_a =
         SpecFun_NewUFunc({special::cem_cva<float>, special::cem_cva<double>}, "mathieu_a", mathieu_a_doc);
     PyModule_AddObjectRef(_special_ufuncs, "mathieu_a", mathieu_a);
