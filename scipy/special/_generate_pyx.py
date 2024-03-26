@@ -79,13 +79,12 @@ import textwrap
 import numpy
 
 special_ufuncs = [
-    '_cospi', '_sinpi', '_lpn', '_lpmn', '_clpmn', '_lqn', '_lqmn',
-    'bei', 'beip', 'ber', 'berp', 'exp1', 'expi', 'gammaln', 'it2i0k0',
-    'it2j0y0', 'it2struve0', 'itairy', 'iti0k0', 'itj0y0', 'itmodstruve0',
-    'itstruve0', 'kei', 'keip', 'kelvin', 'ker', 'kerp', 'mathieu_a',
-    'mathieu_b', 'mathieu_cem', 'mathieu_modcem1', 'mathieu_modcem2',
-    'mathieu_modsem1', 'mathieu_modsem2', 'mathieu_sem', 'modfresnelm',
-    'modfresnelp', '_zeta'
+    '_cospi', '_sinpi', 'bei', 'beip', 'ber', 'berp', 'exp1', 'expi',
+    'gammaln', 'it2i0k0', 'it2j0y0', 'it2struve0', 'itairy', 'iti0k0',
+    'itj0y0', 'itmodstruve0', 'itstruve0', 'kei', 'keip', 'kelvin',
+    'ker', 'kerp', 'mathieu_a', 'mathieu_b', 'mathieu_cem', 'mathieu_modcem1',
+    'mathieu_modcem2', 'mathieu_modsem1', 'mathieu_modsem2', 'mathieu_sem',
+    'modfresnelm', 'modfresnelp', '_zeta'
 ]
 
 # -----------------------------------------------------------------------------
