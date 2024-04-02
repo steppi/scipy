@@ -13,6 +13,7 @@ extern "C" {
     int cephes_ellpj_wrap(double u, double m, double *sn, double *cn, double *dn, double *ph);
     int cephes_fresnl_wrap(double xxa, double *ssa, double *cca);
     int cephes_sici_wrap(double x, double *si, double *ci);
+    int cephes_shichi_wrap(double x, double *si, double *ci);
 
 #ifdef __cplusplus
 }

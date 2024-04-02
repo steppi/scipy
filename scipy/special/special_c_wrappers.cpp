@@ -9,6 +9,7 @@ extern "C" {
 #include "special/cephes/fresnl.h"
 #include "special/cephes/jv.h"
 #include "special/cephes/sici.h"
+#include "special/cephes/shichi.h"
 
 
 
@@ -36,4 +37,8 @@ extern "C" int cephes_fresnl_wrap(double xxa, double *ssa, double *cca) {
 
 extern "C" int cephes_sici_wrap(double x, double *si, double *ci){
     return special::cephes::sici(x, si, ci);
+}
+
+extern "C" int cephes_shichi_wrap(double x, double *si, double *ci){
+    return special::cephes::shichi(x, si, ci);
 }
