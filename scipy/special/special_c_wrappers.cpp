@@ -7,6 +7,7 @@ extern "C" {
 #include "special/cephes/airy.h"
 #include "special/cephes/ellpj.h"
 #include "special/cephes/jv.h"
+#include "special/cephes/fresnl.h"
 
 
 extern "C" npy_cdouble hyp2f1_complex_wrap(double a, double b, double c, npy_cdouble zp) {
@@ -25,4 +26,8 @@ extern "C" double cephes_jv_wrap(double v, double x) {
 
 extern "C" int cephes_ellpj_wrap(double u, double m, double *sn, double *cn, double *dn, double *ph) {
     return special::cephes::ellpj(u, m, sn, cn, dn, ph);
+}
+
+extern "C" int cephes_fresnl(double xxa, double *ssa, double *cca) {
+    return special::cephes::fresnl(xxa, ssa, cca);
 }
