@@ -10,7 +10,7 @@ extern "C" {
 #include "special/cephes/jv.h"
 #include "special/cephes/sici.h"
 #include "special/cephes/shichi.h"
-
+#include "special/cephes/struve.h"
 
 
 extern "C" npy_cdouble hyp2f1_complex_wrap(double a, double b, double c, npy_cdouble zp) {
@@ -42,3 +42,16 @@ extern "C" int cephes_sici_wrap(double x, double *si, double *ci){
 extern "C" int cephes_shichi_wrap(double x, double *si, double *ci){
     return special::cephes::shichi(x, si, ci);
 }
+
+extern "C" double cephes__struve_asymp_large_z(double v, double z, int is_h, double *err) {
+    return special::cephes::detail::struve_asymp_large_z(v, z, is_h, err);
+}
+
+extern "C" double cephes__struve_bessel_series(double v, double z, int is_h, double *err) {
+    return special::cephes::detail::struve_bessel_series(v, z, is_h, err);
+}
+
+extern "C" double cephes__struve_power_series(double v, double z, int is_h, double *err) {
+    return special::cephes::detail::struve_power_series(v, z, is_h, err);
+}
+    
