@@ -32,7 +32,8 @@ extern "C" {
     double cephes__struve_asymp_large_z(double v, double z, int is_h, double *err);
     double cephes__struve_bessel_series(double v, double z, int is_h, double *err);
     double cephes__struve_power_series(double v, double z, int is_h, double *err);
-    
+    double cephes_polevl_wrap(double x, const double coef[], int N);
+    double cephes_p1evl_wrap(double x, const double coef[], int N);
 
 #ifdef __cplusplus
 }

@@ -17,6 +17,7 @@ extern "C" {
 #include "special/cephes/ndtr.h"
 #include "special/cephes/ndtri.h"
 #include "special/cephes/poch.h"
+#include "special/cephes/polevl.h"
 #include "special/cephes/sici.h"
 #include "special/cephes/shichi.h"
 #include "special/cephes/struve.h"
@@ -125,3 +126,10 @@ extern "C" double cephes__struve_power_series(double v, double z, int is_h, doub
     return special::cephes::detail::struve_power_series(v, z, is_h, err);
 }
     
+extern "C" double cephes_polevl_wrap(double x, const double coef[], int N) {
+    return special::cephes::polevl(x, coef, N);
+}
+
+extern "C" double cephes_p1evl_wrap(double x, const double coef[], int N) {
+    return special::cephes::p1evl(x, coef, N);
+}
