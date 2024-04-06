@@ -1,3 +1,9 @@
+/* These wrappers exist to allow for calling functions from the under development
+ * header only C++ special function library in scipy/special/special within files
+ * for special functions which are still implemented in C or Cython. The hope is
+ * that these  wrappers will become unnecessary if all of special is translated
+ * into C++ */
+
 extern "C" {
 #include <numpy/npy_math.h>
 #include "special_c_wrappers.h"
