@@ -110,7 +110,9 @@ ufuncs_sources = [
   'scaled_exp1.c',
   'special_wrappers.cpp',
   'special_c_wrappers.cpp',
-  'sf_error.c'
+  'sf_error.c',
+  'sf_error.cc',
+  'dd_real_wrappers.cpp'
 ]
 
 ufuncs_cxx_sources = [
@@ -279,9 +281,17 @@ py3.extension_module('cython_special',
     uf_cython_gen.process('cython_special.pyx'),
     '_cosine.c',
     'scaled_exp1.c',
+<<<<<<< HEAD
     'special_wrappers.cpp',
     'special_c_wrappers.cpp',
     'sf_error.c'
+=======
+    'amos_wrappers.cpp',
+    'specfun_wrappers.cpp',
+    'sf_error.c',
+    'special_c_wrappers.cpp',
+    'dd_real_wrappers.cpp'
+>>>>>>> 05f9493ed6 (Start using c wrappers for double double arithmetic)
   ],
   c_args: [cython_c_args, Wno_maybe_uninitialized],
   include_directories: ['../_lib', '../_build_utils/src', 'cephes'],
