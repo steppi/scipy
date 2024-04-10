@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     igam.c
  *
  *     Incomplete Gamma integral
@@ -98,311 +102,320 @@
  *   improvements in accuracy for the asymptotic series when a and x
  *   are very close.
  */
+#pragma once
 
-#include "igam.h"
+#include "../config.h"
+#include "../error.h"
+
+#include "const.h"
+#include "gamma.h"
+#include "igam_asymp_coeff.h"
 #include "lanczos.h"
-#include "mconf.h"
+#include "ndtr.h"
+#include "unity.h"
 
-#ifdef MAXITER
-#undef MAXITER
-#endif
+namespace special {
+namespace cephes {
 
-#define MAXITER 2000
-#define IGAM 1
-#define IGAMC 0
-#define SMALL 20
-#define LARGE 200
-#define SMALLRATIO 0.3
-#define LARGERATIO 4.5
+    namespace detail {
 
-extern double MACHEP, MAXLOG;
-static double big = 4.503599627370496e15;
-static double biginv = 2.22044604925031308085e-16;
+        constexpr int igam_MAXITER = 2000;
+        constexpr int IGAM = 1;
+        constexpr int IGAMC = 0;
+        constexpr double igam_SMALL = 20;
+        constexpr double igam_LARGE = 200;
+        constexpr double igam_SMALLRATIO = 0.3;
+        constexpr double igam_LARGERATIO = 4.5;
 
-static double igamc_continued_fraction(double, double);
-static double igam_series(double, double);
-static double igamc_series(double, double);
-static double asymptotic_series(double, double, int);
+        constexpr double igam_big = 4.503599627370496e15;
+        constexpr double igam_biginv = 2.22044604925031308085e-16;
 
-double igam(double a, double x) {
-    double absxma_a;
+        /* Compute
+         *
+         * x^a * exp(-x) / gamma(a)
+         *
+         * corrected from (15) and (16) in [2] by replacing exp(x - a) with
+         * exp(a - x).
+         */
+        SPECFUN_HOST_DEVICE inline double igam_fac(double a, double x) {
+            double ax, fac, res, num;
 
-    if (x < 0 || a < 0) {
-        sf_error("gammainc", SF_ERROR_DOMAIN, NULL);
-        return NAN;
-    } else if (a == 0) {
-        if (x > 0) {
-            return 1;
-        } else {
-            return NAN;
+            if (std::abs(a - x) > 0.4 * std::abs(a)) {
+                ax = a * std::log(x) - x - special::cephes::lgam(a);
+                if (ax < -MAXLOG) {
+                    set_error("igam", SF_ERROR_UNDERFLOW, NULL);
+                    return 0.0;
+                }
+                return std::exp(ax);
+            }
+
+            fac = a + special::cephes::lanczos_g - 0.5;
+            res = std::sqrt(fac / std::exp(1)) / special::cephes::lanczos_sum_expg_scaled(a);
+
+            if ((a < 200) && (x < 200)) {
+                res *= std::exp(a - x) * std::pow(x / fac, a);
+            } else {
+                num = x - a - special::cephes::lanczos_g + 0.5;
+                res *= std::exp(a * special::cephes::log1pmx(num / fac) + x * (0.5 - special::cephes::lanczos_g) / fac);
+            }
+
+            return res;
         }
-    } else if (x == 0) {
-        /* Zero integration limit */
-        return 0;
-    } else if (isinf(a)) {
-        if (isinf(x)) {
-            return NAN;
+
+        /* Compute igamc using DLMF 8.9.2. */
+        SPECFUN_HOST_DEVICE inline double igamc_continued_fraction(double a, double x) {
+            int i;
+            double ans, ax, c, yc, r, t, y, z;
+            double pk, pkm1, pkm2, qk, qkm1, qkm2;
+
+            ax = igam_fac(a, x);
+            if (ax == 0.0) {
+                return 0.0;
+            }
+
+            /* continued fraction */
+            y = 1.0 - a;
+            z = x + y + 1.0;
+            c = 0.0;
+            pkm2 = 1.0;
+            qkm2 = x;
+            pkm1 = x + 1.0;
+            qkm1 = z * x;
+            ans = pkm1 / qkm1;
+
+            for (i = 0; i < igam_MAXITER; i++) {
+                c += 1.0;
+                y += 1.0;
+                z += 2.0;
+                yc = y * c;
+                pk = pkm1 * z - pkm2 * yc;
+                qk = qkm1 * z - qkm2 * yc;
+                if (qk != 0) {
+                    r = pk / qk;
+                    t = std::abs((ans - r) / r);
+                    ans = r;
+                } else
+                    t = 1.0;
+                pkm2 = pkm1;
+                pkm1 = pk;
+                qkm2 = qkm1;
+                qkm1 = qk;
+                if (std::abs(pk) > igam_big) {
+                    pkm2 *= igam_biginv;
+                    pkm1 *= igam_biginv;
+                    qkm2 *= igam_biginv;
+                    qkm1 *= igam_biginv;
+                }
+                if (t <= MACHEP) {
+                    break;
+                }
+            }
+
+            return (ans * ax);
         }
-        return 0;
-    } else if (isinf(x)) {
-        return 1;
-    }
 
-    /* Asymptotic regime where a ~ x; see [2]. */
-    absxma_a = fabs(x - a) / a;
-    if ((a > SMALL) && (a < LARGE) && (absxma_a < SMALLRATIO)) {
-        return asymptotic_series(a, x, IGAM);
-    } else if ((a > LARGE) && (absxma_a < LARGERATIO / sqrt(a))) {
-        return asymptotic_series(a, x, IGAM);
-    }
+        /* Compute igam using DLMF 8.11.4. */
+        SPECFUN_HOST_DEVICE inline double igam_series(double a, double x) {
+            int i;
+            double ans, ax, c, r;
 
-    if ((x > 1.0) && (x > a)) {
-        return (1.0 - igamc(a, x));
-    }
+            ax = igam_fac(a, x);
+            if (ax == 0.0) {
+                return 0.0;
+            }
 
-    return igam_series(a, x);
-}
+            /* power series */
+            r = a;
+            c = 1.0;
+            ans = 1.0;
 
-double igamc(double a, double x) {
-    double absxma_a;
+            for (i = 0; i < igam_MAXITER; i++) {
+                r += 1.0;
+                c *= x / r;
+                ans += c;
+                if (c <= MACHEP * ans) {
+                    break;
+                }
+            }
 
-    if (x < 0 || a < 0) {
-        sf_error("gammaincc", SF_ERROR_DOMAIN, NULL);
-        return NAN;
-    } else if (a == 0) {
-        if (x > 0) {
+            return (ans * ax / a);
+        }
+
+        /* Compute igamc using DLMF 8.7.3. This is related to the series in
+         * igam_series but extra care is taken to avoid cancellation.
+         */
+        SPECFUN_HOST_DEVICE inline double igamc_series(double a, double x) {
+            int n;
+            double fac = 1;
+            double sum = 0;
+            double term, logx;
+
+            for (n = 1; n < igam_MAXITER; n++) {
+                fac *= -x / n;
+                term = fac / (a + n);
+                sum += term;
+                if (std::abs(term) <= MACHEP * std::abs(sum)) {
+                    break;
+                }
+            }
+
+            logx = std::log(x);
+            term = -special::cephes::expm1(a * logx - special::cephes::lgam1p(a));
+            return term - std::exp(a * logx - special::cephes::lgam(a)) * sum;
+        }
+
+        /* Compute igam/igamc using DLMF 8.12.3/8.12.4. */
+        SPECFUN_HOST_DEVICE inline double asymptotic_series(double a, double x, int func) {
+            int k, n, sgn;
+            int maxpow = 0;
+            double lambda = x / a;
+            double sigma = (x - a) / a;
+            double eta, res, ck, ckterm, term, absterm;
+            double absoldterm = std::numeric_limits<double>::infinity();
+            double etapow[detail::igam_asymp_coeff_N] = {1};
+            double sum = 0;
+            double afac = 1;
+
+            if (func == detail::IGAM) {
+                sgn = -1;
+            } else {
+                sgn = 1;
+            }
+
+            if (lambda > 1) {
+                eta = std::sqrt(-2 * special::cephes::log1pmx(sigma));
+            } else if (lambda < 1) {
+                eta = -std::sqrt(-2 * special::cephes::log1pmx(sigma));
+            } else {
+                eta = 0;
+            }
+            res = 0.5 * special::cephes::erfc(sgn * eta * std::sqrt(a / 2));
+
+            for (k = 0; k < igam_asymp_coeff_K; k++) {
+                ck = igam_asymp_coeff_d[k][0];
+                for (n = 1; n < igam_asymp_coeff_N; n++) {
+                    if (n > maxpow) {
+                        etapow[n] = eta * etapow[n - 1];
+                        maxpow += 1;
+                    }
+                    ckterm = igam_asymp_coeff_d[k][n] * etapow[n];
+                    ck += ckterm;
+                    if (std::abs(ckterm) < MACHEP * std::abs(ck)) {
+                        break;
+                    }
+                }
+                term = ck * afac;
+                absterm = std::abs(term);
+                if (absterm > absoldterm) {
+                    break;
+                }
+                sum += term;
+                if (absterm < MACHEP * std::abs(sum)) {
+                    break;
+                }
+                absoldterm = absterm;
+                afac /= a;
+            }
+            res += sgn * std::exp(-0.5 * a * eta * eta) * sum / std::sqrt(2 * M_PI * a);
+
+            return res;
+        }
+
+    } // namespace detail
+
+    SPECFUN_HOST_DEVICE inline double igamc(double a, double x);
+
+    SPECFUN_HOST_DEVICE inline double igam(double a, double x) {
+        double absxma_a;
+
+        if (x < 0 || a < 0) {
+            set_error("gammainc", SF_ERROR_DOMAIN, NULL);
+            return std::numeric_limits<double>::quiet_NaN();
+        } else if (a == 0) {
+            if (x > 0) {
+                return 1;
+            } else {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+        } else if (x == 0) {
+            /* Zero integration limit */
             return 0;
-        } else {
-            return NAN;
-        }
-    } else if (x == 0) {
-        return 1;
-    } else if (isinf(a)) {
-        if (isinf(x)) {
-            return NAN;
-        }
-        return 1;
-    } else if (isinf(x)) {
-        return 0;
-    }
-
-    /* Asymptotic regime where a ~ x; see [2]. */
-    absxma_a = fabs(x - a) / a;
-    if ((a > SMALL) && (a < LARGE) && (absxma_a < SMALLRATIO)) {
-        return asymptotic_series(a, x, IGAMC);
-    } else if ((a > LARGE) && (absxma_a < LARGERATIO / sqrt(a))) {
-        return asymptotic_series(a, x, IGAMC);
-    }
-
-    /* Everywhere else; see [2]. */
-    if (x > 1.1) {
-        if (x < a) {
-            return 1.0 - igam_series(a, x);
-        } else {
-            return igamc_continued_fraction(a, x);
-        }
-    } else if (x <= 0.5) {
-        if (-0.4 / log(x) < a) {
-            return 1.0 - igam_series(a, x);
-        } else {
-            return igamc_series(a, x);
-        }
-    } else {
-        if (x * 1.1 < a) {
-            return 1.0 - igam_series(a, x);
-        } else {
-            return igamc_series(a, x);
-        }
-    }
-}
-
-/* Compute
- *
- * x^a * exp(-x) / gamma(a)
- *
- * corrected from (15) and (16) in [2] by replacing exp(x - a) with
- * exp(a - x).
- */
-double igam_fac(double a, double x) {
-    double ax, fac, res, num;
-
-    if (fabs(a - x) > 0.4 * fabs(a)) {
-        ax = a * log(x) - x - lgam(a);
-        if (ax < -MAXLOG) {
-            sf_error("igam", SF_ERROR_UNDERFLOW, NULL);
-            return 0.0;
-        }
-        return exp(ax);
-    }
-
-    fac = a + lanczos_g - 0.5;
-    res = sqrt(fac / exp(1)) / lanczos_sum_expg_scaled(a);
-
-    if ((a < 200) && (x < 200)) {
-        res *= exp(a - x) * pow(x / fac, a);
-    } else {
-        num = x - a - lanczos_g + 0.5;
-        res *= exp(a * log1pmx(num / fac) + x * (0.5 - lanczos_g) / fac);
-    }
-
-    return res;
-}
-
-/* Compute igamc using DLMF 8.9.2. */
-static double igamc_continued_fraction(double a, double x) {
-    int i;
-    double ans, ax, c, yc, r, t, y, z;
-    double pk, pkm1, pkm2, qk, qkm1, qkm2;
-
-    ax = igam_fac(a, x);
-    if (ax == 0.0) {
-        return 0.0;
-    }
-
-    /* continued fraction */
-    y = 1.0 - a;
-    z = x + y + 1.0;
-    c = 0.0;
-    pkm2 = 1.0;
-    qkm2 = x;
-    pkm1 = x + 1.0;
-    qkm1 = z * x;
-    ans = pkm1 / qkm1;
-
-    for (i = 0; i < MAXITER; i++) {
-        c += 1.0;
-        y += 1.0;
-        z += 2.0;
-        yc = y * c;
-        pk = pkm1 * z - pkm2 * yc;
-        qk = qkm1 * z - qkm2 * yc;
-        if (qk != 0) {
-            r = pk / qk;
-            t = fabs((ans - r) / r);
-            ans = r;
-        } else
-            t = 1.0;
-        pkm2 = pkm1;
-        pkm1 = pk;
-        qkm2 = qkm1;
-        qkm1 = qk;
-        if (fabs(pk) > big) {
-            pkm2 *= biginv;
-            pkm1 *= biginv;
-            qkm2 *= biginv;
-            qkm1 *= biginv;
-        }
-        if (t <= MACHEP) {
-            break;
-        }
-    }
-
-    return (ans * ax);
-}
-
-/* Compute igam using DLMF 8.11.4. */
-static double igam_series(double a, double x) {
-    int i;
-    double ans, ax, c, r;
-
-    ax = igam_fac(a, x);
-    if (ax == 0.0) {
-        return 0.0;
-    }
-
-    /* power series */
-    r = a;
-    c = 1.0;
-    ans = 1.0;
-
-    for (i = 0; i < MAXITER; i++) {
-        r += 1.0;
-        c *= x / r;
-        ans += c;
-        if (c <= MACHEP * ans) {
-            break;
-        }
-    }
-
-    return (ans * ax / a);
-}
-
-/* Compute igamc using DLMF 8.7.3. This is related to the series in
- * igam_series but extra care is taken to avoid cancellation.
- */
-static double igamc_series(double a, double x) {
-    int n;
-    double fac = 1;
-    double sum = 0;
-    double term, logx;
-
-    for (n = 1; n < MAXITER; n++) {
-        fac *= -x / n;
-        term = fac / (a + n);
-        sum += term;
-        if (fabs(term) <= MACHEP * fabs(sum)) {
-            break;
-        }
-    }
-
-    logx = log(x);
-    term = -expm1(a * logx - lgam1p(a));
-    return term - exp(a * logx - lgam(a)) * sum;
-}
-
-/* Compute igam/igamc using DLMF 8.12.3/8.12.4. */
-static double asymptotic_series(double a, double x, int func) {
-    int k, n, sgn;
-    int maxpow = 0;
-    double lambda = x / a;
-    double sigma = (x - a) / a;
-    double eta, res, ck, ckterm, term, absterm;
-    double absoldterm = INFINITY;
-    double etapow[N] = {1};
-    double sum = 0;
-    double afac = 1;
-
-    if (func == IGAM) {
-        sgn = -1;
-    } else {
-        sgn = 1;
-    }
-
-    if (lambda > 1) {
-        eta = sqrt(-2 * log1pmx(sigma));
-    } else if (lambda < 1) {
-        eta = -sqrt(-2 * log1pmx(sigma));
-    } else {
-        eta = 0;
-    }
-    res = 0.5 * erfc(sgn * eta * sqrt(a / 2));
-
-    for (k = 0; k < K; k++) {
-        ck = d[k][0];
-        for (n = 1; n < N; n++) {
-            if (n > maxpow) {
-                etapow[n] = eta * etapow[n - 1];
-                maxpow += 1;
+        } else if (std::isinf(a)) {
+            if (std::isinf(x)) {
+                return std::numeric_limits<double>::quiet_NaN();
             }
-            ckterm = d[k][n] * etapow[n];
-            ck += ckterm;
-            if (fabs(ckterm) < MACHEP * fabs(ck)) {
-                break;
+            return 0;
+        } else if (std::isinf(x)) {
+            return 1;
+        }
+
+        /* Asymptotic regime where a ~ x; see [2]. */
+        absxma_a = std::abs(x - a) / a;
+        if ((a > detail::igam_SMALL) && (a < detail::igam_LARGE) && (absxma_a < detail::igam_SMALLRATIO)) {
+            return detail::asymptotic_series(a, x, detail::IGAM);
+        } else if ((a > detail::igam_LARGE) && (absxma_a < detail::igam_LARGERATIO / std::sqrt(a))) {
+            return detail::asymptotic_series(a, x, detail::IGAM);
+        }
+
+        if ((x > 1.0) && (x > a)) {
+            return (1.0 - igamc(a, x));
+        }
+
+        return detail::igam_series(a, x);
+    }
+
+    SPECFUN_HOST_DEVICE double igamc(double a, double x) {
+        double absxma_a;
+
+        if (x < 0 || a < 0) {
+            set_error("gammaincc", SF_ERROR_DOMAIN, NULL);
+            return std::numeric_limits<double>::quiet_NaN();
+        } else if (a == 0) {
+            if (x > 0) {
+                return 0;
+            } else {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+        } else if (x == 0) {
+            return 1;
+        } else if (std::isinf(a)) {
+            if (std::isinf(x)) {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+            return 1;
+        } else if (std::isinf(x)) {
+            return 0;
+        }
+
+        /* Asymptotic regime where a ~ x; see [2]. */
+        absxma_a = std::abs(x - a) / a;
+        if ((a > detail::igam_SMALL) && (a < detail::igam_LARGE) && (absxma_a < detail::igam_SMALLRATIO)) {
+            return detail::asymptotic_series(a, x, detail::IGAMC);
+        } else if ((a > detail::igam_LARGE) && (absxma_a < detail::igam_LARGERATIO / std::sqrt(a))) {
+            return detail::asymptotic_series(a, x, detail::IGAMC);
+        }
+
+        /* Everywhere else; see [2]. */
+        if (x > 1.1) {
+            if (x < a) {
+                return 1.0 - detail::igam_series(a, x);
+            } else {
+                return detail::igamc_continued_fraction(a, x);
+            }
+        } else if (x <= 0.5) {
+            if (-0.4 / std::log(x) < a) {
+                return 1.0 - detail::igam_series(a, x);
+            } else {
+                return detail::igamc_series(a, x);
+            }
+        } else {
+            if (x * 1.1 < a) {
+                return 1.0 - detail::igam_series(a, x);
+            } else {
+                return detail::igamc_series(a, x);
             }
         }
-        term = ck * afac;
-        absterm = fabs(term);
-        if (absterm > absoldterm) {
-            break;
-        }
-        sum += term;
-        if (absterm < MACHEP * fabs(sum)) {
-            break;
-        }
-        absoldterm = absterm;
-        afac /= a;
     }
-    res += sgn * exp(-0.5 * a * eta * eta) * sum / sqrt(2 * M_PI * a);
 
-    return res;
-}
+} // namespace cephes
+} // namespace special

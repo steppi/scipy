@@ -1,5 +1,12 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ *
+ * The parts of the qd double-double floating point package used in SciPy
+ * have been reworked in a more modern C++ style using operator overloading.
+ */
+
 /*
- * src/double2.cc
+ * include/double2.h
  *
  * This work was supported by the Director, Office of Science, Division
  * of Mathematical, Information, and Computational Sciences of the
@@ -14,493 +21,550 @@
  * BSD license "BSD-LBNL-License.doc" (see LICENSE.txt).
  */
 /*
- * Contains implementation of non-inlined functions of double-double
- * package.  Inlined functions are found in dd_real_inline.h.
+ * Double-double precision (>= 106-bit significand) floating point
+ * arithmetic package based on David Bailey's Fortran-90 double-double
+ * package, with some changes. See
+ *
+ *   http://www.nersc.gov/~dhbailey/mpdist/mpdist.html
+ *
+ * for the original Fortran-90 version.
+ *
+ * Overall structure is similar to that of Keith Brigg's C++ double-double
+ * package.  See
+ *
+ *   http://www-epidem.plansci.cam.ac.uk/~kbriggs/doubledouble.html
+ *
+ * for more details.  In particular, the fix for x86 computers is borrowed
+ * from his code.
+ *
+ * Yozo Hida
  */
 
 /*
  * This code taken from v2.3.18 of the qd package.
  */
 
-#include <float.h>
-#include <limits.h>
-#include <math.h>
-#include <stdlib.h>
+#pragma once
 
-#include "dd_real.h"
+#include "../config.h"
 
-#define _DD_REAL_INIT(A, B)                                                                                            \
-    {                                                                                                                  \
-        { A, B }                                                                                                       \
-    }
+#include "unity.h"
 
-const double DD_C_EPS = 4.93038065763132e-32;               // 2^-104
-const double DD_C_MIN_NORMALIZED = 2.0041683600089728e-292; // = 2^(-1022 + 53)
+namespace special {
+namespace cephes {
 
-/*  Compile-time initialization of const double2 structs */
+    namespace detail {
 
-const double2 DD_C_MAX = _DD_REAL_INIT(1.79769313486231570815e+308, 9.97920154767359795037e+291);
-const double2 DD_C_SAFE_MAX = _DD_REAL_INIT(1.7976931080746007281e+308, 9.97920154767359795037e+291);
-const int _DD_C_NDIGITS = 31;
+        constexpr double __DD_SPLITTER = 134217729.0;               // = 2^27 + 1
+        constexpr double __DD_SPLIT_THRESH = 6.69692879491417e+299; // = 2^996
 
-const double2 DD_C_ZERO = _DD_REAL_INIT(0.0, 0.0);
-const double2 DD_C_ONE = _DD_REAL_INIT(1.0, 0.0);
-const double2 DD_C_NEGONE = _DD_REAL_INIT(-1.0, 0.0);
+        /*************************************************************************
+         * The basic routines taking double arguments, returning 1 (or 2) doubles
+         *************************************************************************/
 
-const double2 DD_C_2PI = _DD_REAL_INIT(6.283185307179586232e+00, 2.449293598294706414e-16);
-const double2 DD_C_PI = _DD_REAL_INIT(3.141592653589793116e+00, 1.224646799147353207e-16);
-const double2 DD_C_PI2 = _DD_REAL_INIT(1.570796326794896558e+00, 6.123233995736766036e-17);
-const double2 DD_C_PI4 = _DD_REAL_INIT(7.853981633974482790e-01, 3.061616997868383018e-17);
-const double2 DD_C_PI16 = _DD_REAL_INIT(1.963495408493620697e-01, 7.654042494670957545e-18);
-const double2 DD_C_3PI4 = _DD_REAL_INIT(2.356194490192344837e+00, 9.1848509936051484375e-17);
+        /* volatile is used below to prevent aggressive optimizations which may change
+         * the result of the error calculations. These volatiles wer e included in the
+         * original C code and may perhaps still be useful, e.g. if someone compiles with
+         * --ffastmath.
+         */
 
-const double2 DD_C_E = _DD_REAL_INIT(2.718281828459045091e+00, 1.445646891729250158e-16);
-const double2 DD_C_LOG2 = _DD_REAL_INIT(6.931471805599452862e-01, 2.319046813846299558e-17);
-const double2 DD_C_LOG10 = _DD_REAL_INIT(2.302585092994045901e+00, -2.170756223382249351e-16);
-
-#ifdef DD_C_NAN_IS_CONST
-const double2 DD_C_NAN = _DD_REAL_INIT(NAN, NAN);
-const double2 DD_C_INF = _DD_REAL_INIT(INFINITY, INFINITY);
-const double2 DD_C_NEGINF = _DD_REAL_INIT(-INFINITY, -INFINITY);
-#endif /* NAN */
-
-/* This routine is called whenever a fatal error occurs. */
-static volatile int errCount = 0;
-void dd_error(const char *msg) {
-    errCount++;
-    /* if (msg) { */
-    /*     fprintf(stderr, "ERROR %s\n", msg); */
-    /* } */
-}
-
-int get_double_expn(double x) {
-    int i = 0;
-    double y;
-    if (x == 0.0) {
-        return INT_MIN;
-    }
-    if (isinf(x) || isnan(x)) {
-        return INT_MAX;
-    }
-
-    y = fabs(x);
-    if (y < 1.0) {
-        while (y < 1.0) {
-            y *= 2.0;
-            i++;
+        /* Computes fl(a+b) and err(a+b).  Assumes |a| >= |b|. */
+        SPECFUN_HOST_DEVICE inline double quick_two_sum(double a, double b, double *err) {
+            volatile double s = a + b;
+            volatile double c = s - a;
+            *err = b - c;
+            return s;
         }
-        return -i;
-    } else if (y >= 2.0) {
-        while (y >= 2.0) {
-            y *= 0.5;
-            i++;
+
+        /* Computes fl(a+b) and err(a+b).  */
+        SPECFUN_HOST_DEVICE inline double two_sum(double a, double b, double *err) {
+            volatile double s = a + b;
+            volatile double c = s - a;
+            volatile double d = b - c;
+            volatile double e = s - c;
+            *err = (a - e) + d;
+            return s;
         }
-        return i;
-    }
-    return 0;
-}
 
-/* ######################################################################## */
-/* # Exponentiation */
-/* ######################################################################## */
-
-/* Computes the square root of the double-double number dd.
-   NOTE: dd must be a non-negative number.                   */
-
-double2 dd_sqrt(const double2 a) {
-    /* Strategy:  Use Karp's trick:  if x is an approximation
-       to sqrt(a), then
-
-          sqrt(a) = a*x + [a - (a*x)^2] * x / 2   (approx)
-
-       The approximation is accurate to twice the accuracy of x.
-       Also, the multiplication (a*x) and [-]*x can be done with
-       only half the precision.
-    */
-    double x, ax;
-
-    if (dd_is_zero(a))
-        return DD_C_ZERO;
-
-    if (dd_is_negative(a)) {
-        dd_error("(dd_sqrt): Negative argument.");
-        return DD_C_NAN;
-    }
-
-    x = 1.0 / sqrt(a.x[0]);
-    ax = a.x[0] * x;
-    return dd_add_d_d(ax, dd_sub(a, dd_sqr_d(ax)).x[0] * (x * 0.5));
-}
-
-/* Computes the square root of a double in double-double precision.
-   NOTE: d must not be negative.                                   */
-
-double2 dd_sqrt_d(double d) { return dd_sqrt(dd_create_d(d)); }
-
-/* Computes the n-th root of the double-double number a.
-   NOTE: n must be a positive integer.
-   NOTE: If n is even, then a must not be negative.       */
-
-double2 dd_nroot(const double2 a, int n) {
-    /* Strategy:  Use Newton iteration for the function
-
-            f(x) = x^(-n) - a
-
-       to find its root a^{-1/n}.  The iteration is thus
-
-            x' = x + x * (1 - a * x^n) / n
-
-       which converges quadratically.  We can then find
-      a^{1/n} by taking the reciprocal.
-    */
-    double2 r, x;
-
-    if (n <= 0) {
-        dd_error("(dd_nroot): N must be positive.");
-        return DD_C_NAN;
-    }
-
-    if (n % 2 == 0 && dd_is_negative(a)) {
-        dd_error("(dd_nroot): Negative argument.");
-        return DD_C_NAN;
-    }
-
-    if (n == 1) {
-        return a;
-    }
-    if (n == 2) {
-        return dd_sqrt(a);
-    }
-
-    if (dd_is_zero(a))
-        return DD_C_ZERO;
-
-    /* Note  a^{-1/n} = exp(-log(a)/n) */
-    r = dd_abs(a);
-    x = dd_create_d(exp(-log(r.x[0]) / n));
-
-    /* Perform Newton's iteration. */
-    x = dd_add(x, dd_mul(x, dd_sub_d_dd(1.0, dd_div_dd_d(dd_mul(r, dd_npwr(x, n)), DD_STATIC_CAST(double, n)))));
-    if (a.x[0] < 0.0) {
-        x = dd_neg(x);
-    }
-    return dd_inv(x);
-}
-
-/* Computes the n-th power of a double-double number.
-   NOTE:  0^0 causes an error.                         */
-
-double2 dd_npwr(const double2 a, int n) {
-    double2 r = a;
-    double2 s = DD_C_ONE;
-    int N = abs(n);
-    if (N == 0) {
-        if (dd_is_zero(a)) {
-            dd_error("(dd_npwr): Invalid argument.");
-            return DD_C_NAN;
+        /* Computes fl(a*b) and err(a*b). */
+        SPECFUN_HOST_DEVICE inline double two_prod(double a, double b, double *err) {
+            volatile double p = a * b;
+            *err = std::fma(a, b, -p);
+            return p;
         }
-        return DD_C_ONE;
-    }
 
-    if (N > 1) {
-        /* Use binary exponentiation */
-        while (N > 0) {
-            if (N % 2 == 1) {
-                s = dd_mul(s, r);
+        /* Computes fl(a*a) and err(a*a).  Faster than the above method. */
+        SPECFUN_HOST_DEVICE inline double two_sqr(double a, double *err) {
+            volatile double p = a * a;
+            *err = std::fma(a, a, -p);
+            return p;
+        }
+
+        /* Computes the nearest integer to d. */
+        SPECFUN_HOST_DEVICE inline double two_nint(double d) {
+            if (d == std::floor(d)) {
+                return d;
             }
-            N /= 2;
-            if (N > 0) {
-                r = dd_sqr(r);
+            return std::floor(d + 0.5);
+        }
+
+        struct double_double {
+            double hi, lo;
+
+            double_double() = default;
+            double_double(double high, double low) : hi(high), lo(low) {}
+            explicit double_double(double high) : hi(high), lo(0.0) {}
+
+            SPECFUN_HOST_DEVICE explicit operator double() const { return hi; }
+            SPECFUN_HOST_DEVICE explicit operator int() const { return static_cast<int>(hi); }
+        };
+
+        // Arithmetic operations
+
+        SPECFUN_HOST_DEVICE inline double_double operator-(const double_double &x) {
+            return double_double(-x.hi, -x.lo);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator+(const double_double &lhs, const double_double &rhs) {
+            /* This one satisfies IEEE style error bound,
+               due to K. Briggs and W. Kahan.                   */
+            double s1, s2, t1, t2;
+
+            s1 = two_sum(lhs.hi, rhs.hi, &s2);
+            t1 = two_sum(lhs.lo, rhs.lo, &t2);
+            s2 += t1;
+            s1 = quick_two_sum(s1, s2, &s2);
+            s2 += t2;
+            s1 = quick_two_sum(s1, s2, &s2);
+            return double_double(s1, s2);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator+(const double_double &lhs, const double rhs) {
+            double s1, s2;
+            s1 = two_sum(lhs.hi, rhs, &s2);
+            s2 += lhs.lo;
+            s1 = quick_two_sum(s1, s2, &s2);
+            return double_double(s1, s2);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator+(const double lhs, const double_double &rhs) {
+            double s1, s2;
+            s1 = two_sum(lhs, rhs.hi, &s2);
+            s2 += rhs.lo;
+            s1 = quick_two_sum(s1, s2, &s2);
+            return double_double(s1, s2);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator-(const double_double &lhs, const double_double &rhs) {
+            return lhs + (-rhs);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator-(const double_double &lhs, const double rhs) {
+            double s1, s2;
+            s1 = two_sum(lhs.hi, -rhs, &s2);
+            s2 += lhs.lo;
+            s1 = quick_two_sum(s1, s2, &s2);
+            return double_double(s1, s2);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator-(const double lhs, const double_double &rhs) {
+            double s1, s2;
+            s1 = two_sum(lhs, -rhs.hi, &s2);
+            s2 -= rhs.lo;
+            s1 = quick_two_sum(s1, s2, &s2);
+            return double_double(s1, s2);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator*(const double_double &lhs, const double_double &rhs) {
+            double p1, p2;
+            p1 = two_prod(lhs.hi, rhs.hi, &p2);
+            p2 += (lhs.hi * rhs.lo + lhs.lo * rhs.hi);
+            p1 = quick_two_sum(p1, p2, &p2);
+            return double_double(p1, p2);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator*(const double_double &lhs, const double rhs) {
+            double p1, p2, e1, e2;
+            p1 = two_prod(lhs.hi, rhs, &e1);
+            p2 = two_prod(lhs.lo, rhs, &e2);
+            p1 = quick_two_sum(p1, e2 + p2 + e1, &e1);
+            return double_double(p1, e1);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator*(const double lhs, const double_double &rhs) {
+            double p1, p2, e1, e2;
+            p1 = two_prod(lhs, rhs.hi, &e1);
+            p2 = two_prod(lhs, rhs.lo, &e2);
+            p1 = quick_two_sum(p1, e2 + p2 + e1, &e1);
+            return double_double(p1, e1);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator/(const double_double &lhs, const double_double &rhs) {
+            double q1, q2, q3;
+            double_double r;
+
+            q1 = lhs.hi / rhs.hi; /* approximate quotient */
+
+            r = lhs - rhs * q1;
+
+            q2 = r.hi / rhs.hi;
+            r = r - rhs * q2;
+
+            q3 = r.hi / rhs.hi;
+
+            q1 = quick_two_sum(q1, q2, &q2);
+            r = double_double(q1, q2) + q3;
+            return r;
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator/(const double_double &lhs, const double rhs) {
+            return lhs / double_double(rhs);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double operator/(const double lhs, const double_double &rhs) {
+            return double_double(lhs) / rhs;
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator==(const double_double &lhs, const double_double &rhs) {
+            return (lhs.hi == rhs.hi && lhs.lo == rhs.lo);
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator==(const double_double &lhs, const double rhs) {
+            return (lhs.hi == rhs && lhs.lo == 0.0);
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator==(const double lhs, const double_double &rhs) {
+            return (lhs == rhs.hi) && (rhs.lo == 0.0);
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator!=(const double_double &lhs, const double_double &rhs) {
+            return (lhs.hi != rhs.hi) || (lhs.lo != rhs.lo);
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator!=(const double_double &lhs, const double rhs) {
+            return (lhs.hi != rhs) || (lhs.lo != 0.0);
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator!=(const double lhs, const double_double &rhs) {
+            return (rhs.hi != lhs) || (rhs.lo != 0.0);
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator<(const double_double &lhs, const double_double &rhs) {
+            if (lhs.hi < rhs.hi) {
+                return true;
             }
-        }
-    } else {
-        s = r;
-    }
-
-    /* Compute the reciprocal if n is negative. */
-    if (n < 0) {
-        return dd_inv(s);
-    }
-
-    return s;
-}
-
-double2 dd_npow(const double2 a, int n) { return dd_npwr(a, n); }
-
-double2 dd_pow(const double2 a, const double2 b) { return dd_exp(dd_mul(b, dd_log(a))); }
-
-/* ######################################################################## */
-/* # Exp/Log functions */
-/* ######################################################################## */
-
-static const double2 inv_fact[] = {
-    {{1.66666666666666657e-01, 9.25185853854297066e-18}},  {{4.16666666666666644e-02, 2.31296463463574266e-18}},
-    {{8.33333333333333322e-03, 1.15648231731787138e-19}},  {{1.38888888888888894e-03, -5.30054395437357706e-20}},
-    {{1.98412698412698413e-04, 1.72095582934207053e-22}},  {{2.48015873015873016e-05, 2.15119478667758816e-23}},
-    {{2.75573192239858925e-06, -1.85839327404647208e-22}}, {{2.75573192239858883e-07, 2.37677146222502973e-23}},
-    {{2.50521083854417202e-08, -1.44881407093591197e-24}}, {{2.08767569878681002e-09, -1.20734505911325997e-25}},
-    {{1.60590438368216133e-10, 1.25852945887520981e-26}},  {{1.14707455977297245e-11, 2.06555127528307454e-28}},
-    {{7.64716373181981641e-13, 7.03872877733453001e-30}},  {{4.77947733238738525e-14, 4.39920548583408126e-31}},
-    {{2.81145725434552060e-15, 1.65088427308614326e-31}}};
-// static const int n_inv_fact = sizeof(inv_fact) / sizeof(inv_fact[0]);
-
-/* Exponential.  Computes exp(x) in double-double precision. */
-
-double2 dd_exp(const double2 a) {
-    /* Strategy:  We first reduce the size of x by noting that
-
-            exp(kr + m * log(2)) = 2^m * exp(r)^k
-
-       where m and k are integers.  By choosing m appropriately
-       we can make |kr| <= log(2) / 2 = 0.347.  Then exp(r) is
-       evaluated using the familiar Taylor series.  Reducing the
-       argument substantially speeds up the convergence.       */
-
-    const double k = 512.0;
-    const double inv_k = 1.0 / k;
-    double m;
-    double2 r, s, t, p;
-    int i = 0;
-
-    if (a.x[0] <= -709.0) {
-        return DD_C_ZERO;
-    }
-
-    if (a.x[0] >= 709.0) {
-        return DD_C_INF;
-    }
-
-    if (dd_is_zero(a)) {
-        return DD_C_ONE;
-    }
-
-    if (dd_is_one(a)) {
-        return DD_C_E;
-    }
-
-    m = floor(a.x[0] / DD_C_LOG2.x[0] + 0.5);
-    r = dd_mul_pwr2(dd_sub(a, dd_mul_dd_d(DD_C_LOG2, m)), inv_k);
-
-    p = dd_sqr(r);
-    s = dd_add(r, dd_mul_pwr2(p, 0.5));
-    p = dd_mul(p, r);
-    t = dd_mul(p, inv_fact[0]);
-    do {
-        s = dd_add(s, t);
-        p = dd_mul(p, r);
-        ++i;
-        t = dd_mul(p, inv_fact[i]);
-    } while (fabs(dd_to_double(t)) > inv_k * DD_C_EPS && i < 5);
-
-    s = dd_add(s, t);
-
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(dd_mul_pwr2(s, 2.0), dd_sqr(s));
-    s = dd_add(s, DD_C_ONE);
-
-    return dd_ldexp(s, DD_STATIC_CAST(int, m));
-}
-
-double2 dd_exp_d(const double a) { return dd_exp(dd_create(a, 0)); }
-
-/* Logarithm.  Computes log(x) in double-double precision.
-   This is a natural logarithm (i.e., base e).            */
-double2 dd_log(const double2 a) {
-    /* Strategy.  The Taylor series for log converges much more
-       slowly than that of exp, due to the lack of the factorial
-       term in the denominator.  Hence this routine instead tries
-       to determine the root of the function
-
-           f(x) = exp(x) - a
-
-       using Newton iteration.  The iteration is given by
-
-           x' = x - f(x)/f'(x)
-              = x - (1 - a * exp(-x))
-              = x + a * exp(-x) - 1.
-
-       Only one iteration is needed, since Newton's iteration
-       approximately doubles the number of digits per iteration. */
-    double2 x;
-
-    if (dd_is_one(a)) {
-        return DD_C_ZERO;
-    }
-
-    if (a.x[0] <= 0.0) {
-        dd_error("(dd_log): Non-positive argument.");
-        return DD_C_NAN;
-    }
-
-    x = dd_create_d(log(a.x[0])); /* Initial approximation */
-
-    /* x = x + a * exp(-x) - 1.0; */
-    x = dd_add(x, dd_sub(dd_mul(a, dd_exp(dd_neg(x))), DD_C_ONE));
-    return x;
-}
-
-double2 dd_log1p(const double2 a) {
-    double2 ans;
-    double la, elam1, ll;
-    if (a.x[0] <= -1.0) {
-        return DD_C_NEGINF;
-    }
-    la = log1p(a.x[0]);
-    elam1 = expm1(la);
-    ll = log1p(a.x[1] / (1 + a.x[0]));
-    if (a.x[0] > 0) {
-        ll -= (elam1 - a.x[0]) / (elam1 + 1);
-    }
-    ans = dd_add_d_d(la, ll);
-    return ans;
-}
-
-double2 dd_log10(const double2 a) { return dd_div(dd_log(a), DD_C_LOG10); }
-
-double2 dd_log_d(double a) { return dd_log(dd_create(a, 0)); }
-
-static const double2 expm1_numer[] = {{{-0.028127670288085938, 1.46e-37}},
-                                      {{0.5127815691121048, -4.248816580490825e-17}},
-                                      {{-0.0632631785207471, 4.733650586348708e-18}},
-                                      {{0.01470328560687425, -4.57569727474415e-20}},
-                                      {{-0.0008675686051689528, 2.340010361165805e-20}},
-                                      {{8.812635961829116e-05, 2.619804163788941e-21}},
-                                      {{-2.596308786770631e-06, -1.6196413688647164e-22}},
-                                      {{1.422669108780046e-07, 1.2956999470135368e-23}},
-                                      {{-1.5995603306536497e-09, 5.185121944095551e-26}},
-                                      {{4.526182006900779e-11, -1.9856249941108077e-27}}};
-
-static const double2 expm1_denom[] = {{{1.0, 0.0}},
-                                      {{-0.4544126470907431, -2.2553855773661143e-17}},
-                                      {{0.09682713193619222, -4.961446925746919e-19}},
-                                      {{-0.012745248725908178, -6.0676821249478945e-19}},
-                                      {{0.001147361387158326, 1.3575817248483204e-20}},
-                                      {{-7.370416847725892e-05, 3.720369981570573e-21}},
-                                      {{3.4087499397791556e-06, -3.3067348191741576e-23}},
-                                      {{-1.1114024704296196e-07, -3.313361038199987e-24}},
-                                      {{2.3987051614110847e-09, 1.102474920537503e-25}},
-                                      {{-2.947734185911159e-11, -9.4795654767864e-28}},
-                                      {{1.32220659910223e-13, 6.440648413523595e-30}}};
-
-//
-// Rational approximation of expm1(x) for -1/2 < x < 1/2
-//
-static double2 expm1_rational_approx(const double2 x) {
-    const double2 Y = dd_create(1.028127670288086, 0.0);
-    const double2 num = dd_polyeval(expm1_numer, 9, x);
-    const double2 den = dd_polyeval(expm1_denom, 10, x);
-    return dd_add(dd_mul(x, Y), dd_mul(x, dd_div(num, den)));
-}
-
-//
-// This is a translation of Boost's `expm1_imp` for quad precision
-// for use with double2.
-//
-
-#define LOG_MAX_VALUE 709.782712893384
-
-double2 dd_expm1(const double2 x) {
-    double2 a = dd_abs(x);
-    if (dd_hi(a) > 0.5) {
-        if (dd_hi(a) > LOG_MAX_VALUE) {
-            if (dd_hi(x) > 0) {
-                return DD_C_INF;
+            if (lhs.hi > rhs.hi) {
+                return false;
             }
-            return DD_C_NEGONE;
+            return lhs.lo < rhs.lo;
         }
-        return dd_sub_dd_d(dd_exp(x), 1.0);
-    }
-    return expm1_rational_approx(x);
-}
 
-double2 dd_rand(void) {
-    static const double m_const = 4.6566128730773926e-10; /* = 2^{-31} */
-    double m = m_const;
-    double2 r = DD_C_ZERO;
-    double d;
-    int i;
-
-    /* Strategy:  Generate 31 bits at a time, using lrand48
-       random number generator.  Shift the bits, and reapeat
-       4 times. */
-
-    for (i = 0; i < 4; i++, m *= m_const) {
-        //    d = lrand48() * m;
-        d = rand() * m;
-        r = dd_add_dd_d(r, d);
-    }
-
-    return r;
-}
-
-/* dd_polyeval(c, n, x)
-   Evaluates the given n-th degree polynomial at x.
-   The polynomial is given by the array of (n+1) coefficients. */
-
-double2 dd_polyeval(const double2 *c, int n, const double2 x) {
-    /* Just use Horner's method of polynomial evaluation. */
-    double2 r = c[n];
-    int i;
-
-    for (i = n - 1; i >= 0; i--) {
-        r = dd_mul(r, x);
-        r = dd_add(r, c[i]);
-    }
-
-    return r;
-}
-
-/* dd_polyroot(c, n, x0)
-   Given an n-th degree polynomial, finds a root close to
-   the given guess x0.  Note that this uses simple Newton
-   iteration scheme, and does not work for multiple roots.  */
-
-double2 dd_polyroot(const double2 *c, int n, const double2 x0, int max_iter, double thresh) {
-    double2 x = x0;
-    double2 f;
-    double2 *d = DD_STATIC_CAST(double2 *, calloc(sizeof(double2), n));
-    int conv = 0;
-    int i;
-    double max_c = fabs(dd_to_double(c[0]));
-    double v;
-
-    if (thresh == 0.0) {
-        thresh = DD_C_EPS;
-    }
-
-    /* Compute the coefficients of the derivatives. */
-    for (i = 1; i <= n; i++) {
-        v = fabs(dd_to_double(c[i]));
-        if (v > max_c) {
-            max_c = v;
+        SPECFUN_HOST_DEVICE inline bool operator<(const double_double &lhs, const double rhs) {
+            if (lhs.hi < rhs) {
+                return true;
+            }
+            if (lhs.hi > rhs) {
+                return false;
+            }
+            return lhs.lo < 0.0;
         }
-        d[i - 1] = dd_mul_dd_d(c[i], DD_STATIC_CAST(double, i));
-    }
-    thresh *= max_c;
 
-    /* Newton iteration. */
-    for (i = 0; i < max_iter; i++) {
-        f = dd_polyeval(c, n, x);
-
-        if (fabs(dd_to_double(f)) < thresh) {
-            conv = 1;
-            break;
+        template <typename T>
+        SPECFUN_HOST_DEVICE bool operator>(const double_double &lhs, const T &rhs) {
+            return rhs < lhs;
         }
-        x = dd_sub(x, (dd_div(f, dd_polyeval(d, n - 1, x))));
-    }
-    free(d);
 
-    if (!conv) {
-        dd_error("(dd_polyroot): Failed to converge.");
-        return DD_C_NAN;
-    }
+        SPECFUN_HOST_DEVICE inline bool operator<(const double lhs, const double_double &rhs) { return rhs > lhs; }
 
-    return x;
-}
+        SPECFUN_HOST_DEVICE inline bool operator>(const double lhs, const double_double &rhs) { return rhs < lhs; }
+
+        SPECFUN_HOST_DEVICE inline bool operator<=(const double_double &lhs, const double_double &rhs) {
+            if (lhs.hi < rhs.hi) {
+                return true;
+            }
+            if (lhs.hi > rhs.hi) {
+                return false;
+            }
+            return lhs.lo <= rhs.lo;
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator<=(const double_double &lhs, const double rhs) {
+            if (lhs.hi < rhs) {
+                return true;
+            }
+            if (lhs.hi > rhs) {
+                return false;
+            }
+            return lhs.lo <= 0.0;
+        }
+
+        template <typename T>
+        SPECFUN_HOST_DEVICE bool operator>=(const double_double &lhs, const T &rhs) {
+            return rhs <= lhs;
+        }
+
+        SPECFUN_HOST_DEVICE inline bool operator>=(const double lhs, const double_double &rhs) { return rhs <= lhs; }
+
+        SPECFUN_HOST_DEVICE inline bool operator<=(const double lhs, const double_double &rhs) { return rhs >= lhs; }
+
+        // Math functions
+
+        SPECFUN_HOST_DEVICE inline double_double mul_pwr2(const double_double &lhs, double rhs) {
+            /* double-double * double,  where double is a power of 2. */
+            return double_double(lhs.hi * rhs, lhs.lo * rhs);
+        }
+
+        SPECFUN_HOST_DEVICE inline bool isfinite(const double_double &a) { return std::isfinite(a.hi); }
+
+        SPECFUN_HOST_DEVICE inline bool isinf(const double_double &a) { return std::isinf(a.hi); }
+
+        SPECFUN_HOST_DEVICE inline double_double round(const double_double &a) {
+            double hi = two_nint(a.hi);
+            double lo;
+
+            if (hi == a.hi) {
+                /* High word is an integer already.  Round the low word.*/
+                lo = two_nint(a.lo);
+
+                /* Renormalize. This is needed if a.hi = some integer, a.lo = 1/2.*/
+                hi = quick_two_sum(hi, lo, &lo);
+            } else {
+                /* High word is not an integer. */
+                lo = 0.0;
+                if (std::abs(hi - a.hi) == 0.5 && a.lo < 0.0) {
+                    /* There is a tie in the high word, consult the low word
+                       to break the tie. */
+                    hi -= 1.0; /* NOTE: This does not cause INEXACT. */
+                }
+            }
+            return double_double(hi, lo);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double floor(const double_double &a) {
+            double hi = std::floor(a.hi);
+            double lo = 0.0;
+
+            if (hi == a.hi) {
+                /* High word is integer already.  Round the low word. */
+                lo = std::floor(a.lo);
+                hi = quick_two_sum(hi, lo, &lo);
+            }
+
+            return double_double(hi, lo);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double ceil(const double_double &a) {
+            double hi = std::ceil(a.hi);
+            double lo = 0.0;
+
+            if (hi == a.hi) {
+                /* High word is integer already.  Round the low word. */
+                lo = std::ceil(a.lo);
+                hi = quick_two_sum(hi, lo, &lo);
+            }
+
+            return double_double(hi, lo);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double trunc(const double_double &a) {
+            return (a.hi >= 0.0) ? floor(a) : ceil(a);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double abs(const double_double &a) { return (a.hi < 0.0 ? -a : a); }
+
+        SPECFUN_HOST_DEVICE inline double_double fmod(const double_double &lhs, const double_double &rhs) {
+            double_double n = trunc(lhs / rhs);
+            return lhs - rhs * n;
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double remainder(const double_double &lhs, const double_double &rhs) {
+            double_double n = round(lhs / rhs);
+            return lhs - rhs * n;
+        }
+
+        SPECFUN_HOST_DEVICE inline std::pair<double_double, double_double> divrem(const double_double &lhs,
+                                                                                  const double_double &rhs) {
+            double_double n = round(lhs / rhs);
+            double_double remainder = lhs - n * rhs;
+            return {n, remainder};
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double square(const double_double &a) {
+            double p1, p2;
+            double s1, s2;
+            p1 = two_sqr(a.hi, &p2);
+            p2 += 2.0 * a.hi * a.lo;
+            p2 += a.lo * a.lo;
+            s1 = quick_two_sum(p1, p2, &s2);
+            return double_double(s1, s2);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double square(const double a) {
+            double p1, p2;
+            p1 = two_sqr(a, &p2);
+            return double_double(p1, p2);
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double ldexp(const double_double &a, int expt) {
+            // float128 * (2.0 ^ expt)
+            return double_double(std::ldexp(a.hi, expt), std::ldexp(a.lo, expt));
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double frexp(const double_double &a, int *expt) {
+            //    r"""return b and l s.t. 0.5<=|b|<1 and 2^l == a
+            //    0.5<=|b[0]|<1.0 or |b[0]| == 1.0 and b[0]*b[1]<0
+            //    """
+            int exponent;
+            double man = std::frexp(a.hi, &exponent);
+            double b1 = std::ldexp(a.lo, -exponent);
+            if (std::abs(man) == 0.5 && man * b1 < 0) {
+                man *= 2;
+                b1 *= 2;
+                exponent -= 1;
+            }
+            *expt = exponent;
+            return double_double(man, b1);
+        }
+
+        // Numeric limits
+
+        SPECFUN_HOST_DEVICE inline double_double quiet_NaN() {
+            return double_double(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double infinity() {
+            return double_double(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+        }
+
+        const double_double inv_fact[] = {double_double(1.66666666666666657e-01, 9.25185853854297066e-18),
+                                          double_double(4.16666666666666644e-02, 2.31296463463574266e-18),
+                                          double_double(8.33333333333333322e-03, 1.15648231731787138e-19),
+                                          double_double(1.38888888888888894e-03, -5.30054395437357706e-20),
+                                          double_double(1.98412698412698413e-04, 1.72095582934207053e-22),
+                                          double_double(2.48015873015873016e-05, 2.15119478667758816e-23),
+                                          double_double(2.75573192239858925e-06, -1.85839327404647208e-22),
+                                          double_double(2.75573192239858883e-07, 2.37677146222502973e-23),
+                                          double_double(2.50521083854417202e-08, -1.44881407093591197e-24),
+                                          double_double(2.08767569878681002e-09, -1.20734505911325997e-25),
+                                          double_double(1.60590438368216133e-10, 1.25852945887520981e-26),
+                                          double_double(1.14707455977297245e-11, 2.06555127528307454e-28),
+                                          double_double(7.64716373181981641e-13, 7.03872877733453001e-30),
+                                          double_double(4.77947733238738525e-14, 4.39920548583408126e-31),
+                                          double_double(2.81145725434552060e-15, 1.65088427308614326e-31)};
+
+        // Math constants
+        const double_double E = double_double(2.718281828459045091e+00, 1.445646891729250158e-16);
+        const double_double LOG2 = double_double(6.931471805599452862e-01, 2.319046813846299558e-17);
+        const double EPS = 4.93038065763132e-32; // 2^-104
+
+        /* Exponential.  Computes exp(x) in double-double precision. */
+        SPECFUN_HOST_DEVICE inline double_double exp(const double_double &a) {
+            /* Strategy:  We first reduce the size of x by noting that
+
+               exp(kr + m * log(2)) = 2^m * exp(r)^k
+
+               where m and k are integers.  By choosing m appropriately
+               we can make |kr| <= log(2) / 2 = 0.347.  Then exp(r) is
+               evaluated using the familiar Taylor series.  Reducing the
+               argument substantially speeds up the convergence.       */
+
+            constexpr double k = 512.0;
+            constexpr double inv_k = 1.0 / k;
+            double m;
+            double_double r, s, t, p;
+            int i = 0;
+
+            if (a.hi <= -709.0) {
+                return double_double(0.0);
+            }
+
+            if (a.hi >= 709.0) {
+                return infinity();
+            }
+
+            if (a == 0.0) {
+                return double_double(1.0);
+            }
+
+            if (a == 1.0) {
+                return E;
+            }
+
+            m = std::floor(a.hi / LOG2.hi + 0.5);
+            r = mul_pwr2(double_double(a) - LOG2 * m, inv_k);
+
+            p = square(r);
+            s = r + mul_pwr2(p, 0.5);
+            p = p * r;
+            t = p * inv_fact[0];
+            do {
+                s = s + t;
+                p = p * r;
+                ++i;
+                t = p * inv_fact[i];
+            } while ((std::abs(static_cast<double>(t)) > inv_k * EPS) && i < 5);
+
+            s = s + t;
+
+            for (int j = 0; j < 9; j++) {
+                s = mul_pwr2(s, 2.0) + square(s);
+            }
+            s = s + 1.0;
+
+            return ldexp(s, static_cast<int>(m));
+        }
+
+        /* Logarithm.  Computes log(x) in double-double precision.
+           This is a natural logarithm (i.e., base e).            */
+        SPECFUN_HOST_DEVICE inline double_double log(const double_double &a) {
+            /* Strategy.  The Taylor series for log converges much more
+               slowly than that of exp, due to the lack of the factorial
+               term in the denominator.  Hence this routine instead tries
+               to determine the root of the function
+
+               f(x) = exp(x) - a
+
+               using Newton iteration.  The iteration is given by
+
+               x' = x - f(x)/f'(x)
+               = x - (1 - a * exp(-x))
+               = x + a * exp(-x) - 1.
+
+               Only one iteration is needed, since Newton's iteration
+               approximately doubles the number of digits per iteration. */
+            double_double x;
+
+            if (a == 1.0) {
+                return double_double(0.0);
+            }
+
+            if (a.hi <= 0.0) {
+                return quiet_NaN();
+            }
+
+            x = double_double(std::log(a.hi)); /* Initial approximation */
+
+            /* x = x + a * exp(-x) - 1.0; */
+            x = x + a * exp(-x) - 1.0;
+            return x;
+        }
+
+        SPECFUN_HOST_DEVICE inline double_double log1p(const double_double &a) {
+            double_double ans;
+            double la, elam1, ll;
+            if (a.hi <= -1.0) {
+                return -infinity();
+            }
+            la = std::log1p(a.hi);
+            elam1 = special::cephes::expm1(la);
+            ll = std::log1p(a.lo / (1 + a.hi));
+            if (a.hi > 0) {
+                ll -= (elam1 - a.hi) / (elam1 + 1);
+            }
+            ans = double_double(la) + ll;
+            return ans;
+        }
+    } // namespace detail
+
+} // namespace cephes
+} // namespace special

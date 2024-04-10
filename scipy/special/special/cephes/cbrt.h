@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     cbrt.c
  *
  *     Cube root
@@ -39,76 +43,89 @@
  * Copyright 1984, 1991 by Stephen L. Moshier
  * Direct inquiries to 30 Frost Street, Cambridge, MA 02140
  */
+#pragma once
 
-#include "mconf.h"
+#include "../config.h"
 
-static double CBRT2 = 1.2599210498948731647672;
-static double CBRT4 = 1.5874010519681994747517;
-static double CBRT2I = 0.79370052598409973737585;
-static double CBRT4I = 0.62996052494743658238361;
+namespace special {
+namespace cephes {
 
-double cbrt(double x) {
-    int e, rem, sign;
-    double z;
+    namespace detail {
 
-    if (!cephes_isfinite(x))
-        return x;
-    if (x == 0)
-        return (x);
-    if (x > 0)
-        sign = 1;
-    else {
-        sign = -1;
-        x = -x;
-    }
+        constexpr double CBRT2 = 1.2599210498948731647672;
+        constexpr double CBRT4 = 1.5874010519681994747517;
+        constexpr double CBRT2I = 0.79370052598409973737585;
+        constexpr double CBRT4I = 0.62996052494743658238361;
 
-    z = x;
-    /* extract power of 2, leaving
-     * mantissa between 0.5 and 1
-     */
-    x = frexp(x, &e);
+        SPECFUN_HOST_DEVICE inline double cbrt(double x) {
+            int e, rem, sign;
+            double z;
 
-    /* Approximate cube root of number between .5 and 1,
-     * peak relative error = 9.2e-6
-     */
-    x = (((-1.3466110473359520655053e-1 * x + 5.4664601366395524503440e-1) * x - 9.5438224771509446525043e-1) * x +
-         1.1399983354717293273738e0) *
-            x +
-        4.0238979564544752126924e-1;
+            if (!std::isfinite(x)) {
+                return x;
+            }
+            if (x == 0) {
+                return (x);
+            }
+            if (x > 0) {
+                sign = 1;
+            } else {
+                sign = -1;
+                x = -x;
+            }
 
-    /* exponent divided by 3 */
-    if (e >= 0) {
-        rem = e;
-        e /= 3;
-        rem -= 3 * e;
-        if (rem == 1)
-            x *= CBRT2;
-        else if (rem == 2)
-            x *= CBRT4;
-    }
+            z = x;
+            /* extract power of 2, leaving
+             * mantissa between 0.5 and 1
+             */
+            x = std::frexp(x, &e);
 
-    /* argument less than 1 */
+            /* Approximate cube root of number between .5 and 1,
+             * peak relative error = 9.2e-6
+             */
+            x = (((-1.3466110473359520655053e-1 * x + 5.4664601366395524503440e-1) * x - 9.5438224771509446525043e-1) *
+                     x +
+                 1.1399983354717293273738e0) *
+                    x +
+                4.0238979564544752126924e-1;
 
-    else {
-        e = -e;
-        rem = e;
-        e /= 3;
-        rem -= 3 * e;
-        if (rem == 1)
-            x *= CBRT2I;
-        else if (rem == 2)
-            x *= CBRT4I;
-        e = -e;
-    }
+            /* exponent divided by 3 */
+            if (e >= 0) {
+                rem = e;
+                e /= 3;
+                rem -= 3 * e;
+                if (rem == 1) {
+                    x *= CBRT2;
+                } else if (rem == 2) {
+                    x *= CBRT4;
+                }
+            }
+            /* argument less than 1 */
+            else {
+                e = -e;
+                rem = e;
+                e /= 3;
+                rem -= 3 * e;
+                if (rem == 1) {
+                    x *= CBRT2I;
+                } else if (rem == 2) {
+                    x *= CBRT4I;
+                }
+                e = -e;
+            }
 
-    /* multiply by power of 2 */
-    x = ldexp(x, e);
+            /* multiply by power of 2 */
+            x = std::ldexp(x, e);
 
-    /* Newton iteration */
-    x -= (x - (z / (x * x))) * 0.33333333333333333333;
-    x -= (x - (z / (x * x))) * 0.33333333333333333333;
+            /* Newton iteration */
+            x -= (x - (z / (x * x))) * 0.33333333333333333333;
+            x -= (x - (z / (x * x))) * 0.33333333333333333333;
 
-    if (sign < 0)
-        x = -x;
-    return (x);
-}
+            if (sign < 0)
+                x = -x;
+            return (x);
+        }
+    } // namespace detail
+
+} // namespace cephes
+} // namespace special

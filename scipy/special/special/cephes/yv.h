@@ -1,42 +1,55 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*
  * Cephes Math Library Release 2.8: June, 2000
  * Copyright 1984, 1987, 2000 by Stephen L. Moshier
  */
+#pragma once
 
-#include "mconf.h"
+#include "../config.h"
+#include "../error.h"
 
-extern double MACHEP;
+#include "const.h"
+#include "jv.h"
+#include "yn.h"
 
-/*
- * Bessel function of noninteger order
- */
-double yv(double v, double x) {
-    double y, t;
-    int n;
+namespace special {
+namespace cephes {
 
-    n = v;
-    if (n == v) {
-        y = yn(n, x);
-        return (y);
-    } else if (v == floor(v)) {
-        /* Zero in denominator. */
-        sf_error("yv", SF_ERROR_DOMAIN, NULL);
-        return NAN;
-    }
+    /*
+     * Bessel function of noninteger order
+     */
+    SPECFUN_HOST_DEVICE inline double yv(double v, double x) {
+        double y, t;
+        int n;
 
-    t = M_PI * v;
-    y = (cos(t) * jv(v, x) - jv(-v, x)) / sin(t);
-
-    if (cephes_isinf(y)) {
-        if (v > 0) {
-            sf_error("yv", SF_ERROR_OVERFLOW, NULL);
-            return -INFINITY;
-        } else if (v < -1e10) {
-            /* Whether it's +inf or -inf is numerically ill-defined. */
-            sf_error("yv", SF_ERROR_DOMAIN, NULL);
-            return NAN;
+        n = v;
+        if (n == v) {
+            y = yn(n, x);
+            return (y);
+        } else if (v == std::floor(v)) {
+            /* Zero in denominator. */
+            set_error("yv", SF_ERROR_DOMAIN, NULL);
+            return std::numeric_limits<double>::quiet_NaN();
         }
-    }
 
-    return (y);
-}
+        t = M_PI * v;
+        y = (std::cos(t) * jv(v, x) - jv(-v, x)) / std::sin(t);
+
+        if (std::isinf(y)) {
+            if (v > 0) {
+                set_error("yv", SF_ERROR_OVERFLOW, NULL);
+                return -std::numeric_limits<double>::infinity();
+            } else if (v < -1e10) {
+                /* Whether it's +inf or -inf is numerically ill-defined. */
+                set_error("yv", SF_ERROR_DOMAIN, NULL);
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+        }
+
+        return (y);
+    }
+} // namespace cephes
+} // namespace special

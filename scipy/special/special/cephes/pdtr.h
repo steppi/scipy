@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     pdtr.c
  *
  *     Poisson distribution
@@ -124,45 +128,56 @@
  * Cephes Math Library Release 2.3:  March, 1995
  * Copyright 1984, 1987, 1995 by Stephen L. Moshier
  */
+#pragma once
 
-#include "mconf.h"
+#include "../config.h"
+#include "../error.h"
 
-double pdtrc(double k, double m) {
-    double v;
+#include "igam.h"
+#include "igami.h"
 
-    if (k < 0.0 || m < 0.0) {
-        sf_error("pdtrc", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
+namespace special {
+namespace cephes {
+
+    SPECFUN_HOST_DEVICE inline double pdtrc(double k, double m) {
+        double v;
+
+        if (k < 0.0 || m < 0.0) {
+            set_error("pdtrc", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+        if (m == 0.0) {
+            return 0.0;
+        }
+        v = std::floor(k) + 1;
+        return (igam(v, m));
     }
-    if (m == 0.0) {
-        return 0.0;
-    }
-    v = floor(k) + 1;
-    return (igam(v, m));
-}
 
-double pdtr(double k, double m) {
-    double v;
+    SPECFUN_HOST_DEVICE inline double pdtr(double k, double m) {
+        double v;
 
-    if (k < 0 || m < 0) {
-        sf_error("pdtr", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
+        if (k < 0 || m < 0) {
+            set_error("pdtr", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+        if (m == 0.0) {
+            return 1.0;
+        }
+        v = std::floor(k) + 1;
+        return (igamc(v, m));
     }
-    if (m == 0.0) {
-        return 1.0;
-    }
-    v = floor(k) + 1;
-    return (igamc(v, m));
-}
 
-double pdtri(int k, double y) {
-    double v;
+    SPECFUN_HOST_DEVICE inline double pdtri(int k, double y) {
+        double v;
 
-    if ((k < 0) || (y < 0.0) || (y >= 1.0)) {
-        sf_error("pdtri", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
+        if ((k < 0) || (y < 0.0) || (y >= 1.0)) {
+            set_error("pdtri", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+        v = k + 1;
+        v = igamci(v, y);
+        return (v);
     }
-    v = k + 1;
-    v = igamci(v, y);
-    return (v);
-}
+
+} // namespace cephes
+} // namespace special

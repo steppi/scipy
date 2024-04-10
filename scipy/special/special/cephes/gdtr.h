@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     gdtr.c
  *
  *     Gamma distribution function
@@ -93,33 +97,44 @@
  * Cephes Math Library Release 2.3:  March,1995
  * Copyright 1984, 1987, 1995 by Stephen L. Moshier
  */
+#pragma once
 
-#include "mconf.h"
+#include "../config.h"
+#include "../error.h"
 
-double gdtr(double a, double b, double x) {
+#include "igam.h"
+#include "igami.h"
 
-    if (x < 0.0) {
-        sf_error("gdtr", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
-    }
-    return (igam(b, a * x));
-}
+namespace special {
+namespace cephes {
 
-double gdtrc(double a, double b, double x) {
+    SPECFUN_HOST_DEVICE inline double gdtr(double a, double b, double x) {
 
-    if (x < 0.0) {
-        sf_error("gdtrc", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
-    }
-    return (igamc(b, a * x));
-}
-
-double gdtri(double a, double b, double y) {
-
-    if ((y < 0.0) || (y > 1.0) || (a <= 0.0) || (b < 0.0)) {
-        sf_error("gdtri", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
+        if (x < 0.0) {
+            sf_error("gdtr", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+        return (igam(b, a * x));
     }
 
-    return (igamci(b, 1.0 - y) / a);
-}
+    SPECFUN_HOST_DEVICE inline double gdtrc(double a, double b, double x) {
+
+        if (x < 0.0) {
+            set_error("gdtrc", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+        return (igamc(b, a * x));
+    }
+
+    SPECFUN_HOST_DEVICE inline double gdtri(double a, double b, double y) {
+
+        if ((y < 0.0) || (y > 1.0) || (a <= 0.0) || (b < 0.0)) {
+            sf_error("gdtri", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+
+        return (igamci(b, 1.0 - y) / a);
+    }
+
+} // namespace cephes
+} // namespace special

@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     fdtr.c
  *
  *     F distribution
@@ -159,50 +163,61 @@
  * Cephes Math Library Release 2.3:  March, 1995
  * Copyright 1984, 1987, 1995 by Stephen L. Moshier
  */
+#pragma once
 
-#include "mconf.h"
+#include "../config.h"
+#include "../error.h"
 
-double fdtrc(double a, double b, double x) {
-    double w;
+#include "incbet.h"
+#include "incbi.h"
 
-    if ((a <= 0.0) || (b <= 0.0) || (x < 0.0)) {
-        sf_error("fdtrc", SF_ERROR_DOMAIN, NULL);
-        return NAN;
+namespace special {
+namespace cephes {
+
+    SPECFUN_HOST_DEVICE inline double fdtrc(double a, double b, double x) {
+        double w;
+
+        if ((a <= 0.0) || (b <= 0.0) || (x < 0.0)) {
+            set_error("fdtrc", SF_ERROR_DOMAIN, NULL);
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+        w = b / (b + a * x);
+        return incbet(0.5 * b, 0.5 * a, w);
     }
-    w = b / (b + a * x);
-    return incbet(0.5 * b, 0.5 * a, w);
-}
 
-double fdtr(double a, double b, double x) {
-    double w;
+    SPECFUN_HOST_DEVICE inline double fdtr(double a, double b, double x) {
+        double w;
 
-    if ((a <= 0.0) || (b <= 0.0) || (x < 0.0)) {
-        sf_error("fdtr", SF_ERROR_DOMAIN, NULL);
-        return NAN;
+        if ((a <= 0.0) || (b <= 0.0) || (x < 0.0)) {
+            set_error("fdtr", SF_ERROR_DOMAIN, NULL);
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+        w = a * x;
+        w = w / (b + w);
+        return incbet(0.5 * a, 0.5 * b, w);
     }
-    w = a * x;
-    w = w / (b + w);
-    return incbet(0.5 * a, 0.5 * b, w);
-}
 
-double fdtri(double a, double b, double y) {
-    double w, x;
+    SPECFUN_HOST_DEVICE inline double fdtri(double a, double b, double y) {
+        double w, x;
 
-    if ((a <= 0.0) || (b <= 0.0) || (y <= 0.0) || (y > 1.0)) {
-        sf_error("fdtri", SF_ERROR_DOMAIN, NULL);
-        return NAN;
+        if ((a <= 0.0) || (b <= 0.0) || (y <= 0.0) || (y > 1.0)) {
+            set_error("fdtri", SF_ERROR_DOMAIN, NULL);
+            return NAN;
+        }
+        y = 1.0 - y;
+        /* Compute probability for x = 0.5.  */
+        w = incbet(0.5 * b, 0.5 * a, 0.5);
+        /* If that is greater than y, then the solution w < .5.
+         * Otherwise, solve at 1-y to remove cancellation in (b - b*w).  */
+        if (w > y || y < 0.001) {
+            w = incbi(0.5 * b, 0.5 * a, y);
+            x = (b - b * w) / (a * w);
+        } else {
+            w = incbi(0.5 * a, 0.5 * b, 1.0 - y);
+            x = b * w / (a * (1.0 - w));
+        }
+        return x;
     }
-    y = 1.0 - y;
-    /* Compute probability for x = 0.5.  */
-    w = incbet(0.5 * b, 0.5 * a, 0.5);
-    /* If that is greater than y, then the solution w < .5.
-     * Otherwise, solve at 1-y to remove cancellation in (b - b*w).  */
-    if (w > y || y < 0.001) {
-        w = incbi(0.5 * b, 0.5 * a, y);
-        x = (b - b * w) / (a * w);
-    } else {
-        w = incbi(0.5 * a, 0.5 * b, 1.0 - y);
-        x = b * w / (a * (1.0 - w));
-    }
-    return x;
-}
+
+} // namespace cephes
+} // namespace special

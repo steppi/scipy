@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     exp2.c
  *
  *     Base 2 exponential function
@@ -51,54 +55,68 @@
  * Cephes Math Library Release 2.3:  March, 1995
  * Copyright 1984, 1995 by Stephen L. Moshier
  */
+#pragma once
 
-#include "mconf.h"
+#include "../config.h"
 
-static double P[] = {
-    2.30933477057345225087E-2,
-    2.02020656693165307700E1,
-    1.51390680115615096133E3,
-};
+#include "polevl.h"
 
-static double Q[] = {
-    /* 1.00000000000000000000E0, */
-    2.33184211722314911771E2,
-    4.36821166879210612817E3,
-};
+namespace special {
+namespace cephes {
 
-#define MAXL2 1024.0
-#define MINL2 -1024.0
+    namespace detail {
 
-double exp2(double x) {
-    double px, xx;
-    short n;
+        constexpr double exp2_P[] = {
+            2.30933477057345225087E-2,
+            2.02020656693165307700E1,
+            1.51390680115615096133E3,
+        };
 
-    if (cephes_isnan(x))
+        constexpr double exp2_Q[] = {
+            /* 1.00000000000000000000E0, */
+            2.33184211722314911771E2,
+            4.36821166879210612817E3,
+        };
+
+        constexpr double exp2_MAXL2 = 1024.0;
+        constexpr double exp2_MINL2 = -1024.0;
+
+    } // namespace detail
+
+    SPECFUN_HOST_DEVICE inline double exp2(double x) {
+        double px, xx;
+        short n;
+
+        if (std::isnan(x)) {
+            return (x);
+        }
+        if (x > detail::exp2_MAXL2) {
+            return (std::numeric_limits<double>::infinity());
+        }
+
+        if (x < detail::exp2_MINL2) {
+            return (0.0);
+        }
+
+        xx = x; /* save x */
+        /* separate into integer and fractional parts */
+        px = std::floor(x + 0.5);
+        n = px;
+        x = x - px;
+
+        /* rational approximation
+         * exp2(x) = 1 +  2xP(xx)/(Q(xx) - P(xx))
+         * where xx = x**2
+         */
+        xx = x * x;
+        px = x * polevl(xx, detail::exp2_P, 2);
+        x = px / (p1evl(xx, detail::exp2_Q, 2) - px);
+        x = 1.0 + std::ldexp(x, 1);
+
+        /* scale by power of 2 */
+        x = std::ldexp(x, n);
         return (x);
-    if (x > MAXL2) {
-        return (INFINITY);
     }
 
-    if (x < MINL2) {
-        return (0.0);
-    }
-
-    xx = x; /* save x */
-    /* separate into integer and fractional parts */
-    px = floor(x + 0.5);
-    n = px;
-    x = x - px;
-
-    /* rational approximation
-     * exp2(x) = 1 +  2xP(xx)/(Q(xx) - P(xx))
-     * where xx = x**2
-     */
-    xx = x * x;
-    px = x * polevl(xx, P, 2);
-    x = px / (p1evl(xx, Q, 2) - px);
-    x = 1.0 + ldexp(x, 1);
-
-    /* scale by power of 2 */
-    x = ldexp(x, n);
-    return (x);
-}
+} // namespace cephes
+} // namespace special

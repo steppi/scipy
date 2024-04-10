@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*
  * Compute the Struve function.
  *
@@ -76,301 +80,302 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+#pragma once
+
+#include "../amos.h"
+#include "../config.h"
+#include "../error.h"
 
 #include "dd_real.h"
-#include "mconf.h"
+#include "gamma.h"
+#include "scipy_iv.h"
 
-#include "special_wrappers.h"
+namespace special {
+namespace cephes {
 
-#define STRUVE_MAXITER 10000
-#define SUM_EPS 1e-16 /* be sure we are in the tail of the sum */
-#define SUM_TINY 1e-100
-#define GOOD_EPS 1e-12
-#define ACCEPTABLE_EPS 1e-7
-#define ACCEPTABLE_ATOL 1e-300
+    namespace detail {
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+        constexpr int STRUVE_MAXITER = 10000;
+        constexpr double STRUVE_SUM_EPS = 1e-16; /* be sure we are in the tail of the sum */
+        constexpr double STRUVE_SUM_TINY = 1e-100;
+        constexpr double STRUVE_GOOD_EPS = 1e-12;
+        constexpr double STRUVE_ACCEPTABLE_EPS = 1e-7;
+        constexpr double STRUVE_ACCEPTABLE_ATOL = 1e-300;
 
-double struve_power_series(double v, double x, int is_h, double *err);
-double struve_asymp_large_z(double v, double z, int is_h, double *err);
-double struve_bessel_series(double v, double z, int is_h, double *err);
+        /*
+         * Large-z expansion for Struve H and L
+         * https://dlmf.nist.gov/11.6.1
+         */
+        SPECFUN_HOST_DEVICE inline double struve_asymp_large_z(double v, double z, int is_h, double *err) {
+            int n, sgn, maxiter;
+            double term, sum, maxterm;
+            double m;
 
-static double bessel_y(double v, double x);
-static double bessel_j(double v, double x);
-static double struve_hl(double v, double x, int is_h);
+            if (is_h) {
+                sgn = -1;
+            } else {
+                sgn = 1;
+            }
 
-double struve_h(double v, double z) { return struve_hl(v, z, 1); }
+            /* Asymptotic expansion divergenge point */
+            m = z / 2;
+            if (m <= 0) {
+                maxiter = 0;
+            } else if (m > STRUVE_MAXITER) {
+                maxiter = STRUVE_MAXITER;
+            } else {
+                maxiter = (int) m;
+            }
+            if (maxiter == 0) {
+                *err = std::numeric_limits<double>::infinity();
+                return std::numeric_limits<double>::quiet_NaN();
+            }
 
-double struve_l(double v, double z) { return struve_hl(v, z, 0); }
+            if (z < v) {
+                /* Exclude regions where our error estimation fails */
+                *err = std::numeric_limits<double>::infinity();
+                return std::numeric_limits<double>::quiet_NaN();
+            }
 
-static double struve_hl(double v, double z, int is_h) {
-    double value[4], err[4], tmp;
-    int n;
+            /* Evaluate sum */
+            term = -sgn / std::sqrt(M_PI) * std::exp(-special::cephes::lgam(v + 0.5) + (v - 1) * std::log(z / 2)) *
+                   special::cephes::gammasgn(v + 0.5);
+            sum = term;
+            maxterm = 0;
 
-    if (z < 0) {
-        n = v;
-        if (v == n) {
-            tmp = (n % 2 == 0) ? -1 : 1;
-            return tmp * struve_hl(v, -z, is_h);
-        } else {
-            return NAN;
+            for (n = 0; n < maxiter; ++n) {
+                term *= sgn * (1 + 2 * n) * (1 + 2 * n - 2 * v) / (z * z);
+                sum += term;
+                if (std::abs(term) > maxterm) {
+                    maxterm = std::abs(term);
+                }
+                if (std::abs(term) < STRUVE_SUM_EPS * std::abs(sum) || term == 0 || !std::isfinite(sum)) {
+                    break;
+                }
+            }
+
+            if (is_h) {
+                sum += special::cbesy_wrap_real(v, z);
+            } else {
+                sum += special::cephes::iv(v, z);
+            }
+
+            /*
+             * This error estimate is strictly speaking valid only for
+             * n > v - 0.5, but numerical results indicate that it works
+             * reasonably.
+             */
+            *err = std::abs(term) + std::abs(maxterm) * STRUVE_SUM_EPS;
+
+            return sum;
         }
-    } else if (z == 0) {
-        if (v < -1) {
-            return gammasgn(v + 1.5) * INFINITY;
-        } else if (v == -1) {
-            return 2 / sqrt(M_PI) / Gamma(0.5);
-        } else {
-            return 0;
+
+        /*
+         * Power series for Struve H and L
+         * https://dlmf.nist.gov/11.2.1
+         *
+         * Starts to converge roughly at |n| > |z|
+         */
+        SPECFUN_HOST_DEVICE inline double struve_power_series(double v, double z, int is_h, double *err) {
+            int n, sgn;
+            double term, sum, maxterm, scaleexp, tmp;
+            double_double cterm, csum, cdiv, z2, c2v, ctmp;
+
+            if (is_h) {
+                sgn = -1;
+            } else {
+                sgn = 1;
+            }
+
+            tmp = -special::cephes::lgam(v + 1.5) + (v + 1) * std::log(z / 2);
+            if (tmp < -600 || tmp > 600) {
+                /* Scale exponent to postpone underflow/overflow */
+                scaleexp = tmp / 2;
+                tmp -= scaleexp;
+            } else {
+                scaleexp = 0;
+            }
+
+            term = 2 / std::sqrt(M_PI) * std::exp(tmp) * special::cephes::gammasgn(v + 1.5);
+            sum = term;
+            maxterm = 0;
+
+            cterm = double_double(term);
+            csum = double_double(sum);
+            z2 = double_double(sgn * z * z);
+            c2v = double_double(2 * v);
+
+            for (n = 0; n < STRUVE_MAXITER; ++n) {
+                /* cdiv = (3 + 2*n) * (3 + 2*n + 2*v)) */
+                cdiv = double_double(3 + 2 * n);
+                ctmp = double_double(3 + 2 * n);
+                ctmp = ctmp + c2v;
+                cdiv = cdiv * ctmp;
+
+                /* cterm *= z2 / cdiv */
+                cterm = cterm * z2;
+                cterm = cterm / cdiv;
+
+                csum = csum + cterm;
+
+                term = static_cast<double>(cterm);
+                sum = static_cast<double>(csum);
+
+                if (std::abs(term) > maxterm) {
+                    maxterm = std::abs(term);
+                }
+                if (std::abs(term) < STRUVE_SUM_TINY * std::abs(sum) || term == 0 || !std::isfinite(sum)) {
+                    break;
+                }
+            }
+
+            *err = std::abs(term) + std::abs(maxterm) * 1e-22;
+
+            if (scaleexp != 0) {
+                sum *= std::exp(scaleexp);
+                *err *= std::exp(scaleexp);
+            }
+
+            if (sum == 0 && term == 0 && v < 0 && !is_h) {
+                /* Spurious underflow */
+                *err = std::numeric_limits<double>::infinity();
+                return std::numeric_limits<double>::quiet_NaN();
+                ;
+            }
+
+            return sum;
         }
-    }
 
-    n = -v - 0.5;
-    if (n == -v - 0.5 && n > 0) {
-        if (is_h) {
-            return (n % 2 == 0 ? 1 : -1) * bessel_j(n + 0.5, z);
-        } else {
-            return iv(n + 0.5, z);
+        /*
+         * Bessel series
+         * https://dlmf.nist.gov/11.4.19
+         */
+        SPECFUN_HOST_DEVICE inline double struve_bessel_series(double v, double z, int is_h, double *err) {
+            int n;
+            double term, cterm, sum, maxterm;
+
+            if (is_h && v < 0) {
+                /* Works less reliably in this region */
+                *err = std::numeric_limits<double>::infinity();
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+
+            sum = 0;
+            maxterm = 0;
+
+            cterm = std::sqrt(z / (2 * M_PI));
+
+            for (n = 0; n < STRUVE_MAXITER; ++n) {
+                if (is_h) {
+                    term = cterm * special::cbesj_wrap_real(n + v + 0.5, z) / (n + 0.5);
+                    cterm *= z / 2 / (n + 1);
+                } else {
+                    term = cterm * special::cephes::iv(n + v + 0.5, z) / (n + 0.5);
+                    cterm *= -z / 2 / (n + 1);
+                }
+                sum += term;
+                if (std::abs(term) > maxterm) {
+                    maxterm = std::abs(term);
+                }
+                if (std::abs(term) < STRUVE_SUM_EPS * std::abs(sum) || term == 0 || !std::isfinite(sum)) {
+                    break;
+                }
+            }
+
+            *err = std::abs(term) + std::abs(maxterm) * 1e-16;
+
+            /* Account for potential underflow of the Bessel functions */
+            *err += 1e-300 * std::abs(cterm);
+
+            return sum;
         }
-    }
 
-    /* Try the asymptotic expansion */
-    if (z >= 0.7 * v + 12) {
-        value[0] = struve_asymp_large_z(v, z, is_h, &err[0]);
-        if (err[0] < GOOD_EPS * fabs(value[0])) {
-            return value[0];
+        SPECFUN_HOST_DEVICE inline double struve_hl(double v, double z, int is_h) {
+            double value[4], err[4], tmp;
+            int n;
+
+            if (z < 0) {
+                n = v;
+                if (v == n) {
+                    tmp = (n % 2 == 0) ? -1 : 1;
+                    return tmp * struve_hl(v, -z, is_h);
+                } else {
+                    return std::numeric_limits<double>::quiet_NaN();
+                }
+            } else if (z == 0) {
+                if (v < -1) {
+                    return special::cephes::gammasgn(v + 1.5) * std::numeric_limits<double>::infinity();
+                } else if (v == -1) {
+                    return 2 / std::sqrt(M_PI) / special::cephes::Gamma(0.5);
+                } else {
+                    return 0;
+                }
+            }
+
+            n = -v - 0.5;
+            if (n == -v - 0.5 && n > 0) {
+                if (is_h) {
+                    return (n % 2 == 0 ? 1 : -1) * special::cbesj_wrap_real(n + 0.5, z);
+                } else {
+                    return special::cephes::iv(n + 0.5, z);
+                }
+            }
+
+            /* Try the asymptotic expansion */
+            if (z >= 0.7 * v + 12) {
+                value[0] = struve_asymp_large_z(v, z, is_h, &err[0]);
+                if (err[0] < STRUVE_GOOD_EPS * std::abs(value[0])) {
+                    return value[0];
+                }
+            } else {
+                err[0] = std::numeric_limits<double>::infinity();
+            }
+
+            /* Try power series */
+            value[1] = struve_power_series(v, z, is_h, &err[1]);
+            if (err[1] < STRUVE_GOOD_EPS * std::abs(value[1])) {
+                return value[1];
+            }
+
+            /* Try bessel series */
+            if (std::abs(z) < std::abs(v) + 20) {
+                value[2] = struve_bessel_series(v, z, is_h, &err[2]);
+                if (err[2] < STRUVE_GOOD_EPS * std::abs(value[2])) {
+                    return value[2];
+                }
+            } else {
+                err[2] = std::numeric_limits<double>::infinity();
+            }
+
+            /* Return the best of the three, if it is acceptable */
+            n = 0;
+            if (err[1] < err[n])
+                n = 1;
+            if (err[2] < err[n])
+                n = 2;
+            if (err[n] < STRUVE_ACCEPTABLE_EPS * std::abs(value[n]) || err[n] < STRUVE_ACCEPTABLE_ATOL) {
+                return value[n];
+            }
+
+            /* Maybe it really is an overflow? */
+            tmp = -special::cephes::lgam(v + 1.5) + (v + 1) * std::log(z / 2);
+            if (!is_h) {
+                tmp = std::abs(tmp);
+            }
+            if (tmp > 700) {
+                set_error("struve", SF_ERROR_OVERFLOW, NULL);
+                return std::numeric_limits<double>::infinity() * special::cephes::gammasgn(v + 1.5);
+            }
+
+            /* Failure */
+            set_error("struve", SF_ERROR_NO_RESULT, NULL);
+            return std::numeric_limits<double>::quiet_NaN();
         }
-    } else {
-        err[0] = INFINITY;
-    }
+    } // namespace detail
 
-    /* Try power series */
-    value[1] = struve_power_series(v, z, is_h, &err[1]);
-    if (err[1] < GOOD_EPS * fabs(value[1])) {
-        return value[1];
-    }
+    SPECFUN_HOST_DEVICE inline double struve_h(double v, double z) { return detail::struve_hl(v, z, 1); }
 
-    /* Try bessel series */
-    if (fabs(z) < fabs(v) + 20) {
-        value[2] = struve_bessel_series(v, z, is_h, &err[2]);
-        if (err[2] < GOOD_EPS * fabs(value[2])) {
-            return value[2];
-        }
-    } else {
-        err[2] = INFINITY;
-    }
+    SPECFUN_HOST_DEVICE inline double struve_l(double v, double z) { return detail::struve_hl(v, z, 0); }
 
-    /* Return the best of the three, if it is acceptable */
-    n = 0;
-    if (err[1] < err[n])
-        n = 1;
-    if (err[2] < err[n])
-        n = 2;
-    if (err[n] < ACCEPTABLE_EPS * fabs(value[n]) || err[n] < ACCEPTABLE_ATOL) {
-        return value[n];
-    }
-
-    /* Maybe it really is an overflow? */
-    tmp = -lgam(v + 1.5) + (v + 1) * log(z / 2);
-    if (!is_h) {
-        tmp = fabs(tmp);
-    }
-    if (tmp > 700) {
-        sf_error("struve", SF_ERROR_OVERFLOW, NULL);
-        return INFINITY * gammasgn(v + 1.5);
-    }
-
-    /* Failure */
-    sf_error("struve", SF_ERROR_NO_RESULT, NULL);
-    return NAN;
-}
-
-/*
- * Power series for Struve H and L
- * https://dlmf.nist.gov/11.2.1
- *
- * Starts to converge roughly at |n| > |z|
- */
-double struve_power_series(double v, double z, int is_h, double *err) {
-    int n, sgn;
-    double term, sum, maxterm, scaleexp, tmp;
-    double2 cterm, csum, cdiv, z2, c2v, ctmp;
-
-    if (is_h) {
-        sgn = -1;
-    } else {
-        sgn = 1;
-    }
-
-    tmp = -lgam(v + 1.5) + (v + 1) * log(z / 2);
-    if (tmp < -600 || tmp > 600) {
-        /* Scale exponent to postpone underflow/overflow */
-        scaleexp = tmp / 2;
-        tmp -= scaleexp;
-    } else {
-        scaleexp = 0;
-    }
-
-    term = 2 / sqrt(M_PI) * exp(tmp) * gammasgn(v + 1.5);
-    sum = term;
-    maxterm = 0;
-
-    cterm = dd_create_d(term);
-    csum = dd_create_d(sum);
-    z2 = dd_create_d(sgn * z * z);
-    c2v = dd_create_d(2 * v);
-
-    for (n = 0; n < STRUVE_MAXITER; ++n) {
-        /* cdiv = (3 + 2*n) * (3 + 2*n + 2*v)) */
-        cdiv = dd_create_d(3 + 2 * n);
-        ctmp = dd_create_d(3 + 2 * n);
-        ctmp = dd_add(ctmp, c2v);
-        cdiv = dd_mul(cdiv, ctmp);
-
-        /* cterm *= z2 / cdiv */
-        cterm = dd_mul(cterm, z2);
-        cterm = dd_div(cterm, cdiv);
-
-        csum = dd_add(csum, cterm);
-
-        term = dd_to_double(cterm);
-        sum = dd_to_double(csum);
-
-        if (fabs(term) > maxterm) {
-            maxterm = fabs(term);
-        }
-        if (fabs(term) < SUM_TINY * fabs(sum) || term == 0 || !isfinite(sum)) {
-            break;
-        }
-    }
-
-    *err = fabs(term) + fabs(maxterm) * 1e-22;
-
-    if (scaleexp != 0) {
-        sum *= exp(scaleexp);
-        *err *= exp(scaleexp);
-    }
-
-    if (sum == 0 && term == 0 && v < 0 && !is_h) {
-        /* Spurious underflow */
-        *err = INFINITY;
-        return NAN;
-    }
-
-    return sum;
-}
-
-/*
- * Bessel series
- * https://dlmf.nist.gov/11.4.19
- */
-double struve_bessel_series(double v, double z, int is_h, double *err) {
-    int n;
-    double term, cterm, sum, maxterm;
-
-    if (is_h && v < 0) {
-        /* Works less reliably in this region */
-        *err = INFINITY;
-        return NAN;
-    }
-
-    sum = 0;
-    maxterm = 0;
-
-    cterm = sqrt(z / (2 * M_PI));
-
-    for (n = 0; n < STRUVE_MAXITER; ++n) {
-        if (is_h) {
-            term = cterm * bessel_j(n + v + 0.5, z) / (n + 0.5);
-            cterm *= z / 2 / (n + 1);
-        } else {
-            term = cterm * iv(n + v + 0.5, z) / (n + 0.5);
-            cterm *= -z / 2 / (n + 1);
-        }
-        sum += term;
-        if (fabs(term) > maxterm) {
-            maxterm = fabs(term);
-        }
-        if (fabs(term) < SUM_EPS * fabs(sum) || term == 0 || !isfinite(sum)) {
-            break;
-        }
-    }
-
-    *err = fabs(term) + fabs(maxterm) * 1e-16;
-
-    /* Account for potential underflow of the Bessel functions */
-    *err += 1e-300 * fabs(cterm);
-
-    return sum;
-}
-
-/*
- * Large-z expansion for Struve H and L
- * https://dlmf.nist.gov/11.6.1
- */
-double struve_asymp_large_z(double v, double z, int is_h, double *err) {
-    int n, sgn, maxiter;
-    double term, sum, maxterm;
-    double m;
-
-    if (is_h) {
-        sgn = -1;
-    } else {
-        sgn = 1;
-    }
-
-    /* Asymptotic expansion divergenge point */
-    m = z / 2;
-    if (m <= 0) {
-        maxiter = 0;
-    } else if (m > STRUVE_MAXITER) {
-        maxiter = STRUVE_MAXITER;
-    } else {
-        maxiter = (int) m;
-    }
-    if (maxiter == 0) {
-        *err = INFINITY;
-        return NAN;
-    }
-
-    if (z < v) {
-        /* Exclude regions where our error estimation fails */
-        *err = INFINITY;
-        return NAN;
-    }
-
-    /* Evaluate sum */
-    term = -sgn / sqrt(M_PI) * exp(-lgam(v + 0.5) + (v - 1) * log(z / 2)) * gammasgn(v + 0.5);
-    sum = term;
-    maxterm = 0;
-
-    for (n = 0; n < maxiter; ++n) {
-        term *= sgn * (1 + 2 * n) * (1 + 2 * n - 2 * v) / (z * z);
-        sum += term;
-        if (fabs(term) > maxterm) {
-            maxterm = fabs(term);
-        }
-        if (fabs(term) < SUM_EPS * fabs(sum) || term == 0 || !isfinite(sum)) {
-            break;
-        }
-    }
-
-    if (is_h) {
-        sum += bessel_y(v, z);
-    } else {
-        sum += iv(v, z);
-    }
-
-    /*
-     * This error estimate is strictly speaking valid only for
-     * n > v - 0.5, but numerical results indicate that it works
-     * reasonably.
-     */
-    *err = fabs(term) + fabs(maxterm) * 1e-16;
-
-    return sum;
-}
-
-static double bessel_y(double v, double x) { return cbesy_wrap_real(v, x); }
-
-static double bessel_j(double v, double x) { return cbesj_wrap_real(v, x); }
+} // namespace cephes
+} // namespace special

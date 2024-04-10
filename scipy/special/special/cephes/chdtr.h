@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     chdtr.c
  *
  *     Chi-square distribution
@@ -146,33 +150,44 @@
  * Copyright 1984, 1987 by Stephen L. Moshier
  * Direct inquiries to 30 Frost Street, Cambridge, MA 02140
  */
+#pragma once
 
-#include "mconf.h"
+#include "../config.h"
+#include "../error.h"
 
-double chdtrc(double df, double x) {
+#include "igam.h"
+#include "igami.h"
 
-    if (x < 0.0)
-        return 1.0; /* modified by T. Oliphant */
-    return (igamc(df / 2.0, x / 2.0));
-}
+namespace special {
+namespace cephes {
 
-double chdtr(double df, double x) {
+    SPECFUN_HOST_DEVICE inline double chdtrc(double df, double x) {
 
-    if ((x < 0.0)) { /* || (df < 1.0) ) */
-        sf_error("chdtr", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
-    }
-    return (igam(df / 2.0, x / 2.0));
-}
-
-double chdtri(double df, double y) {
-    double x;
-
-    if ((y < 0.0) || (y > 1.0)) { /* || (df < 1.0) ) */
-        sf_error("chdtri", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
+        if (x < 0.0)
+            return 1.0; /* modified by T. Oliphant */
+        return (igamc(df / 2.0, x / 2.0));
     }
 
-    x = igamci(0.5 * df, y);
-    return (2.0 * x);
-}
+    SPECFUN_HOST_DEVICE inline double chdtr(double df, double x) {
+
+        if ((x < 0.0)) { /* || (df < 1.0) ) */
+            set_error("chdtr", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+        return (igam(df / 2.0, x / 2.0));
+    }
+
+    SPECFUN_HOST_DEVICE double chdtri(double df, double y) {
+        double x;
+
+        if ((y < 0.0) || (y > 1.0)) { /* || (df < 1.0) ) */
+            set_error("chdtri", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+
+        x = igamci(0.5 * df, y);
+        return (2.0 * x);
+    }
+
+} // namespace cephes
+} // namespace special

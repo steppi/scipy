@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     nbdtr.c
  *
  *     Negative binomial distribution
@@ -149,52 +153,66 @@
  * Cephes Math Library Release 2.3:  March, 1995
  * Copyright 1984, 1987, 1995 by Stephen L. Moshier
  */
+#pragma once
 
-#include "mconf.h"
+#include "../config.h"
+#include "../error.h"
 
-double nbdtrc(int k, int n, double p) {
-    double dk, dn;
+#include "incbet.h"
+#include "incbi.h"
 
-    if ((p < 0.0) || (p > 1.0))
-        goto domerr;
-    if (k < 0) {
-    domerr:
-        sf_error("nbdtr", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
+namespace special {
+namespace cephes {
+
+    SPECFUN_HOST_DEVICE inline double nbdtrc(int k, int n, double p) {
+        double dk, dn;
+
+        if ((p < 0.0) || (p > 1.0)) {
+            goto domerr;
+        }
+        if (k < 0) {
+        domerr:
+            set_error("nbdtr", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+
+        dk = k + 1;
+        dn = n;
+        return (incbet(dk, dn, 1.0 - p));
     }
 
-    dk = k + 1;
-    dn = n;
-    return (incbet(dk, dn, 1.0 - p));
-}
+    SPECFUN_HOST_DEVICE inline double nbdtr(int k, int n, double p) {
+        double dk, dn;
 
-double nbdtr(int k, int n, double p) {
-    double dk, dn;
-
-    if ((p < 0.0) || (p > 1.0))
-        goto domerr;
-    if (k < 0) {
-    domerr:
-        sf_error("nbdtr", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
+        if ((p < 0.0) || (p > 1.0)) {
+            goto domerr;
+        }
+        if (k < 0) {
+        domerr:
+            set_error("nbdtr", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+        dk = k + 1;
+        dn = n;
+        return (incbet(dn, dk, p));
     }
-    dk = k + 1;
-    dn = n;
-    return (incbet(dn, dk, p));
-}
 
-double nbdtri(int k, int n, double p) {
-    double dk, dn, w;
+    SPECFUN_HOST_DEVICE inline double nbdtri(int k, int n, double p) {
+        double dk, dn, w;
 
-    if ((p < 0.0) || (p > 1.0))
-        goto domerr;
-    if (k < 0) {
-    domerr:
-        sf_error("nbdtri", SF_ERROR_DOMAIN, NULL);
-        return (NAN);
+        if ((p < 0.0) || (p > 1.0)) {
+            goto domerr;
+        }
+        if (k < 0) {
+        domerr:
+            set_error("nbdtri", SF_ERROR_DOMAIN, NULL);
+            return (std::numeric_limits<double>::quiet_NaN());
+        }
+        dk = k + 1;
+        dn = n;
+        w = incbi(dn, dk, p);
+        return (w);
     }
-    dk = k + 1;
-    dn = n;
-    w = incbi(dn, dk, p);
-    return (w);
-}
+
+} // namespace cephes
+} // namespace special

@@ -1,3 +1,7 @@
+/* Translated into C++ by SciPy developers in 2024.
+ * Original header with Copyright information appears below.
+ */
+
 /*                                                     ellpj.c
  *
  *     Jacobian Elliptic Functions
@@ -63,88 +67,96 @@
 /* Scipy changes:
  * - 07-18-2016: improve evaluation of dn near quarter periods
  */
+#pragma once
 
-#include "mconf.h"
-extern double MACHEP;
+#include "../config.h"
+#include "../error.h"
+#include "const.h"
 
-int ellpj(double u, double m, double *sn, double *cn, double *dn, double *ph) {
-    double ai, b, phi, t, twon, dnfac;
-    double a[9], c[9];
-    int i;
+namespace special {
+namespace cephes {
 
-    /* Check for special cases */
-    if (m < 0.0 || m > 1.0 || cephes_isnan(m)) {
-        sf_error("ellpj", SF_ERROR_DOMAIN, NULL);
-        *sn = NAN;
-        *cn = NAN;
-        *ph = NAN;
-        *dn = NAN;
-        return (-1);
-    }
-    if (m < 1.0e-9) {
-        t = sin(u);
-        b = cos(u);
-        ai = 0.25 * m * (u - t * b);
-        *sn = t - ai * b;
-        *cn = b + ai * t;
-        *ph = u - ai;
-        *dn = 1.0 - 0.5 * m * t * t;
-        return (0);
-    }
-    if (m >= 0.9999999999) {
-        ai = 0.25 * (1.0 - m);
-        b = cosh(u);
-        t = tanh(u);
-        phi = 1.0 / b;
-        twon = b * sinh(u);
-        *sn = t + ai * (twon - u) / (b * b);
-        *ph = 2.0 * atan(exp(u)) - M_PI_2 + ai * (twon - u) / b;
-        ai *= t * phi;
-        *cn = phi - ai * (twon - u);
-        *dn = phi + ai * (twon + u);
-        return (0);
-    }
+    SPECFUN_HOST_DEVICE inline int ellpj(double u, double m, double *sn, double *cn, double *dn, double *ph) {
+        double ai, b, phi, t, twon, dnfac;
+        double a[9], c[9];
+        int i;
 
-    /* A. G. M. scale. See DLMF 22.20(ii) */
-    a[0] = 1.0;
-    b = sqrt(1.0 - m);
-    c[0] = sqrt(m);
-    twon = 1.0;
-    i = 0;
-
-    while (fabs(c[i] / a[i]) > MACHEP) {
-        if (i > 7) {
-            sf_error("ellpj", SF_ERROR_OVERFLOW, NULL);
-            goto done;
+        /* Check for special cases */
+        if (m < 0.0 || m > 1.0 || std::isnan(m)) {
+            set_error("ellpj", SF_ERROR_DOMAIN, NULL);
+            *sn = std::numeric_limits<double>::quiet_NaN();
+            *cn = std::numeric_limits<double>::quiet_NaN();
+            *ph = std::numeric_limits<double>::quiet_NaN();
+            *dn = std::numeric_limits<double>::quiet_NaN();
+            return (-1);
         }
-        ai = a[i];
-        ++i;
-        c[i] = (ai - b) / 2.0;
-        t = sqrt(ai * b);
-        a[i] = (ai + b) / 2.0;
-        b = t;
-        twon *= 2.0;
+        if (m < 1.0e-9) {
+            t = std::sin(u);
+            b = std::cos(u);
+            ai = 0.25 * m * (u - t * b);
+            *sn = t - ai * b;
+            *cn = b + ai * t;
+            *ph = u - ai;
+            *dn = 1.0 - 0.5 * m * t * t;
+            return (0);
+        }
+        if (m >= 0.9999999999) {
+            ai = 0.25 * (1.0 - m);
+            b = std::cosh(u);
+            t = std::tanh(u);
+            phi = 1.0 / b;
+            twon = b * std::sinh(u);
+            *sn = t + ai * (twon - u) / (b * b);
+            *ph = 2.0 * std::atan(exp(u)) - M_PI_2 + ai * (twon - u) / b;
+            ai *= t * phi;
+            *cn = phi - ai * (twon - u);
+            *dn = phi + ai * (twon + u);
+            return (0);
+        }
+
+        /* A. G. M. scale. See DLMF 22.20(ii) */
+        a[0] = 1.0;
+        b = std::sqrt(1.0 - m);
+        c[0] = std::sqrt(m);
+        twon = 1.0;
+        i = 0;
+
+        while (std::abs(c[i] / a[i]) > detail::MACHEP) {
+            if (i > 7) {
+                set_error("ellpj", SF_ERROR_OVERFLOW, NULL);
+                goto done;
+            }
+            ai = a[i];
+            ++i;
+            c[i] = (ai - b) / 2.0;
+            t = std::sqrt(ai * b);
+            a[i] = (ai + b) / 2.0;
+            b = t;
+            twon *= 2.0;
+        }
+
+    done:
+        /* backward recurrence */
+        phi = twon * a[i] * u;
+        do {
+            t = c[i] * std::sin(phi) / a[i];
+            b = phi;
+            phi = (std::asin(t) + phi) / 2.0;
+        } while (--i);
+
+        *sn = std::sin(phi);
+        t = std::cos(phi);
+        *cn = t;
+        dnfac = std::cos(phi - b);
+        /* See discussion after DLMF 22.20.5 */
+        if (std::abs(dnfac) < 0.1) {
+            *dn = std::sqrt(1 - m * (*sn) * (*sn));
+        } else {
+            *dn = t / dnfac;
+        }
+        *ph = phi;
+        return (0);
     }
 
-done:
-    /* backward recurrence */
-    phi = twon * a[i] * u;
-    do {
-        t = c[i] * sin(phi) / a[i];
-        b = phi;
-        phi = (asin(t) + phi) / 2.0;
-    } while (--i);
-
-    *sn = sin(phi);
-    t = cos(phi);
-    *cn = t;
-    dnfac = cos(phi - b);
-    /* See discussion after DLMF 22.20.5 */
-    if (fabs(dnfac) < 0.1) {
-        *dn = sqrt(1 - m * (*sn) * (*sn));
-    } else {
-        *dn = t / dnfac;
-    }
-    *ph = phi;
-    return (0);
-}
+} // namespace cephes
+} // namespace special
