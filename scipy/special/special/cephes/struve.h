@@ -77,13 +77,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "mconf.h"
 #include "dd_real.h"
+#include "mconf.h"
 
 #include "special_wrappers.h"
 
 #define STRUVE_MAXITER 10000
-#define SUM_EPS 1e-16   /* be sure we are in the tail of the sum */
+#define SUM_EPS 1e-16 /* be sure we are in the tail of the sum */
 #define SUM_TINY 1e-100
 #define GOOD_EPS 1e-12
 #define ACCEPTABLE_EPS 1e-7
@@ -99,18 +99,11 @@ static double bessel_y(double v, double x);
 static double bessel_j(double v, double x);
 static double struve_hl(double v, double x, int is_h);
 
-double struve_h(double v, double z)
-{
-    return struve_hl(v, z, 1);
-}
+double struve_h(double v, double z) { return struve_hl(v, z, 1); }
 
-double struve_l(double v, double z)
-{
-    return struve_hl(v, z, 0);
-}
+double struve_l(double v, double z) { return struve_hl(v, z, 0); }
 
-static double struve_hl(double v, double z, int is_h)
-{
+static double struve_hl(double v, double z, int is_h) {
     double value[4], err[4], tmp;
     int n;
 
@@ -119,19 +112,15 @@ static double struve_hl(double v, double z, int is_h)
         if (v == n) {
             tmp = (n % 2 == 0) ? -1 : 1;
             return tmp * struve_hl(v, -z, is_h);
-        }
-        else {
+        } else {
             return NAN;
         }
-    }
-    else if (z == 0) {
+    } else if (z == 0) {
         if (v < -1) {
             return gammasgn(v + 1.5) * INFINITY;
-        }
-        else if (v == -1) {
+        } else if (v == -1) {
             return 2 / sqrt(M_PI) / Gamma(0.5);
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -140,20 +129,18 @@ static double struve_hl(double v, double z, int is_h)
     if (n == -v - 0.5 && n > 0) {
         if (is_h) {
             return (n % 2 == 0 ? 1 : -1) * bessel_j(n + 0.5, z);
-        }
-        else {
+        } else {
             return iv(n + 0.5, z);
         }
     }
 
     /* Try the asymptotic expansion */
-    if (z >= 0.7*v + 12) {
+    if (z >= 0.7 * v + 12) {
         value[0] = struve_asymp_large_z(v, z, is_h, &err[0]);
         if (err[0] < GOOD_EPS * fabs(value[0])) {
             return value[0];
         }
-    }
-    else {
+    } else {
         err[0] = INFINITY;
     }
 
@@ -169,21 +156,22 @@ static double struve_hl(double v, double z, int is_h)
         if (err[2] < GOOD_EPS * fabs(value[2])) {
             return value[2];
         }
-    }
-    else {
+    } else {
         err[2] = INFINITY;
     }
 
     /* Return the best of the three, if it is acceptable */
     n = 0;
-    if (err[1] < err[n]) n = 1;
-    if (err[2] < err[n]) n = 2;
+    if (err[1] < err[n])
+        n = 1;
+    if (err[2] < err[n])
+        n = 2;
     if (err[n] < ACCEPTABLE_EPS * fabs(value[n]) || err[n] < ACCEPTABLE_ATOL) {
         return value[n];
     }
 
     /* Maybe it really is an overflow? */
-    tmp = -lgam(v + 1.5) + (v + 1)*log(z/2);
+    tmp = -lgam(v + 1.5) + (v + 1) * log(z / 2);
     if (!is_h) {
         tmp = fabs(tmp);
     }
@@ -197,33 +185,29 @@ static double struve_hl(double v, double z, int is_h)
     return NAN;
 }
 
-
 /*
  * Power series for Struve H and L
  * https://dlmf.nist.gov/11.2.1
  *
  * Starts to converge roughly at |n| > |z|
  */
-double struve_power_series(double v, double z, int is_h, double *err)
-{
+double struve_power_series(double v, double z, int is_h, double *err) {
     int n, sgn;
     double term, sum, maxterm, scaleexp, tmp;
     double2 cterm, csum, cdiv, z2, c2v, ctmp;
 
     if (is_h) {
         sgn = -1;
-    }
-    else {
+    } else {
         sgn = 1;
     }
 
-    tmp = -lgam(v + 1.5) + (v + 1)*log(z/2);
+    tmp = -lgam(v + 1.5) + (v + 1) * log(z / 2);
     if (tmp < -600 || tmp > 600) {
         /* Scale exponent to postpone underflow/overflow */
-        scaleexp = tmp/2;
+        scaleexp = tmp / 2;
         tmp -= scaleexp;
-    }
-    else {
+    } else {
         scaleexp = 0;
     }
 
@@ -233,13 +217,13 @@ double struve_power_series(double v, double z, int is_h, double *err)
 
     cterm = dd_create_d(term);
     csum = dd_create_d(sum);
-    z2 = dd_create_d(sgn*z*z);
-    c2v = dd_create_d(2*v);
+    z2 = dd_create_d(sgn * z * z);
+    c2v = dd_create_d(2 * v);
 
     for (n = 0; n < STRUVE_MAXITER; ++n) {
         /* cdiv = (3 + 2*n) * (3 + 2*n + 2*v)) */
-        cdiv = dd_create_d(3 + 2*n);
-        ctmp = dd_create_d(3 + 2*n);
+        cdiv = dd_create_d(3 + 2 * n);
+        ctmp = dd_create_d(3 + 2 * n);
         ctmp = dd_add(ctmp, c2v);
         cdiv = dd_mul(cdiv, ctmp);
 
@@ -276,13 +260,11 @@ double struve_power_series(double v, double z, int is_h, double *err)
     return sum;
 }
 
-
 /*
  * Bessel series
  * https://dlmf.nist.gov/11.4.19
  */
-double struve_bessel_series(double v, double z, int is_h, double *err)
-{
+double struve_bessel_series(double v, double z, int is_h, double *err) {
     int n;
     double term, cterm, sum, maxterm;
 
@@ -295,16 +277,15 @@ double struve_bessel_series(double v, double z, int is_h, double *err)
     sum = 0;
     maxterm = 0;
 
-    cterm = sqrt(z / (2*M_PI));
+    cterm = sqrt(z / (2 * M_PI));
 
     for (n = 0; n < STRUVE_MAXITER; ++n) {
         if (is_h) {
             term = cterm * bessel_j(n + v + 0.5, z) / (n + 0.5);
-            cterm *= z/2 / (n + 1);
-        }
-        else {
+            cterm *= z / 2 / (n + 1);
+        } else {
             term = cterm * iv(n + v + 0.5, z) / (n + 0.5);
-            cterm *= -z/2 / (n + 1);
+            cterm *= -z / 2 / (n + 1);
         }
         sum += term;
         if (fabs(term) > maxterm) {
@@ -323,34 +304,29 @@ double struve_bessel_series(double v, double z, int is_h, double *err)
     return sum;
 }
 
-
 /*
  * Large-z expansion for Struve H and L
  * https://dlmf.nist.gov/11.6.1
  */
-double struve_asymp_large_z(double v, double z, int is_h, double *err)
-{
+double struve_asymp_large_z(double v, double z, int is_h, double *err) {
     int n, sgn, maxiter;
     double term, sum, maxterm;
     double m;
 
     if (is_h) {
         sgn = -1;
-    }
-    else {
+    } else {
         sgn = 1;
     }
 
     /* Asymptotic expansion divergenge point */
-    m = z/2;
+    m = z / 2;
     if (m <= 0) {
         maxiter = 0;
-    }
-    else if (m > STRUVE_MAXITER) {
+    } else if (m > STRUVE_MAXITER) {
         maxiter = STRUVE_MAXITER;
-    }
-    else {
-        maxiter = (int)m;
+    } else {
+        maxiter = (int) m;
     }
     if (maxiter == 0) {
         *err = INFINITY;
@@ -364,12 +340,12 @@ double struve_asymp_large_z(double v, double z, int is_h, double *err)
     }
 
     /* Evaluate sum */
-    term = -sgn / sqrt(M_PI) * exp(-lgam(v + 0.5) + (v - 1) * log(z/2)) * gammasgn(v + 0.5);
+    term = -sgn / sqrt(M_PI) * exp(-lgam(v + 0.5) + (v - 1) * log(z / 2)) * gammasgn(v + 0.5);
     sum = term;
     maxterm = 0;
 
     for (n = 0; n < maxiter; ++n) {
-        term *= sgn * (1 + 2*n) * (1 + 2*n - 2*v) / (z*z);
+        term *= sgn * (1 + 2 * n) * (1 + 2 * n - 2 * v) / (z * z);
         sum += term;
         if (fabs(term) > maxterm) {
             maxterm = fabs(term);
@@ -381,8 +357,7 @@ double struve_asymp_large_z(double v, double z, int is_h, double *err)
 
     if (is_h) {
         sum += bessel_y(v, z);
-    }
-    else {
+    } else {
         sum += iv(v, z);
     }
 
@@ -396,13 +371,6 @@ double struve_asymp_large_z(double v, double z, int is_h, double *err)
     return sum;
 }
 
+static double bessel_y(double v, double x) { return cbesy_wrap_real(v, x); }
 
-static double bessel_y(double v, double x)
-{
-    return cbesy_wrap_real(v, x);
-}
-
-static double bessel_j(double v, double x)
-{
-    return cbesj_wrap_real(v, x);
-}
+static double bessel_j(double v, double x) { return cbesj_wrap_real(v, x); }

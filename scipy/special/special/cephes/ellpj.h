@@ -51,9 +51,8 @@
  * Accuracy deteriorates when u is large.
  *
  */
-
-/*                                                     ellpj.c         */
 
+/*                                                     ellpj.c         */
 
 /*
  * Cephes Math Library Release 2.0:  April, 1987
@@ -68,8 +67,7 @@
 #include "mconf.h"
 extern double MACHEP;
 
-int ellpj(double u, double m, double *sn, double *cn, double *dn, double *ph)
-{
+int ellpj(double u, double m, double *sn, double *cn, double *dn, double *ph) {
     double ai, b, phi, t, twon, dnfac;
     double a[9], c[9];
     int i;
@@ -128,15 +126,14 @@ int ellpj(double u, double m, double *sn, double *cn, double *dn, double *ph)
         twon *= 2.0;
     }
 
- done:
+done:
     /* backward recurrence */
     phi = twon * a[i] * u;
     do {
         t = c[i] * sin(phi) / a[i];
         b = phi;
         phi = (asin(t) + phi) / 2.0;
-    }
-    while (--i);
+    } while (--i);
 
     *sn = sin(phi);
     t = cos(phi);
@@ -144,9 +141,8 @@ int ellpj(double u, double m, double *sn, double *cn, double *dn, double *ph)
     dnfac = cos(phi - b);
     /* See discussion after DLMF 22.20.5 */
     if (fabs(dnfac) < 0.1) {
-        *dn = sqrt(1 - m*(*sn)*(*sn));
-    }
-    else {
+        *dn = sqrt(1 - m * (*sn) * (*sn));
+    } else {
         *dn = t / dnfac;
     }
     *ph = phi;

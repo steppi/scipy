@@ -42,13 +42,12 @@
  * IEEE arithmetic: MAXL10 = 308.2547155599167.
  *
  */
-
+
 /*
  * Cephes Math Library Release 2.2:  January, 1991
  * Copyright 1984, 1991 by Stephen L. Moshier
  * Direct inquiries to 30 Frost Street, Cambridge, MA 02140
  */
-
 
 #include "mconf.h"
 
@@ -74,20 +73,19 @@ static double LG102B = 4.60503898119521373889E-6;
 /* static double MAXL10 = 38.230809449325611792; */
 static double MAXL10 = 308.2547155599167;
 
-double exp10(double x)
-{
+double exp10(double x) {
     double px, xx;
     short n;
 
     if (cephes_isnan(x))
-	return (x);
+        return (x);
     if (x > MAXL10) {
-	return (INFINITY);
+        return (INFINITY);
     }
 
-    if (x < -MAXL10) {		/* Would like to use MINLOG but can't */
-	sf_error("exp10", SF_ERROR_UNDERFLOW, NULL);
-	return (0.0);
+    if (x < -MAXL10) { /* Would like to use MINLOG but can't */
+        sf_error("exp10", SF_ERROR_UNDERFLOW, NULL);
+        return (0.0);
     }
 
     /* Express 10**x = 10**g 2**n

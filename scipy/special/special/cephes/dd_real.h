@@ -5,7 +5,7 @@
  * of Mathematical, Information, and Computational Sciences of the
  * U.S. Department of Energy under contract numbers DE-AC03-76SF00098 and
  * DE-AC02-05CH11231.
- * 
+ *
  * Copyright (c) 2003-2009, The Regents of the University of California,
  * through Lawrence Berkeley National Laboratory (subject to receipt of
  * any required approvals from U.S. Dept. of Energy) All rights reserved.
@@ -20,8 +20,7 @@
 
 /*
  * This code taken from v2.3.18 of the qd package.
-*/
-
+ */
 
 #include <float.h>
 #include <limits.h>
@@ -30,42 +29,34 @@
 
 #include "dd_real.h"
 
-#define _DD_REAL_INIT(A, B)  {{A, B}}
+#define _DD_REAL_INIT(A, B)                                                                                            \
+    {                                                                                                                  \
+        { A, B }                                                                                                       \
+    }
 
-const double DD_C_EPS = 4.93038065763132e-32; // 2^-104
+const double DD_C_EPS = 4.93038065763132e-32;               // 2^-104
 const double DD_C_MIN_NORMALIZED = 2.0041683600089728e-292; // = 2^(-1022 + 53)
 
 /*  Compile-time initialization of const double2 structs */
 
-const double2 DD_C_MAX =
-    _DD_REAL_INIT(1.79769313486231570815e+308, 9.97920154767359795037e+291);
-const double2 DD_C_SAFE_MAX =
-    _DD_REAL_INIT(1.7976931080746007281e+308, 9.97920154767359795037e+291);
+const double2 DD_C_MAX = _DD_REAL_INIT(1.79769313486231570815e+308, 9.97920154767359795037e+291);
+const double2 DD_C_SAFE_MAX = _DD_REAL_INIT(1.7976931080746007281e+308, 9.97920154767359795037e+291);
 const int _DD_C_NDIGITS = 31;
 
 const double2 DD_C_ZERO = _DD_REAL_INIT(0.0, 0.0);
 const double2 DD_C_ONE = _DD_REAL_INIT(1.0, 0.0);
 const double2 DD_C_NEGONE = _DD_REAL_INIT(-1.0, 0.0);
 
-const double2 DD_C_2PI =
-    _DD_REAL_INIT(6.283185307179586232e+00, 2.449293598294706414e-16);
-const double2 DD_C_PI =
-    _DD_REAL_INIT(3.141592653589793116e+00, 1.224646799147353207e-16);
-const double2 DD_C_PI2 =
-    _DD_REAL_INIT(1.570796326794896558e+00, 6.123233995736766036e-17);
-const double2 DD_C_PI4 =
-    _DD_REAL_INIT(7.853981633974482790e-01, 3.061616997868383018e-17);
-const double2 DD_C_PI16 =
-    _DD_REAL_INIT(1.963495408493620697e-01, 7.654042494670957545e-18);
-const double2 DD_C_3PI4 =
-    _DD_REAL_INIT(2.356194490192344837e+00, 9.1848509936051484375e-17);
+const double2 DD_C_2PI = _DD_REAL_INIT(6.283185307179586232e+00, 2.449293598294706414e-16);
+const double2 DD_C_PI = _DD_REAL_INIT(3.141592653589793116e+00, 1.224646799147353207e-16);
+const double2 DD_C_PI2 = _DD_REAL_INIT(1.570796326794896558e+00, 6.123233995736766036e-17);
+const double2 DD_C_PI4 = _DD_REAL_INIT(7.853981633974482790e-01, 3.061616997868383018e-17);
+const double2 DD_C_PI16 = _DD_REAL_INIT(1.963495408493620697e-01, 7.654042494670957545e-18);
+const double2 DD_C_3PI4 = _DD_REAL_INIT(2.356194490192344837e+00, 9.1848509936051484375e-17);
 
-const double2 DD_C_E =
-    _DD_REAL_INIT(2.718281828459045091e+00, 1.445646891729250158e-16);
-const double2 DD_C_LOG2 =
-    _DD_REAL_INIT(6.931471805599452862e-01, 2.319046813846299558e-17);
-const double2 DD_C_LOG10 =
-    _DD_REAL_INIT(2.302585092994045901e+00, -2.170756223382249351e-16);
+const double2 DD_C_E = _DD_REAL_INIT(2.718281828459045091e+00, 1.445646891729250158e-16);
+const double2 DD_C_LOG2 = _DD_REAL_INIT(6.931471805599452862e-01, 2.319046813846299558e-17);
+const double2 DD_C_LOG10 = _DD_REAL_INIT(2.302585092994045901e+00, -2.170756223382249351e-16);
 
 #ifdef DD_C_NAN_IS_CONST
 const double2 DD_C_NAN = _DD_REAL_INIT(NAN, NAN);
@@ -73,22 +64,16 @@ const double2 DD_C_INF = _DD_REAL_INIT(INFINITY, INFINITY);
 const double2 DD_C_NEGINF = _DD_REAL_INIT(-INFINITY, -INFINITY);
 #endif /* NAN */
 
-
 /* This routine is called whenever a fatal error occurs. */
 static volatile int errCount = 0;
-void
-dd_error(const char *msg)
-{
+void dd_error(const char *msg) {
     errCount++;
     /* if (msg) { */
     /*     fprintf(stderr, "ERROR %s\n", msg); */
     /* } */
 }
 
-
-int
-get_double_expn(double x)
-{
+int get_double_expn(double x) {
     int i = 0;
     double y;
     if (x == 0.0) {
@@ -122,9 +107,7 @@ get_double_expn(double x)
 /* Computes the square root of the double-double number dd.
    NOTE: dd must be a non-negative number.                   */
 
-double2
-dd_sqrt(const double2 a)
-{
+double2 dd_sqrt(const double2 a) {
     /* Strategy:  Use Karp's trick:  if x is an approximation
        to sqrt(a), then
 
@@ -152,19 +135,13 @@ dd_sqrt(const double2 a)
 /* Computes the square root of a double in double-double precision.
    NOTE: d must not be negative.                                   */
 
-double2
-dd_sqrt_d(double d)
-{
-    return dd_sqrt(dd_create_d(d));
-}
+double2 dd_sqrt_d(double d) { return dd_sqrt(dd_create_d(d)); }
 
 /* Computes the n-th root of the double-double number a.
    NOTE: n must be a positive integer.
    NOTE: If n is even, then a must not be negative.       */
 
-double2
-dd_nroot(const double2 a, int n)
-{
+double2 dd_nroot(const double2 a, int n) {
     /* Strategy:  Use Newton iteration for the function
 
             f(x) = x^(-n) - a
@@ -203,9 +180,7 @@ dd_nroot(const double2 a, int n)
     x = dd_create_d(exp(-log(r.x[0]) / n));
 
     /* Perform Newton's iteration. */
-    x = dd_add(
-        x, dd_mul(x, dd_sub_d_dd(1.0, dd_div_dd_d(dd_mul(r, dd_npwr(x, n)),
-                                                  DD_STATIC_CAST(double, n)))));
+    x = dd_add(x, dd_mul(x, dd_sub_d_dd(1.0, dd_div_dd_d(dd_mul(r, dd_npwr(x, n)), DD_STATIC_CAST(double, n)))));
     if (a.x[0] < 0.0) {
         x = dd_neg(x);
     }
@@ -215,9 +190,7 @@ dd_nroot(const double2 a, int n)
 /* Computes the n-th power of a double-double number.
    NOTE:  0^0 causes an error.                         */
 
-double2
-dd_npwr(const double2 a, int n)
-{
+double2 dd_npwr(const double2 a, int n) {
     double2 r = a;
     double2 s = DD_C_ONE;
     int N = abs(n);
@@ -240,8 +213,7 @@ dd_npwr(const double2 a, int n)
                 r = dd_sqr(r);
             }
         }
-    }
-    else {
+    } else {
         s = r;
     }
 
@@ -253,46 +225,28 @@ dd_npwr(const double2 a, int n)
     return s;
 }
 
-double2
-dd_npow(const double2 a, int n)
-{
-    return dd_npwr(a, n);
-}
+double2 dd_npow(const double2 a, int n) { return dd_npwr(a, n); }
 
-double2
-dd_pow(const double2 a, const double2 b)
-{
-    return dd_exp(dd_mul(b, dd_log(a)));
-}
+double2 dd_pow(const double2 a, const double2 b) { return dd_exp(dd_mul(b, dd_log(a))); }
 
 /* ######################################################################## */
 /* # Exp/Log functions */
 /* ######################################################################## */
 
 static const double2 inv_fact[] = {
-    {{1.66666666666666657e-01,  9.25185853854297066e-18}},
-    {{4.16666666666666644e-02,  2.31296463463574266e-18}},
-    {{8.33333333333333322e-03,  1.15648231731787138e-19}},
-    {{1.38888888888888894e-03, -5.30054395437357706e-20}},
-    {{1.98412698412698413e-04,  1.72095582934207053e-22}},
-    {{2.48015873015873016e-05,  2.15119478667758816e-23}},
-    {{2.75573192239858925e-06, -1.85839327404647208e-22}},
-    {{2.75573192239858883e-07,  2.37677146222502973e-23}},
-    {{2.50521083854417202e-08, -1.44881407093591197e-24}},
-    {{2.08767569878681002e-09, -1.20734505911325997e-25}},
-    {{1.60590438368216133e-10,  1.25852945887520981e-26}},
-    {{1.14707455977297245e-11,  2.06555127528307454e-28}},
-    {{7.64716373181981641e-13,  7.03872877733453001e-30}},
-    {{4.77947733238738525e-14,  4.39920548583408126e-31}},
-    {{2.81145725434552060e-15,  1.65088427308614326e-31}}
-};
-//static const int n_inv_fact = sizeof(inv_fact) / sizeof(inv_fact[0]);
+    {{1.66666666666666657e-01, 9.25185853854297066e-18}},  {{4.16666666666666644e-02, 2.31296463463574266e-18}},
+    {{8.33333333333333322e-03, 1.15648231731787138e-19}},  {{1.38888888888888894e-03, -5.30054395437357706e-20}},
+    {{1.98412698412698413e-04, 1.72095582934207053e-22}},  {{2.48015873015873016e-05, 2.15119478667758816e-23}},
+    {{2.75573192239858925e-06, -1.85839327404647208e-22}}, {{2.75573192239858883e-07, 2.37677146222502973e-23}},
+    {{2.50521083854417202e-08, -1.44881407093591197e-24}}, {{2.08767569878681002e-09, -1.20734505911325997e-25}},
+    {{1.60590438368216133e-10, 1.25852945887520981e-26}},  {{1.14707455977297245e-11, 2.06555127528307454e-28}},
+    {{7.64716373181981641e-13, 7.03872877733453001e-30}},  {{4.77947733238738525e-14, 4.39920548583408126e-31}},
+    {{2.81145725434552060e-15, 1.65088427308614326e-31}}};
+// static const int n_inv_fact = sizeof(inv_fact) / sizeof(inv_fact[0]);
 
 /* Exponential.  Computes exp(x) in double-double precision. */
 
-double2
-dd_exp(const double2 a)
-{
+double2 dd_exp(const double2 a) {
     /* Strategy:  We first reduce the size of x by noting that
 
             exp(kr + m * log(2)) = 2^m * exp(r)^k
@@ -354,18 +308,11 @@ dd_exp(const double2 a)
     return dd_ldexp(s, DD_STATIC_CAST(int, m));
 }
 
-double2
-dd_exp_d(const double a)
-{
-    return dd_exp(dd_create(a, 0));
-}
-
+double2 dd_exp_d(const double a) { return dd_exp(dd_create(a, 0)); }
 
 /* Logarithm.  Computes log(x) in double-double precision.
    This is a natural logarithm (i.e., base e).            */
-double2
-dd_log(const double2 a)
-{
+double2 dd_log(const double2 a) {
     /* Strategy.  The Taylor series for log converges much more
        slowly than that of exp, due to the lack of the factorial
        term in the denominator.  Hence this routine instead tries
@@ -399,10 +346,7 @@ dd_log(const double2 a)
     return x;
 }
 
-
-double2
-dd_log1p(const double2 a)
-{
+double2 dd_log1p(const double2 a) {
     double2 ans;
     double la, elam1, ll;
     if (a.x[0] <= -1.0) {
@@ -412,58 +356,43 @@ dd_log1p(const double2 a)
     elam1 = expm1(la);
     ll = log1p(a.x[1] / (1 + a.x[0]));
     if (a.x[0] > 0) {
-        ll -= (elam1 - a.x[0])/(elam1+1);
+        ll -= (elam1 - a.x[0]) / (elam1 + 1);
     }
     ans = dd_add_d_d(la, ll);
     return ans;
 }
 
-double2
-dd_log10(const double2 a)
-{
-    return dd_div(dd_log(a), DD_C_LOG10);
-}
+double2 dd_log10(const double2 a) { return dd_div(dd_log(a), DD_C_LOG10); }
 
-double2
-dd_log_d(double a)
-{
-    return dd_log(dd_create(a, 0));
-}
+double2 dd_log_d(double a) { return dd_log(dd_create(a, 0)); }
 
+static const double2 expm1_numer[] = {{{-0.028127670288085938, 1.46e-37}},
+                                      {{0.5127815691121048, -4.248816580490825e-17}},
+                                      {{-0.0632631785207471, 4.733650586348708e-18}},
+                                      {{0.01470328560687425, -4.57569727474415e-20}},
+                                      {{-0.0008675686051689528, 2.340010361165805e-20}},
+                                      {{8.812635961829116e-05, 2.619804163788941e-21}},
+                                      {{-2.596308786770631e-06, -1.6196413688647164e-22}},
+                                      {{1.422669108780046e-07, 1.2956999470135368e-23}},
+                                      {{-1.5995603306536497e-09, 5.185121944095551e-26}},
+                                      {{4.526182006900779e-11, -1.9856249941108077e-27}}};
 
-static const double2 expm1_numer[] = {
-    {{-0.028127670288085938, 1.46e-37}},
-    {{0.5127815691121048, -4.248816580490825e-17}},
-    {{-0.0632631785207471, 4.733650586348708e-18}},
-    {{0.01470328560687425, -4.57569727474415e-20}},
-    {{-0.0008675686051689528, 2.340010361165805e-20}},
-    {{8.812635961829116e-05, 2.619804163788941e-21}},
-    {{-2.596308786770631e-06, -1.6196413688647164e-22}},
-    {{1.422669108780046e-07, 1.2956999470135368e-23}},
-    {{-1.5995603306536497e-09, 5.185121944095551e-26}},
-    {{4.526182006900779e-11, -1.9856249941108077e-27}}
-};
-
-static const double2 expm1_denom[] = {
-    {{1.0, 0.0}},
-    {{-0.4544126470907431, -2.2553855773661143e-17}},
-    {{0.09682713193619222, -4.961446925746919e-19}},
-    {{-0.012745248725908178, -6.0676821249478945e-19}},
-    {{0.001147361387158326, 1.3575817248483204e-20}},
-    {{-7.370416847725892e-05, 3.720369981570573e-21}},
-    {{3.4087499397791556e-06, -3.3067348191741576e-23}},
-    {{-1.1114024704296196e-07, -3.313361038199987e-24}},
-    {{2.3987051614110847e-09, 1.102474920537503e-25}},
-    {{-2.947734185911159e-11, -9.4795654767864e-28}},
-    {{1.32220659910223e-13, 6.440648413523595e-30}}
-};
+static const double2 expm1_denom[] = {{{1.0, 0.0}},
+                                      {{-0.4544126470907431, -2.2553855773661143e-17}},
+                                      {{0.09682713193619222, -4.961446925746919e-19}},
+                                      {{-0.012745248725908178, -6.0676821249478945e-19}},
+                                      {{0.001147361387158326, 1.3575817248483204e-20}},
+                                      {{-7.370416847725892e-05, 3.720369981570573e-21}},
+                                      {{3.4087499397791556e-06, -3.3067348191741576e-23}},
+                                      {{-1.1114024704296196e-07, -3.313361038199987e-24}},
+                                      {{2.3987051614110847e-09, 1.102474920537503e-25}},
+                                      {{-2.947734185911159e-11, -9.4795654767864e-28}},
+                                      {{1.32220659910223e-13, 6.440648413523595e-30}}};
 
 //
 // Rational approximation of expm1(x) for -1/2 < x < 1/2
 //
-static double2
-expm1_rational_approx(const double2 x)
-{
+static double2 expm1_rational_approx(const double2 x) {
     const double2 Y = dd_create(1.028127670288086, 0.0);
     const double2 num = dd_polyeval(expm1_numer, 9, x);
     const double2 den = dd_polyeval(expm1_denom, 10, x);
@@ -477,9 +406,7 @@ expm1_rational_approx(const double2 x)
 
 #define LOG_MAX_VALUE 709.782712893384
 
-double2
-dd_expm1(const double2 x)
-{
+double2 dd_expm1(const double2 x) {
     double2 a = dd_abs(x);
     if (dd_hi(a) > 0.5) {
         if (dd_hi(a) > LOG_MAX_VALUE) {
@@ -493,10 +420,7 @@ dd_expm1(const double2 x)
     return expm1_rational_approx(x);
 }
 
-
-double2
-dd_rand(void)
-{
+double2 dd_rand(void) {
     static const double m_const = 4.6566128730773926e-10; /* = 2^{-31} */
     double m = m_const;
     double2 r = DD_C_ZERO;
@@ -520,9 +444,7 @@ dd_rand(void)
    Evaluates the given n-th degree polynomial at x.
    The polynomial is given by the array of (n+1) coefficients. */
 
-double2
-dd_polyeval(const double2 *c, int n, const double2 x)
-{
+double2 dd_polyeval(const double2 *c, int n, const double2 x) {
     /* Just use Horner's method of polynomial evaluation. */
     double2 r = c[n];
     int i;
@@ -540,10 +462,7 @@ dd_polyeval(const double2 *c, int n, const double2 x)
    the given guess x0.  Note that this uses simple Newton
    iteration scheme, and does not work for multiple roots.  */
 
-double2
-dd_polyroot(const double2 *c, int n, const double2 x0, int max_iter,
-            double thresh)
-{
+double2 dd_polyroot(const double2 *c, int n, const double2 x0, int max_iter, double thresh) {
     double2 x = x0;
     double2 f;
     double2 *d = DD_STATIC_CAST(double2 *, calloc(sizeof(double2), n));

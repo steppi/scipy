@@ -49,7 +49,7 @@
  * the same degree.
  *
  */
-/*							chbevl.c	*/
+/*							chbevl.c	*/
 
 /*
  * Cephes Math Library Release 2.0:  April, 1987
@@ -60,8 +60,7 @@
 #include "mconf.h"
 #include <stdio.h>
 
-double chbevl(double x, double array[], int n)
-{
+double chbevl(double x, double array[], int n) {
     double b0, b1, b2, *p;
     int i;
 
@@ -71,11 +70,10 @@ double chbevl(double x, double array[], int n)
     i = n - 1;
 
     do {
-	b2 = b1;
-	b1 = b0;
-	b0 = x * b1 - b2 + *p++;
-    }
-    while (--i);
+        b2 = b1;
+        b1 = b0;
+        b0 = x * b1 - b2 + *p++;
+    } while (--i);
 
     return (0.5 * (b0 - b2));
 }

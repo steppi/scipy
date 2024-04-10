@@ -3,13 +3,9 @@
  */
 #include "mconf.h"
 
-static double is_nonpos_int(double x)
-{
-    return x <= 0 && x == ceil(x) && fabs(x) < 1e13;
-}
+static double is_nonpos_int(double x) { return x <= 0 && x == ceil(x) && fabs(x) < 1e13; }
 
-double poch(double a, double m)
-{
+double poch(double a, double m) {
     double r;
 
     r = 1.0;
@@ -56,15 +52,11 @@ double poch(double a, double m)
     if (m == 0) {
         /* Easy case */
         return r;
-    }
-    else if (a > 1e4 && fabs(m) <= 1) {
+    } else if (a > 1e4 && fabs(m) <= 1) {
         /* Avoid loss of precision */
-        return r * pow(a, m) * (
-            1
-            + m*(m-1)/(2*a)
-            + m*(m-1)*(m-2)*(3*m-1)/(24*a*a)
-            + m*m*(m-1)*(m-1)*(m-2)*(m-3)/(48*a*a*a)
-            );
+        return r * pow(a, m) *
+               (1 + m * (m - 1) / (2 * a) + m * (m - 1) * (m - 2) * (3 * m - 1) / (24 * a * a) +
+                m * m * (m - 1) * (m - 1) * (m - 2) * (m - 3) / (48 * a * a * a));
     }
 
     /* Check for infinity */

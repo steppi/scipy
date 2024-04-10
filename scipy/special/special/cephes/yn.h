@@ -45,7 +45,7 @@
  * Spot checked against tables for x, n between 0 and 100.
  *
  */
-
+
 /*
  * Cephes Math Library Release 2.8:  June, 2000
  * Copyright 1984, 1987, 2000 by Stephen L. Moshier
@@ -54,35 +54,31 @@
 #include "mconf.h"
 extern double MAXLOG;
 
-double yn(int n, double x)
-{
+double yn(int n, double x) {
     double an, anm1, anm2, r;
     int k, sign;
 
     if (n < 0) {
-	n = -n;
-	if ((n & 1) == 0)	/* -1**n */
-	    sign = 1;
-	else
-	    sign = -1;
-    }
-    else
-	sign = 1;
-
+        n = -n;
+        if ((n & 1) == 0) /* -1**n */
+            sign = 1;
+        else
+            sign = -1;
+    } else
+        sign = 1;
 
     if (n == 0)
-	return (sign * y0(x));
+        return (sign * y0(x));
     if (n == 1)
-	return (sign * y1(x));
+        return (sign * y1(x));
 
     /* test for overflow */
     if (x == 0.0) {
-	sf_error("yn", SF_ERROR_SINGULAR, NULL);
-	return -INFINITY * sign;
-    }
-    else if (x < 0.0) {
-	sf_error("yn", SF_ERROR_DOMAIN, NULL);
-	return NAN;
+        sf_error("yn", SF_ERROR_SINGULAR, NULL);
+        return -INFINITY * sign;
+    } else if (x < 0.0) {
+        sf_error("yn", SF_ERROR_DOMAIN, NULL);
+        return NAN;
     }
 
     /* forward recurrence on n */
@@ -92,14 +88,12 @@ double yn(int n, double x)
     k = 1;
     r = 2 * k;
     do {
-	an = r * anm1 / x - anm2;
-	anm2 = anm1;
-	anm1 = an;
-	r += 2.0;
-	++k;
-    }
-    while (k < n && isfinite(an));
-
+        an = r * anm1 / x - anm2;
+        anm2 = anm1;
+        anm1 = an;
+        r += 2.0;
+        ++k;
+    } while (k < n && isfinite(an));
 
     return (sign * an);
 }

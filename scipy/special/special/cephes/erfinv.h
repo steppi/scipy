@@ -19,29 +19,25 @@ double erfinv(double y) {
 
     const double thresh = 1e-7;
 
-    /* 
+    /*
      * For small arguments, use the Taylor expansion
-     * erf(y) = 2/\sqrt{\pi} (y - y^3 / 3 + O(y^5)),    y\to 0 
+     * erf(y) = 2/\sqrt{\pi} (y - y^3 / 3 + O(y^5)),    y\to 0
      * where we only retain the linear term.
      * Otherwise, y + 1 loses precision for |y| << 1.
      */
-    if ((-thresh < y) && (y < thresh)){
+    if ((-thresh < y) && (y < thresh)) {
         return y / M_2_SQRTPI;
-    } 
+    }
     if ((domain_lb < y) && (y < domain_ub)) {
-        return ndtri(0.5 * (y+1)) * M_SQRT1_2;
-    }
-    else if (y == domain_lb) {
+        return ndtri(0.5 * (y + 1)) * M_SQRT1_2;
+    } else if (y == domain_lb) {
         return -INFINITY;
-    }
-    else if (y == domain_ub) {
+    } else if (y == domain_ub) {
         return INFINITY;
-    }
-    else if (cephes_isnan(y)) {
+    } else if (cephes_isnan(y)) {
         sf_error("erfinv", SF_ERROR_DOMAIN, NULL);
         return y;
-    }
-    else {
+    } else {
         sf_error("erfinv", SF_ERROR_DOMAIN, NULL);
         return NAN;
     }
@@ -60,18 +56,14 @@ double erfcinv(double y) {
 
     if ((domain_lb < y) && (y < domain_ub)) {
         return -ndtri(0.5 * y) * M_SQRT1_2;
-    }
-    else if (y == domain_lb) {
+    } else if (y == domain_lb) {
         return INFINITY;
-    }
-    else if (y == domain_ub) {
+    } else if (y == domain_ub) {
         return -INFINITY;
-    }
-    else if (cephes_isnan(y)) {
+    } else if (cephes_isnan(y)) {
         sf_error("erfcinv", SF_ERROR_DOMAIN, NULL);
         return y;
-    }
-    else {
+    } else {
         sf_error("erfcinv", SF_ERROR_DOMAIN, NULL);
         return NAN;
     }

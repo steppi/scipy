@@ -46,14 +46,11 @@
  *
  * For IEEE arithmetic, MAXL2 = 1024.
  */
-
 
 /*
  * Cephes Math Library Release 2.3:  March, 1995
  * Copyright 1984, 1995 by Stephen L. Moshier
  */
-
-
 
 #include "mconf.h"
 
@@ -72,22 +69,21 @@ static double Q[] = {
 #define MAXL2 1024.0
 #define MINL2 -1024.0
 
-double exp2(double x)
-{
+double exp2(double x) {
     double px, xx;
     short n;
 
     if (cephes_isnan(x))
-	return (x);
+        return (x);
     if (x > MAXL2) {
-	return (INFINITY);
+        return (INFINITY);
     }
 
     if (x < MINL2) {
-	return (0.0);
+        return (0.0);
     }
 
-    xx = x;			/* save x */
+    xx = x; /* save x */
     /* separate into integer and fractional parts */
     px = floor(x + 0.5);
     n = px;

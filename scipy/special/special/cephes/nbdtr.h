@@ -42,7 +42,7 @@
  * See also incbet.c.
  *
  */
-/*							nbdtrc.c
+/*							nbdtrc.c
  *
  *	Complemented negative binomial distribution
  *
@@ -82,7 +82,7 @@
  *    IEEE     0,100       100000      1.7e-13     8.8e-15
  * See also incbet.c.
  */
-
+
 /*                                                     nbdtrc
  *
  *     Complemented negative binomial distribution
@@ -118,7 +118,7 @@
  *
  * See incbet.c.
  */
-/*							nbdtri
+/*							nbdtri
  *
  *	Functional inverse of negative binomial distribution
  *
@@ -144,7 +144,7 @@
  *    IEEE     0,100       100000      1.5e-14     8.5e-16
  * See also incbi.c.
  */
-
+
 /*
  * Cephes Math Library Release 2.3:  March, 1995
  * Copyright 1984, 1987, 1995 by Stephen L. Moshier
@@ -152,16 +152,15 @@
 
 #include "mconf.h"
 
-double nbdtrc(int k, int n, double p)
-{
+double nbdtrc(int k, int n, double p) {
     double dk, dn;
 
     if ((p < 0.0) || (p > 1.0))
-	goto domerr;
+        goto domerr;
     if (k < 0) {
-      domerr:
-	sf_error("nbdtr", SF_ERROR_DOMAIN, NULL);
-	return (NAN);
+    domerr:
+        sf_error("nbdtr", SF_ERROR_DOMAIN, NULL);
+        return (NAN);
     }
 
     dk = k + 1;
@@ -169,36 +168,30 @@ double nbdtrc(int k, int n, double p)
     return (incbet(dk, dn, 1.0 - p));
 }
 
-
-
-double nbdtr(int k, int n, double p)
-{
+double nbdtr(int k, int n, double p) {
     double dk, dn;
 
     if ((p < 0.0) || (p > 1.0))
-	goto domerr;
+        goto domerr;
     if (k < 0) {
-      domerr:
-	sf_error("nbdtr", SF_ERROR_DOMAIN, NULL);
-	return (NAN);
+    domerr:
+        sf_error("nbdtr", SF_ERROR_DOMAIN, NULL);
+        return (NAN);
     }
     dk = k + 1;
     dn = n;
     return (incbet(dn, dk, p));
 }
 
-
-
-double nbdtri(int k, int n, double p)
-{
+double nbdtri(int k, int n, double p) {
     double dk, dn, w;
 
     if ((p < 0.0) || (p > 1.0))
-	goto domerr;
+        goto domerr;
     if (k < 0) {
-      domerr:
-	sf_error("nbdtri", SF_ERROR_DOMAIN, NULL);
-	return (NAN);
+    domerr:
+        sf_error("nbdtri", SF_ERROR_DOMAIN, NULL);
+        return (NAN);
     }
     dk = k + 1;
     dn = n;

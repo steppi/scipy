@@ -1,11 +1,11 @@
 
-/* Compute the CDF of the Tukey-Lambda distribution 
+/* Compute the CDF of the Tukey-Lambda distribution
  * using a bracketing search with special checks
- * 
- * The PPF of the Tukey-lambda distribution is 
+ *
+ * The PPF of the Tukey-lambda distribution is
  * G(p) = (p**lam + (1-p)**lam) / lam
- * 
- * Author:  Travis Oliphant 
+ *
+ * Author:  Travis Oliphant
  */
 
 #include "mconf.h"
@@ -14,8 +14,7 @@
 #define EPS 1.0e-14
 #define MAXCOUNT 60
 
-double tukeylambdacdf(double x, double lmbda)
-{
+double tukeylambdacdf(double x, double lmbda) {
     double pmin, pmid, pmax, plow, phigh, xeval;
     int count;
 
@@ -36,8 +35,7 @@ double tukeylambdacdf(double x, double lmbda)
     if ((-SMALLVAL < lmbda) && (lmbda < SMALLVAL)) {
         if (x >= 0) {
             return 1.0 / (1.0 + exp(-x));
-        }
-        else {
+        } else {
             return exp(x) / (1.0 + exp(x));
         }
     }
@@ -57,8 +55,7 @@ double tukeylambdacdf(double x, double lmbda)
         if (xeval > x) {
             phigh = pmid;
             pmid = (pmid + plow) / 2.0;
-        }
-        else {
+        } else {
             plow = pmid;
             pmid = (pmid + phigh) / 2.0;
         }

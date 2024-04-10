@@ -7,23 +7,20 @@
 
 extern double MACHEP;
 
-
 /*
  * Bessel function of noninteger order
  */
-double yv(double v, double x)
-{
+double yv(double v, double x) {
     double y, t;
     int n;
 
     n = v;
     if (n == v) {
-	y = yn(n, x);
-	return (y);
-    }
-    else if (v == floor(v)) {
+        y = yn(n, x);
+        return (y);
+    } else if (v == floor(v)) {
         /* Zero in denominator. */
-	sf_error("yv", SF_ERROR_DOMAIN, NULL);
+        sf_error("yv", SF_ERROR_DOMAIN, NULL);
         return NAN;
     }
 
@@ -34,8 +31,7 @@ double yv(double v, double x)
         if (v > 0) {
             sf_error("yv", SF_ERROR_OVERFLOW, NULL);
             return -INFINITY;
-        }
-        else if (v < -1e10) {
+        } else if (v < -1e10) {
             /* Whether it's +inf or -inf is numerically ill-defined. */
             sf_error("yv", SF_ERROR_DOMAIN, NULL);
             return NAN;

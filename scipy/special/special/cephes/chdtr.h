@@ -48,7 +48,7 @@
  *   message         condition      value returned
  * chdtr domain   x < 0 or v < 1        0.0
  */
-/*							chdtrc()
+/*							chdtrc()
  *
  *	Complemented Chi-square distribution
  *
@@ -98,7 +98,7 @@
  *   message         condition      value returned
  * chdtrc domain  x < 0 or v < 1        0.0
  */
-/*							chdtri()
+/*							chdtri()
  *
  *	Inverse of complemented Chi-square distribution
  *
@@ -138,9 +138,8 @@
  *                     v < 1
  *
  */
-
-/*                                                             chdtr() */
 
+/*                                                             chdtr() */
 
 /*
  * Cephes Math Library Release 2.0:  April, 1987
@@ -150,35 +149,28 @@
 
 #include "mconf.h"
 
-double chdtrc(double df, double x)
-{
+double chdtrc(double df, double x) {
 
     if (x < 0.0)
-	return 1.0;		/* modified by T. Oliphant */
+        return 1.0; /* modified by T. Oliphant */
     return (igamc(df / 2.0, x / 2.0));
 }
 
+double chdtr(double df, double x) {
 
-
-double chdtr(double df, double x)
-{
-
-    if ((x < 0.0)) {		/* || (df < 1.0) ) */
-	sf_error("chdtr", SF_ERROR_DOMAIN, NULL);
-	return (NAN);
+    if ((x < 0.0)) { /* || (df < 1.0) ) */
+        sf_error("chdtr", SF_ERROR_DOMAIN, NULL);
+        return (NAN);
     }
     return (igam(df / 2.0, x / 2.0));
 }
 
-
-
-double chdtri(double df, double y)
-{
+double chdtri(double df, double y) {
     double x;
 
-    if ((y < 0.0) || (y > 1.0)) {	/* || (df < 1.0) ) */
-	sf_error("chdtri", SF_ERROR_DOMAIN, NULL);
-	return (NAN);
+    if ((y < 0.0) || (y > 1.0)) { /* || (df < 1.0) ) */
+        sf_error("chdtri", SF_ERROR_DOMAIN, NULL);
+        return (NAN);
     }
 
     x = igamci(0.5 * df, y);

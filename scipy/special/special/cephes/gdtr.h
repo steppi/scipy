@@ -42,7 +42,7 @@
  * gdtr domain         x < 0            0.0
  *
  */
-/*							gdtrc.c
+/*							gdtrc.c
  *
  *	Complemented Gamma distribution function
  *
@@ -86,9 +86,8 @@
  * gdtrc domain         x < 0            0.0
  *
  */
-
-/*                                                     gdtr()  */
 
+/*                                                     gdtr()  */
 
 /*
  * Cephes Math Library Release 2.3:  March,1995
@@ -97,35 +96,29 @@
 
 #include "mconf.h"
 
-
-double gdtr(double a, double b, double x)
-{
+double gdtr(double a, double b, double x) {
 
     if (x < 0.0) {
-	sf_error("gdtr", SF_ERROR_DOMAIN, NULL);
-	return (NAN);
+        sf_error("gdtr", SF_ERROR_DOMAIN, NULL);
+        return (NAN);
     }
     return (igam(b, a * x));
 }
 
-
-double gdtrc(double a, double b, double x)
-{
+double gdtrc(double a, double b, double x) {
 
     if (x < 0.0) {
-	sf_error("gdtrc", SF_ERROR_DOMAIN, NULL);
-	return (NAN);
+        sf_error("gdtrc", SF_ERROR_DOMAIN, NULL);
+        return (NAN);
     }
     return (igamc(b, a * x));
 }
 
-
-double gdtri(double a, double b, double y)
-{
+double gdtri(double a, double b, double y) {
 
     if ((y < 0.0) || (y > 1.0) || (a <= 0.0) || (b < 0.0)) {
-	sf_error("gdtri", SF_ERROR_DOMAIN, NULL);
-	return (NAN);
+        sf_error("gdtri", SF_ERROR_DOMAIN, NULL);
+        return (NAN);
     }
 
     return (igamci(b, 1.0 - y) / a);

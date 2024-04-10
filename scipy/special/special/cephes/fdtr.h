@@ -160,12 +160,9 @@
  * Copyright 1984, 1987, 1995 by Stephen L. Moshier
  */
 
-
 #include "mconf.h"
 
-
-double fdtrc(double a, double b, double x)
-{
+double fdtrc(double a, double b, double x) {
     double w;
 
     if ((a <= 0.0) || (b <= 0.0) || (x < 0.0)) {
@@ -176,9 +173,7 @@ double fdtrc(double a, double b, double x)
     return incbet(0.5 * b, 0.5 * a, w);
 }
 
-
-double fdtr(double a, double b, double x)
-{
+double fdtr(double a, double b, double x) {
     double w;
 
     if ((a <= 0.0) || (b <= 0.0) || (x < 0.0)) {
@@ -190,9 +185,7 @@ double fdtr(double a, double b, double x)
     return incbet(0.5 * a, 0.5 * b, w);
 }
 
-
-double fdtri(double a, double b, double y)
-{
+double fdtri(double a, double b, double y) {
     double w, x;
 
     if ((a <= 0.0) || (b <= 0.0) || (y <= 0.0) || (y > 1.0)) {
@@ -207,8 +200,7 @@ double fdtri(double a, double b, double y)
     if (w > y || y < 0.001) {
         w = incbi(0.5 * b, 0.5 * a, y);
         x = (b - b * w) / (a * w);
-    }
-    else {
+    } else {
         w = incbi(0.5 * a, 0.5 * b, 1.0 - y);
         x = b * w / (a * (1.0 - w));
     }

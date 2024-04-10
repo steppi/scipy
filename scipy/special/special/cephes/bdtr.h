@@ -46,7 +46,7 @@
  *                     n < k
  *                     x < 0, x > 1
  */
-/*							bdtrc()
+/*							bdtrc()
  *
  *	Complemented binomial distribution
  *
@@ -93,7 +93,7 @@
  *   message         condition      value returned
  * bdtrc domain      x<0, x>1, n<k       0.0
  */
-/*							bdtri()
+/*							bdtri()
  *
  *	Inverse binomial distribution
  *
@@ -137,9 +137,8 @@
  * bdtri domain     k < 0, n <= k         0.0
  *                  x < 0, x > 1
  */
-
-/*                                                             bdtr() */
 
+/*                                                             bdtr() */
 
 /*
  * Cephes Math Library Release 2.3:  March, 1995
@@ -148,22 +147,21 @@
 
 #include "mconf.h"
 
-double bdtrc(double k, int n, double p)
-{
+double bdtrc(double k, int n, double p) {
     double dk, dn;
     double fk = floor(k);
 
     if (isnan(p) || isnan(k)) {
-	return NAN;
+        return NAN;
     }
 
     if (p < 0.0 || p > 1.0 || n < fk) {
-	sf_error("bdtrc", SF_ERROR_DOMAIN, NULL);
-	return NAN;
+        sf_error("bdtrc", SF_ERROR_DOMAIN, NULL);
+        return NAN;
     }
 
     if (fk < 0) {
-	return 1.0;
+        return 1.0;
     }
 
     if (fk == n) {
@@ -172,27 +170,23 @@ double bdtrc(double k, int n, double p)
 
     dn = n - fk;
     if (k == 0) {
-	if (p < .01)
-	    dk = -expm1(dn * log1p(-p));
-	else
-	    dk = 1.0 - pow(1.0 - p, dn);
-    }
-    else {
-	dk = fk + 1;
-	dk = incbet(dk, dn, p);
+        if (p < .01)
+            dk = -expm1(dn * log1p(-p));
+        else
+            dk = 1.0 - pow(1.0 - p, dn);
+    } else {
+        dk = fk + 1;
+        dk = incbet(dk, dn, p);
     }
     return dk;
 }
 
-
-
-double bdtr(double k, int n, double p)
-{
+double bdtr(double k, int n, double p) {
     double dk, dn;
     double fk = floor(k);
 
     if (isnan(p) || isnan(k)) {
-	return NAN;
+        return NAN;
     }
 
     if (p < 0.0 || p > 1.0 || fk < 0 || n < fk) {
@@ -201,54 +195,49 @@ double bdtr(double k, int n, double p)
     }
 
     if (fk == n)
-	return 1.0;
+        return 1.0;
 
     dn = n - fk;
     if (fk == 0) {
-	dk = pow(1.0 - p, dn);
-    }
-    else {
-	dk = fk + 1.;
-	dk = incbet(dn, dk, 1.0 - p);
+        dk = pow(1.0 - p, dn);
+    } else {
+        dk = fk + 1.;
+        dk = incbet(dn, dk, 1.0 - p);
     }
     return dk;
 }
 
-
-double bdtri(double k, int n, double y)
-{
+double bdtri(double k, int n, double y) {
     double p, dn, dk;
     double fk = floor(k);
 
     if (isnan(k)) {
-	return NAN;
+        return NAN;
     }
 
     if (y < 0.0 || y > 1.0 || fk < 0.0 || n <= fk) {
-	sf_error("bdtri", SF_ERROR_DOMAIN, NULL);
-	return NAN;
+        sf_error("bdtri", SF_ERROR_DOMAIN, NULL);
+        return NAN;
     }
 
     dn = n - fk;
 
     if (fk == n)
-	return 1.0;
+        return 1.0;
 
     if (fk == 0) {
-	if (y > 0.8) {
-	    p = -expm1(log1p(y - 1.0) / dn);
-	}
-	else {
-	    p = 1.0 - pow(y, 1.0 / dn);
-	}
-    }
-    else {
-	dk = fk + 1;
-	p = incbet(dn, dk, 0.5);
-	if (p > 0.5)
-	    p = incbi(dk, dn, 1.0 - y);
-	else
-	    p = 1.0 - incbi(dn, dk, y);
+        if (y > 0.8) {
+            p = -expm1(log1p(y - 1.0) / dn);
+        } else {
+            p = 1.0 - pow(y, 1.0 / dn);
+        }
+    } else {
+        dk = fk + 1;
+        p = incbet(dn, dk, 0.5);
+        if (p > 0.5)
+            p = incbi(dk, dn, 1.0 - y);
+        else
+            p = 1.0 - incbi(dn, dk, y);
     }
     return p;
 }

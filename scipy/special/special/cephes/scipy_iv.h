@@ -22,7 +22,6 @@
 /*     Modified Bessel function of noninteger order            */
 /* If x < 0, then v must be an integer. */
 
-
 /*
  * Parts of the code are copyright:
  *
@@ -77,73 +76,68 @@ static double iv_asymptotic(double v, double x);
 static void ikv_asymptotic_uniform(double v, double x, double *Iv, double *Kv);
 static void ikv_temme(double v, double x, double *Iv, double *Kv);
 
-double iv(double v, double x)
-{
+double iv(double v, double x) {
     int sign;
     double t, ax, res;
 
     if (isnan(v) || isnan(x)) {
-      return NAN;
+        return NAN;
     }
 
     /* If v is a negative integer, invoke symmetry */
     t = floor(v);
     if (v < 0.0) {
-	if (t == v) {
-	    v = -v;		/* symmetry */
-	    t = -t;
-	}
+        if (t == v) {
+            v = -v; /* symmetry */
+            t = -t;
+        }
     }
     /* If x is negative, require v to be an integer */
     sign = 1;
     if (x < 0.0) {
-	if (t != v) {
-	    sf_error("iv", SF_ERROR_DOMAIN, NULL);
-	    return (NAN);
-	}
-	if (v != 2.0 * floor(v / 2.0)) {
-	    sign = -1;
-	}
+        if (t != v) {
+            sf_error("iv", SF_ERROR_DOMAIN, NULL);
+            return (NAN);
+        }
+        if (v != 2.0 * floor(v / 2.0)) {
+            sign = -1;
+        }
     }
 
     /* Avoid logarithm singularity */
     if (x == 0.0) {
-	if (v == 0.0) {
-	    return 1.0;
-	}
-	if (v < 0.0) {
-	    sf_error("iv", SF_ERROR_OVERFLOW, NULL);
-	    return INFINITY;
-	}
-	else
-	    return 0.0;
+        if (v == 0.0) {
+            return 1.0;
+        }
+        if (v < 0.0) {
+            sf_error("iv", SF_ERROR_OVERFLOW, NULL);
+            return INFINITY;
+        } else
+            return 0.0;
     }
 
     ax = fabs(x);
     if (fabs(v) > 50) {
-	/*
-	 * Uniform asymptotic expansion for large orders.
-	 *
-	 * This appears to overflow slightly later than the Boost
-	 * implementation of Temme's method.
-	 */
-	ikv_asymptotic_uniform(v, ax, &res, NULL);
-    }
-    else {
-	/* Otherwise: Temme's method */
-	ikv_temme(v, ax, &res, NULL);
+        /*
+         * Uniform asymptotic expansion for large orders.
+         *
+         * This appears to overflow slightly later than the Boost
+         * implementation of Temme's method.
+         */
+        ikv_asymptotic_uniform(v, ax, &res, NULL);
+    } else {
+        /* Otherwise: Temme's method */
+        ikv_temme(v, ax, &res, NULL);
     }
     res *= sign;
     return res;
 }
 
-
 /*
  * Compute Iv from (AMS5 9.7.1), asymptotic expansion for large |z|
  * Iv ~ exp(x)/sqrt(2 pi x) ( 1 + (4*v*v-1)/8x + (4*v*v-1)(4*v*v-9)/8x/2! + ...)
  */
-static double iv_asymptotic(double v, double x)
-{
+static double iv_asymptotic(double v, double x) {
     double mu;
     double sum, term, prefactor, factor;
     int k;
@@ -151,7 +145,7 @@ static double iv_asymptotic(double v, double x)
     prefactor = exp(x) / sqrt(2 * M_PI * x);
 
     if (prefactor == INFINITY) {
-	return prefactor;
+        return prefactor;
     }
 
     mu = 4 * v * v;
@@ -160,19 +154,18 @@ static double iv_asymptotic(double v, double x)
     k = 1;
 
     do {
-	factor = (mu - (2 * k - 1) * (2 * k - 1)) / (8 * x) / k;
-	if (k > 100) {
-	    /* didn't converge */
-	    sf_error("iv(iv_asymptotic)", SF_ERROR_NO_RESULT, NULL);
-	    break;
-	}
-	term *= -factor;
-	sum += term;
-	++k;
+        factor = (mu - (2 * k - 1) * (2 * k - 1)) / (8 * x) / k;
+        if (k > 100) {
+            /* didn't converge */
+            sf_error("iv(iv_asymptotic)", SF_ERROR_NO_RESULT, NULL);
+            break;
+        }
+        term *= -factor;
+        sum += term;
+        ++k;
     } while (fabs(term) > MACHEP * fabs(sum));
     return sum * prefactor;
 }
-
 
 /*
  * Uniform asymptotic expansion factors, (AMS5 9.3.9; AMS5 9.3.10)
@@ -196,59 +189,233 @@ static double iv_asymptotic(double v, double x)
 #define N_UFACTORS 11
 #define N_UFACTOR_TERMS 31
 static const double asymptotic_ufactors[N_UFACTORS][N_UFACTOR_TERMS] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 1},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, -0.20833333333333334, 0.0, 0.125, 0.0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0.3342013888888889, 0.0, -0.40104166666666669, 0.0, 0.0703125, 0.0,
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {0,   0,     0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.20833333333333334,
+     0.0, 0.125, 0.0},
+    {0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0.3342013888888889,
+     0.0,
+     -0.40104166666666669,
+     0.0,
+     0.0703125,
+     0.0,
      0.0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     -1.0258125964506173, 0.0, 1.8464626736111112, 0.0,
-     -0.89121093750000002, 0.0, 0.0732421875, 0.0, 0.0, 0.0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     4.6695844234262474, 0.0, -11.207002616222995, 0.0, 8.78912353515625,
-     0.0, -2.3640869140624998, 0.0, 0.112152099609375, 0.0, 0.0, 0.0, 0.0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -28.212072558200244, 0.0,
-     84.636217674600744, 0.0, -91.818241543240035, 0.0, 42.534998745388457,
-     0.0, -7.3687943594796312, 0.0, 0.22710800170898438, 0.0, 0.0, 0.0,
-     0.0, 0.0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 212.5701300392171, 0.0,
-     -765.25246814118157, 0.0, 1059.9904525279999, 0.0,
-     -699.57962737613275, 0.0, 218.19051174421159, 0.0,
-     -26.491430486951554, 0.0, 0.57250142097473145, 0.0, 0.0, 0.0, 0.0,
-     0.0, 0.0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, -1919.4576623184068, 0.0,
-     8061.7221817373083, 0.0, -13586.550006434136, 0.0, 11655.393336864536,
-     0.0, -5305.6469786134048, 0.0, 1200.9029132163525, 0.0,
-     -108.09091978839464, 0.0, 1.7277275025844574, 0.0, 0.0, 0.0, 0.0, 0.0,
-     0.0, 0.0},
-    {0, 0, 0, 0, 0, 0, 20204.291330966149, 0.0, -96980.598388637503, 0.0,
-     192547.0012325315, 0.0, -203400.17728041555, 0.0, 122200.46498301747,
-     0.0, -41192.654968897557, 0.0, 7109.5143024893641, 0.0,
-     -493.915304773088, 0.0, 6.074042001273483, 0.0, 0.0, 0.0, 0.0, 0.0,
-     0.0, 0.0, 0.0},
-    {0, 0, 0, -242919.18790055133, 0.0, 1311763.6146629769, 0.0,
-     -2998015.9185381061, 0.0, 3763271.2976564039, 0.0,
-     -2813563.2265865342, 0.0, 1268365.2733216248, 0.0,
-     -331645.17248456361, 0.0, 45218.768981362737, 0.0,
-     -2499.8304818112092, 0.0, 24.380529699556064, 0.0, 0.0, 0.0, 0.0, 0.0,
-     0.0, 0.0, 0.0, 0.0},
-    {3284469.8530720375, 0.0, -19706819.11843222, 0.0, 50952602.492664628,
-     0.0, -74105148.211532637, 0.0, 66344512.274729028, 0.0,
-     -37567176.660763353, 0.0, 13288767.166421819, 0.0,
-     -2785618.1280864552, 0.0, 308186.40461266245, 0.0,
-     -13886.089753717039, 0.0, 110.01714026924674, 0.0, 0.0, 0.0, 0.0, 0.0,
-     0.0, 0.0, 0.0, 0.0, 0.0}
-};
-
+    {0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   -1.0258125964506173,
+     0.0, 1.8464626736111112,
+     0.0, -0.89121093750000002,
+     0.0, 0.0732421875,
+     0.0, 0.0,
+     0.0},
+    {0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     4.6695844234262474,
+     0.0,
+     -11.207002616222995,
+     0.0,
+     8.78912353515625,
+     0.0,
+     -2.3640869140624998,
+     0.0,
+     0.112152099609375,
+     0.0,
+     0.0,
+     0.0,
+     0.0},
+    {0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   -28.212072558200244,
+     0.0, 84.636217674600744,
+     0.0, -91.818241543240035,
+     0.0, 42.534998745388457,
+     0.0, -7.3687943594796312,
+     0.0, 0.22710800170898438,
+     0.0, 0.0,
+     0.0, 0.0,
+     0.0},
+    {0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     212.5701300392171,
+     0.0,
+     -765.25246814118157,
+     0.0,
+     1059.9904525279999,
+     0.0,
+     -699.57962737613275,
+     0.0,
+     218.19051174421159,
+     0.0,
+     -26.491430486951554,
+     0.0,
+     0.57250142097473145,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0},
+    {0,   0,
+     0,   0,
+     0,   0,
+     0,   0,
+     0,   -1919.4576623184068,
+     0.0, 8061.7221817373083,
+     0.0, -13586.550006434136,
+     0.0, 11655.393336864536,
+     0.0, -5305.6469786134048,
+     0.0, 1200.9029132163525,
+     0.0, -108.09091978839464,
+     0.0, 1.7277275025844574,
+     0.0, 0.0,
+     0.0, 0.0,
+     0.0, 0.0,
+     0.0},
+    {0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     20204.291330966149,
+     0.0,
+     -96980.598388637503,
+     0.0,
+     192547.0012325315,
+     0.0,
+     -203400.17728041555,
+     0.0,
+     122200.46498301747,
+     0.0,
+     -41192.654968897557,
+     0.0,
+     7109.5143024893641,
+     0.0,
+     -493.915304773088,
+     0.0,
+     6.074042001273483,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0},
+    {0,   0,
+     0,   -242919.18790055133,
+     0.0, 1311763.6146629769,
+     0.0, -2998015.9185381061,
+     0.0, 3763271.2976564039,
+     0.0, -2813563.2265865342,
+     0.0, 1268365.2733216248,
+     0.0, -331645.17248456361,
+     0.0, 45218.768981362737,
+     0.0, -2499.8304818112092,
+     0.0, 24.380529699556064,
+     0.0, 0.0,
+     0.0, 0.0,
+     0.0, 0.0,
+     0.0, 0.0,
+     0.0},
+    {3284469.8530720375,
+     0.0,
+     -19706819.11843222,
+     0.0,
+     50952602.492664628,
+     0.0,
+     -74105148.211532637,
+     0.0,
+     66344512.274729028,
+     0.0,
+     -37567176.660763353,
+     0.0,
+     13288767.166421819,
+     0.0,
+     -2785618.1280864552,
+     0.0,
+     308186.40461266245,
+     0.0,
+     -13886.089753717039,
+     0.0,
+     110.01714026924674,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0}};
 
 /*
  * Compute Iv, Kv from (AMS5 9.7.7 + 9.7.8), asymptotic expansion for large v
  */
-static void ikv_asymptotic_uniform(double v, double x,
-			    double *i_value, double *k_value)
-{
+static void ikv_asymptotic_uniform(double v, double x, double *i_value, double *k_value) {
     double i_prefactor, k_prefactor;
     double t, t2, eta, z;
     double i_sum, k_sum, term, divisor;
@@ -256,9 +423,9 @@ static void ikv_asymptotic_uniform(double v, double x,
     int sign = 1;
 
     if (v < 0) {
-	/* Negative v; compute I_{-v} and K_{-v} and use (AMS 9.6.2) */
-	sign = -1;
-	v = -v;
+        /* Negative v; compute I_{-v} and K_{-v} and use (AMS 9.6.2) */
+        sign = -1;
+        v = -v;
     }
 
     z = x / v;
@@ -274,62 +441,58 @@ static void ikv_asymptotic_uniform(double v, double x,
 
     divisor = v;
     for (n = 1; n < N_UFACTORS; ++n) {
-	/*
-	 * Evaluate u_k(t) with Horner's scheme;
-	 * (using the knowledge about which coefficients are zero)
-	 */
-	term = 0;
-	for (k = N_UFACTOR_TERMS - 1 - 3 * n;
-	     k < N_UFACTOR_TERMS - n; k += 2) {
-	    term *= t2;
-	    term += asymptotic_ufactors[n][k];
-	}
-	for (k = 1; k < n; k += 2) {
-	    term *= t2;
-	}
-	if (n % 2 == 1) {
-	    term *= t;
-	}
+        /*
+         * Evaluate u_k(t) with Horner's scheme;
+         * (using the knowledge about which coefficients are zero)
+         */
+        term = 0;
+        for (k = N_UFACTOR_TERMS - 1 - 3 * n; k < N_UFACTOR_TERMS - n; k += 2) {
+            term *= t2;
+            term += asymptotic_ufactors[n][k];
+        }
+        for (k = 1; k < n; k += 2) {
+            term *= t2;
+        }
+        if (n % 2 == 1) {
+            term *= t;
+        }
 
-	/* Sum terms */
-	term /= divisor;
-	i_sum += term;
-	k_sum += (n % 2 == 0) ? term : -term;
+        /* Sum terms */
+        term /= divisor;
+        i_sum += term;
+        k_sum += (n % 2 == 0) ? term : -term;
 
-	/* Check convergence */
-	if (fabs(term) < MACHEP) {
-	    break;
-	}
+        /* Check convergence */
+        if (fabs(term) < MACHEP) {
+            break;
+        }
 
-	divisor *= v;
+        divisor *= v;
     }
 
     if (fabs(term) > 1e-3 * fabs(i_sum)) {
-	/* Didn't converge */
-	sf_error("ikv_asymptotic_uniform", SF_ERROR_NO_RESULT, NULL);
+        /* Didn't converge */
+        sf_error("ikv_asymptotic_uniform", SF_ERROR_NO_RESULT, NULL);
     }
     if (fabs(term) > MACHEP * fabs(i_sum)) {
-	/* Some precision lost */
-	sf_error("ikv_asymptotic_uniform", SF_ERROR_LOSS, NULL);
+        /* Some precision lost */
+        sf_error("ikv_asymptotic_uniform", SF_ERROR_LOSS, NULL);
     }
 
     if (k_value != NULL) {
-	/* symmetric in v */
-	*k_value = k_prefactor * k_sum;
+        /* symmetric in v */
+        *k_value = k_prefactor * k_sum;
     }
 
     if (i_value != NULL) {
-	if (sign == 1) {
-	    *i_value = i_prefactor * i_sum;
-	}
-	else {
-	    /* (AMS 9.6.2) */
-	    *i_value = (i_prefactor * i_sum
-			+ (2 / M_PI) * sin(M_PI * v) * k_prefactor * k_sum);
-	}
+        if (sign == 1) {
+            *i_value = i_prefactor * i_sum;
+        } else {
+            /* (AMS 9.6.2) */
+            *i_value = (i_prefactor * i_sum + (2 / M_PI) * sin(M_PI * v) * k_prefactor * k_sum);
+        }
     }
 }
-
 
 /*
  * The following code originates from the Boost C++ library,
@@ -349,14 +512,12 @@ static void ikv_asymptotic_uniform(double v, double x,
  * Calculate K(v, x) and K(v+1, x) by method analogous to
  * Temme, Journal of Computational Physics, vol 21, 343 (1976)
  */
-static int temme_ik_series(double v, double x, double *K, double *K1)
-{
+static int temme_ik_series(double v, double x, double *K, double *K1) {
     double f, h, p, q, coef, sum, sum1, tolerance;
     double a, b, c, d, sigma, gamma1, gamma2;
     unsigned long k;
     double gp;
     double gm;
-
 
     /*
      * |x| <= 2, Temme series converge rapidly
@@ -388,19 +549,19 @@ static int temme_ik_series(double v, double x, double *K, double *K1)
     /* series summation */
     tolerance = MACHEP;
     for (k = 1; k < MAXITER; k++) {
-	f = (k * f + p + q) / (k * k - v * v);
-	p /= k - v;
-	q /= k + v;
-	h = p - k * f;
-	coef *= x * x / (4 * k);
-	sum += coef * f;
-	sum1 += coef * h;
-	if (fabs(coef * f) < fabs(sum) * tolerance) {
-	    break;
-	}
+        f = (k * f + p + q) / (k * k - v * v);
+        p /= k - v;
+        q /= k + v;
+        h = p - k * f;
+        coef *= x * x / (4 * k);
+        sum += coef * f;
+        sum1 += coef * h;
+        if (fabs(coef * f) < fabs(sum) * tolerance) {
+            break;
+        }
     }
     if (k == MAXITER) {
-	sf_error("ikv_temme(temme_ik_series)", SF_ERROR_NO_RESULT, NULL);
+        sf_error("ikv_temme(temme_ik_series)", SF_ERROR_NO_RESULT, NULL);
     }
 
     *K = sum;
@@ -411,11 +572,9 @@ static int temme_ik_series(double v, double x, double *K, double *K1)
 
 /* Evaluate continued fraction fv = I_(v+1) / I_v, derived from
  * Abramowitz and Stegun, Handbook of Mathematical Functions, 1972, 9.1.73 */
-static int CF1_ik(double v, double x, double *fv)
-{
+static int CF1_ik(double v, double x, double *fv) {
     double C, D, f, a, b, delta, tiny, tolerance;
     unsigned long k;
-
 
     /*
      * |x| <= |v|, CF1_ik converges rapidly
@@ -428,28 +587,28 @@ static int CF1_ik(double v, double x, double *fv)
      */
     tolerance = 2 * MACHEP;
     tiny = 1 / sqrt(DBL_MAX);
-    C = f = tiny;		/* b0 = 0, replace with tiny */
+    C = f = tiny; /* b0 = 0, replace with tiny */
     D = 0;
     for (k = 1; k < MAXITER; k++) {
-	a = 1;
-	b = 2 * (v + k) / x;
-	C = b + a / C;
-	D = b + a * D;
-	if (C == 0) {
-	    C = tiny;
-	}
-	if (D == 0) {
-	    D = tiny;
-	}
-	D = 1 / D;
-	delta = C * D;
-	f *= delta;
-	if (fabs(delta - 1) <= tolerance) {
-	    break;
-	}
+        a = 1;
+        b = 2 * (v + k) / x;
+        C = b + a / C;
+        D = b + a * D;
+        if (C == 0) {
+            C = tiny;
+        }
+        if (D == 0) {
+            D = tiny;
+        }
+        D = 1 / D;
+        delta = C * D;
+        f *= delta;
+        if (fabs(delta - 1) <= tolerance) {
+            break;
+        }
     }
     if (k == MAXITER) {
-	sf_error("ikv_temme(CF1_ik)", SF_ERROR_NO_RESULT, NULL);
+        sf_error("ikv_temme(CF1_ik)", SF_ERROR_NO_RESULT, NULL);
     }
 
     *fv = f;
@@ -462,8 +621,7 @@ static int CF1_ik(double v, double x, double *fv)
  * z1 / z0 = U(v+1.5, 2v+1, 2x) / U(v+0.5, 2v+1, 2x), see
  * Thompson and Barnett, Computer Physics Communications, vol 47, 245 (1987)
  */
-static int CF2_ik(double v, double x, double *Kv, double *Kv1)
-{
+static int CF2_ik(double v, double x, double *Kv, double *Kv1) {
 
     double S, C, Q, D, f, a, b, q, delta, tolerance, current, prev;
     unsigned long k;
@@ -481,36 +639,36 @@ static int CF2_ik(double v, double x, double *Kv, double *Kv1)
      */
     tolerance = MACHEP;
     a = v * v - 0.25f;
-    b = 2 * (x + 1);		/* b1 */
-    D = 1 / b;			/* D1 = 1 / b1 */
-    f = delta = D;		/* f1 = delta1 = D1, coincidence */
-    prev = 0;			/* q0 */
-    current = 1;		/* q1 */
-    Q = C = -a;			/* Q1 = C1 because q1 = 1 */
-    S = 1 + Q * delta;		/* S1 */
-    for (k = 2; k < MAXITER; k++) {	/* starting from 2 */
-	/* continued fraction f = z1 / z0 */
-	a -= 2 * (k - 1);
-	b += 2;
-	D = 1 / (b + a * D);
-	delta *= b * D - 1;
-	f += delta;
+    b = 2 * (x + 1);                /* b1 */
+    D = 1 / b;                      /* D1 = 1 / b1 */
+    f = delta = D;                  /* f1 = delta1 = D1, coincidence */
+    prev = 0;                       /* q0 */
+    current = 1;                    /* q1 */
+    Q = C = -a;                     /* Q1 = C1 because q1 = 1 */
+    S = 1 + Q * delta;              /* S1 */
+    for (k = 2; k < MAXITER; k++) { /* starting from 2 */
+        /* continued fraction f = z1 / z0 */
+        a -= 2 * (k - 1);
+        b += 2;
+        D = 1 / (b + a * D);
+        delta *= b * D - 1;
+        f += delta;
 
-	/* series summation S = 1 + \sum_{n=1}^{\infty} C_n * z_n / z_0 */
-	q = (prev - (b - 2) * current) / a;
-	prev = current;
-	current = q;		/* forward recurrence for q */
-	C *= -a / k;
-	Q += C * q;
-	S += Q * delta;
+        /* series summation S = 1 + \sum_{n=1}^{\infty} C_n * z_n / z_0 */
+        q = (prev - (b - 2) * current) / a;
+        prev = current;
+        current = q; /* forward recurrence for q */
+        C *= -a / k;
+        Q += C * q;
+        S += Q * delta;
 
-	/* S converges slower than f */
-	if (fabs(Q * delta) < fabs(S) * tolerance) {
-	    break;
-	}
+        /* S converges slower than f */
+        if (fabs(Q * delta) < fabs(S) * tolerance) {
+            break;
+        }
     }
     if (k == MAXITER) {
-	sf_error("ikv_temme(CF2_ik)", SF_ERROR_NO_RESULT, NULL);
+        sf_error("ikv_temme(CF2_ik)", SF_ERROR_NO_RESULT, NULL);
     }
 
     *Kv = sqrt(M_PI / (2 * x)) * exp(-x) / S;
@@ -520,17 +678,13 @@ static int CF2_ik(double v, double x, double *Kv, double *Kv1)
 }
 
 /* Flags for what to compute */
-enum {
-    need_i = 0x1,
-    need_k = 0x2
-};
+enum { need_i = 0x1, need_k = 0x2 };
 
 /*
  * Compute I(v, x) and K(v, x) simultaneously by Temme's method, see
  * Temme, Journal of Computational Physics, vol 19, 324 (1975)
  */
-static void ikv_temme(double v, double x, double *Iv_p, double *Kv_p)
-{
+static void ikv_temme(double v, double x, double *Iv_p, double *Kv_p) {
     /* Kv1 = K_(v+1), fv = I_(v+1) / I_v */
     /* Ku1 = K_(u+1), fu = I_(u+1) / I_u */
     double u, Iv, Kv, Kv1, Ku, Ku1, fv;
@@ -541,114 +695,109 @@ static void ikv_temme(double v, double x, double *Iv_p, double *Kv_p)
 
     kind = 0;
     if (Iv_p != NULL) {
-	kind |= need_i;
+        kind |= need_i;
     }
     if (Kv_p != NULL) {
-	kind |= need_k;
+        kind |= need_k;
     }
 
     if (v < 0) {
-	reflect = 1;
-	v = -v;			/* v is non-negative from here */
-	kind |= need_k;
+        reflect = 1;
+        v = -v; /* v is non-negative from here */
+        kind |= need_k;
     }
     n = round(v);
-    u = v - n;			/* -1/2 <= u < 1/2 */
+    u = v - n; /* -1/2 <= u < 1/2 */
 
     if (x < 0) {
-	if (Iv_p != NULL)
-	    *Iv_p = NAN;
-	if (Kv_p != NULL)
-	    *Kv_p = NAN;
-	sf_error("ikv_temme", SF_ERROR_DOMAIN, NULL);
-	return;
+        if (Iv_p != NULL)
+            *Iv_p = NAN;
+        if (Kv_p != NULL)
+            *Kv_p = NAN;
+        sf_error("ikv_temme", SF_ERROR_DOMAIN, NULL);
+        return;
     }
     if (x == 0) {
-	Iv = (v == 0) ? 1 : 0;
-	if (kind & need_k) {
-	    sf_error("ikv_temme", SF_ERROR_OVERFLOW, NULL);
-	    Kv = INFINITY;
-	}
-	else {
-	    Kv = NAN;	/* any value will do */
-	}
+        Iv = (v == 0) ? 1 : 0;
+        if (kind & need_k) {
+            sf_error("ikv_temme", SF_ERROR_OVERFLOW, NULL);
+            Kv = INFINITY;
+        } else {
+            Kv = NAN; /* any value will do */
+        }
 
-	if (reflect && (kind & need_i)) {
-	    double z = (u + n % 2);
+        if (reflect && (kind & need_i)) {
+            double z = (u + n % 2);
 
-	    Iv = sin((double)M_PI * z) == 0 ? Iv : INFINITY;
-	    if (Iv == INFINITY || Iv == -INFINITY) {
-		sf_error("ikv_temme", SF_ERROR_OVERFLOW, NULL);
-	    }
-	}
+            Iv = sin((double) M_PI * z) == 0 ? Iv : INFINITY;
+            if (Iv == INFINITY || Iv == -INFINITY) {
+                sf_error("ikv_temme", SF_ERROR_OVERFLOW, NULL);
+            }
+        }
 
-	if (Iv_p != NULL) {
-	    *Iv_p = Iv;
-	}
-	if (Kv_p != NULL) {
-	    *Kv_p = Kv;
-	}
-	return;
+        if (Iv_p != NULL) {
+            *Iv_p = Iv;
+        }
+        if (Kv_p != NULL) {
+            *Kv_p = Kv;
+        }
+        return;
     }
     /* x is positive until reflection */
-    W = 1 / x;			/* Wronskian */
-    if (x <= 2) {		/* x in (0, 2] */
-	temme_ik_series(u, x, &Ku, &Ku1);	/* Temme series */
-    }
-    else {			/* x in (2, \infty) */
-	CF2_ik(u, x, &Ku, &Ku1);	/* continued fraction CF2_ik */
+    W = 1 / x;                            /* Wronskian */
+    if (x <= 2) {                         /* x in (0, 2] */
+        temme_ik_series(u, x, &Ku, &Ku1); /* Temme series */
+    } else {                              /* x in (2, \infty) */
+        CF2_ik(u, x, &Ku, &Ku1);          /* continued fraction CF2_ik */
     }
     prev = Ku;
     current = Ku1;
-    for (k = 1; k <= n; k++) {	/* forward recurrence for K */
-	next = 2 * (u + k) * current / x + prev;
-	prev = current;
-	current = next;
+    for (k = 1; k <= n; k++) { /* forward recurrence for K */
+        next = 2 * (u + k) * current / x + prev;
+        prev = current;
+        current = next;
     }
     Kv = prev;
     Kv1 = current;
     if (kind & need_i) {
-	double lim = (4 * v * v + 10) / (8 * x);
+        double lim = (4 * v * v + 10) / (8 * x);
 
-	lim *= lim;
-	lim *= lim;
-	lim /= 24;
-	if ((lim < MACHEP * 10) && (x > 100)) {
-	    /*
-	     * x is huge compared to v, CF1 may be very slow
-	     * to converge so use asymptotic expansion for large
-	     * x case instead.  Note that the asymptotic expansion
-	     * isn't very accurate - so it's deliberately very hard
-	     * to get here - probably we're going to overflow:
-	     */
-	    Iv = iv_asymptotic(v, x);
-	}
-	else {
-	    CF1_ik(v, x, &fv);	/* continued fraction CF1_ik */
-	    Iv = W / (Kv * fv + Kv1);	/* Wronskian relation */
-	}
-    }
-    else {
-	Iv = NAN;		/* any value will do */
+        lim *= lim;
+        lim *= lim;
+        lim /= 24;
+        if ((lim < MACHEP * 10) && (x > 100)) {
+            /*
+             * x is huge compared to v, CF1 may be very slow
+             * to converge so use asymptotic expansion for large
+             * x case instead.  Note that the asymptotic expansion
+             * isn't very accurate - so it's deliberately very hard
+             * to get here - probably we're going to overflow:
+             */
+            Iv = iv_asymptotic(v, x);
+        } else {
+            CF1_ik(v, x, &fv);        /* continued fraction CF1_ik */
+            Iv = W / (Kv * fv + Kv1); /* Wronskian relation */
+        }
+    } else {
+        Iv = NAN; /* any value will do */
     }
 
     if (reflect) {
-	double z = (u + n % 2);
+        double z = (u + n % 2);
 
-	if (Iv_p != NULL) {
-	    *Iv_p = Iv + (2 / M_PI) * sin(M_PI * z) * Kv;	/* reflection formula */
-	}
-	if (Kv_p != NULL) {
-	    *Kv_p = Kv;
-	}
-    }
-    else {
-	if (Iv_p != NULL) {
-	    *Iv_p = Iv;
-	}
-	if (Kv_p != NULL) {
-	    *Kv_p = Kv;
-	}
+        if (Iv_p != NULL) {
+            *Iv_p = Iv + (2 / M_PI) * sin(M_PI * z) * Kv; /* reflection formula */
+        }
+        if (Kv_p != NULL) {
+            *Kv_p = Kv;
+        }
+    } else {
+        if (Iv_p != NULL) {
+            *Iv_p = Iv;
+        }
+        if (Kv_p != NULL) {
+            *Kv_p = Kv;
+        }
     }
     return;
 }

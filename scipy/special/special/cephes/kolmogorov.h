@@ -38,9 +38,11 @@
  *     Ann. Math. Statist. 1951.  https://doi.org/10.1214/aoms/1177729550
  * [3] Dwass, Meyer, "The Distribution of a Generalized $\mathrm{D}^+_n$ Statistic",
  *     Ann. Math. Statist., 1959.  https://doi.org/10.1214/aoms/1177706085
- * [4] van Mulbregt, Paul, "Computing the Cumulative Distribution Function and Quantiles of the One-sided Kolmogorov-Smirnov Statistic"
+ * [4] van Mulbregt, Paul, "Computing the Cumulative Distribution Function and Quantiles of the One-sided
+ Kolmogorov-Smirnov Statistic"
  *     http://arxiv.org/abs/1802.06966
- * [5] van Mulbregt, Paul,  "Computing the Cumulative Distribution Function and Quantiles of the limit of the Two-sided Kolmogorov-Smirnov Statistic"
+ * [5] van Mulbregt, Paul,  "Computing the Cumulative Distribution Function and Quantiles of the limit of the Two-sided
+ Kolmogorov-Smirnov Statistic"
  *     https://arxiv.org/abs/1803.00426
  *
  */
@@ -48,7 +50,6 @@
 #include "mconf.h"
 #include <float.h>
 #include <math.h>
-
 
 /* ************************************************************************ */
 /* Algorithm Configuration */
@@ -60,7 +61,6 @@
  *  KOLMOG_CUTOVER < x < infty
  */
 #define KOLMOG_CUTOVER 0.82
-
 
 /*
  * Smirnov One-sided:
@@ -83,10 +83,10 @@ const int SMIRNOV_MAX_COMPUTE_N = 1000000;
 /* Assuming LOW and HIGH are constants. */
 #define CLIP(X, LOW, HIGH) ((X) < LOW ? LOW : MIN(X, HIGH))
 #ifndef MIN
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 #ifndef MAX
-#define MAX(a,b) (((a) < (b)) ? (b) : (a))
+#define MAX(a, b) (((a) < (b)) ? (b) : (a))
 #endif
 
 /* from cephes constants */
@@ -106,20 +106,18 @@ typedef struct ThreeProbs {
     double pdf;
 } ThreeProbs;
 
-#define RETURN_3PROBS(PSF, PCDF, PDF) \
-    ret.cdf = (PCDF);                 \
-    ret.sf = (PSF);                   \
-    ret.pdf = (PDF);                  \
+#define RETURN_3PROBS(PSF, PCDF, PDF)                                                                                  \
+    ret.cdf = (PCDF);                                                                                                  \
+    ret.sf = (PSF);                                                                                                    \
+    ret.pdf = (PDF);                                                                                                   \
     return ret;
 
 static const double _xtol = DBL_EPSILON;
-static const double _rtol = 2*DBL_EPSILON;
+static const double _rtol = 2 * DBL_EPSILON;
 
-static int
-_within_tol(double x, double y, double atol, double rtol)
-{
-    double diff = fabs(x-y);
-    int result = (diff <=  (atol + rtol * fabs(y)));
+static int _within_tol(double x, double y, double atol, double rtol) {
+    double diff = fabs(x - y);
+    int result = (diff <= (atol + rtol * fabs(y)));
     return result;
 }
 
@@ -130,7 +128,7 @@ _within_tol(double x, double y, double atol, double rtol)
 #define add_dd dd_add_d_d
 #define sub_dd dd_sub_d_d
 #define mul_dd dd_mul_d_d
-#define neg_D  dd_neg
+#define neg_D dd_neg
 #define div_dd dd_div_d_d
 #define add_DD dd_add
 #define sub_DD dd_sub
@@ -146,17 +144,14 @@ _within_tol(double x, double y, double atol, double rtol)
 #define div_dD dd_div_d_dd
 #define frexpD dd_frexp
 #define ldexpD dd_ldexp
-#define logD   dd_log
+#define logD dd_log
 #define log1pD dd_log1p
-
 
 /* ************************************************************************ */
 /* Kolmogorov : Two-sided                      **************************** */
 /* ************************************************************************ */
 
-static ThreeProbs
-_kolmogorov(double x)
-{
+static ThreeProbs _kolmogorov(double x) {
     double P = 1.0;
     double D = 0;
     double sf, cdf, pdf;
@@ -169,7 +164,7 @@ _kolmogorov(double x)
         RETURN_3PROBS(1.0, 0.0, 0);
     }
     /* x <= 0.040611972203751713 */
-    if (x <= (double)M_PI/sqrt(-MIN_EXPABLE * 8)) {
+    if (x <= (double) M_PI / sqrt(-MIN_EXPABLE * 8)) {
         RETURN_3PROBS(1.0, 0.0, 0);
     }
 
@@ -180,62 +175,61 @@ _kolmogorov(double x)
          *  w = sqrt(2pi)/x
          *  P = w*u * (1 + u^8 + u^24 + u^48 + ...)
          */
-        double w = sqrt(2 * M_PI)/x;
-        double logu8 = -M_PI * M_PI/(x * x); /* log(u^8) */
-        double u = exp(logu8/8);
+        double w = sqrt(2 * M_PI) / x;
+        double logu8 = -M_PI * M_PI / (x * x); /* log(u^8) */
+        double u = exp(logu8 / 8);
         if (u == 0) {
             /*
              * P = w*u, but u < 1e-308, and w > 1,
              * so compute as logs, then exponentiate
              */
-            double logP = logu8/8 + log(w);
+            double logP = logu8 / 8 + log(w);
             P = exp(logP);
         } else {
-           /* Just unroll the loop, 3 iterations */
+            /* Just unroll the loop, 3 iterations */
             double u8 = exp(logu8);
             double u8cub = pow(u8, 3);
             P = 1 + u8cub * P;
-            D = 5*5 + u8cub * D;
-            P = 1 + u8*u8 * P;
-            D = 3*3 + u8*u8 * D;
+            D = 5 * 5 + u8cub * D;
+            P = 1 + u8 * u8 * P;
+            D = 3 * 3 + u8 * u8 * D;
             P = 1 + u8 * P;
-            D = 1*1 + u8 * D;
+            D = 1 * 1 + u8 * D;
 
-            D = M_PI * M_PI/4/(x*x) * D - P;
-            D *=  w * u/x;
+            D = M_PI * M_PI / 4 / (x * x) * D - P;
+            D *= w * u / x;
             P = w * u * P;
         }
         cdf = P;
-        sf = 1-P;
+        sf = 1 - P;
         pdf = D;
-    }
-    else {
+    } else {
         /*
          *  v = e^(-2x^2)
          *  P = 2 (v - v^4 + v^9 - v^16 + ...)
          *    = 2v(1 - v^3*(1 - v^5*(1 - v^7*(1 - ...)))
          */
-        double logv = -2*x*x;
+        double logv = -2 * x * x;
         double v = exp(logv);
         /*
          * Want q^((2k-1)^2)(1-q^(4k-1)) / q(1-q^3) < epsilon to break out of loop.
          * With KOLMOG_CUTOVER ~ 0.82, k <= 4.  Just unroll the loop, 4 iterations
          */
-        double vsq = v*v;
+        double vsq = v * v;
         double v3 = pow(v, 3);
         double vpwr;
 
-        vpwr = v3*v3*v;   /* v**7 */
-        P = 1 - vpwr * P; /* P <- 1 - (1-v**(2k-1)) * P */
-        D = 3*3 - vpwr * D;
+        vpwr = v3 * v3 * v; /* v**7 */
+        P = 1 - vpwr * P;   /* P <- 1 - (1-v**(2k-1)) * P */
+        D = 3 * 3 - vpwr * D;
 
-        vpwr = v3*vsq;
+        vpwr = v3 * vsq;
         P = 1 - vpwr * P;
-        D = 2*2 - vpwr * D;
+        D = 2 * 2 - vpwr * D;
 
         vpwr = v3;
         P = 1 - vpwr * P;
-        D = 1*1 - vpwr * D;
+        D = 1 * 1 - vpwr * D;
 
         P = 2 * v * P;
         D = 8 * v * x * D;
@@ -249,11 +243,8 @@ _kolmogorov(double x)
     RETURN_3PROBS(sf, cdf, pdf);
 }
 
-
 /* Find x such kolmogorov(x)=psf, kolmogc(x)=pcdf */
-static double
-_kolmogi(double psf, double pcdf)
-{
+static double _kolmogi(double psf, double pcdf) {
     double x, t;
     double xmin = 0;
     double xmax = INFINITY;
@@ -264,7 +255,7 @@ _kolmogi(double psf, double pcdf)
         sf_error("kolmogi", SF_ERROR_DOMAIN, NULL);
         return (NAN);
     }
-    if (fabs(1.0 - pcdf - psf) >  4* DBL_EPSILON) {
+    if (fabs(1.0 - pcdf - psf) > 4 * DBL_EPSILON) {
         sf_error("kolmogi", SF_ERROR_DOMAIN, NULL);
         return (NAN);
     }
@@ -281,13 +272,12 @@ _kolmogi(double psf, double pcdf)
         const double SQRT2 = M_SQRT2;
         /* Now that 1 >= x >= sqrt(p) */
         /* Iterate twice: x <- pi/(sqrt(8) sqrt(log(sqrt(2pi)) - log(x) - log(pdf))) */
-        a = M_PI / (2 * SQRT2 * sqrt(-(logpcdf + logpcdf/2 - LOGSQRT2PI)));
+        a = M_PI / (2 * SQRT2 * sqrt(-(logpcdf + logpcdf / 2 - LOGSQRT2PI)));
         b = M_PI / (2 * SQRT2 * sqrt(-(logpcdf + 0 - LOGSQRT2PI)));
         a = M_PI / (2 * SQRT2 * sqrt(-(logpcdf + log(a) - LOGSQRT2PI)));
         b = M_PI / (2 * SQRT2 * sqrt(-(logpcdf + log(b) - LOGSQRT2PI)));
-        x =  (a + b) / 2.0;
-    }
-    else {
+        x = (a + b) / 2.0;
+    } else {
         /*
          * Based on the approximation p ~ 2 exp(-2x^2)
          * Found that needed to replace psf with a slightly smaller number in the second element
@@ -297,7 +287,7 @@ _kolmogi(double psf, double pcdf)
          *  so (1-q^(-(4-1)*2*x^2)) = (1-exp(-6*0.8275^2) ~ (1-exp(-4.1)
          */
         const double jiggerb = 256 * DBL_EPSILON;
-        double pba = psf/(1.0 - exp(-4))/2, pbb = psf * (1 - jiggerb)/2;
+        double pba = psf / (1.0 - exp(-4)) / 2, pbb = psf * (1 - jiggerb) / 2;
         double q0;
         a = sqrt(-0.5 * log(pba));
         b = sqrt(-0.5 * log(pbb));
@@ -307,15 +297,15 @@ _kolmogi(double psf, double pcdf)
          *   q = p + p^4 + 4p^7 - p^9 + 22p^10  - 13p^12 + 140*p^13 ...
          */
         {
-            double p = psf/2.0;
-            double p2 = p*p;
-            double p3 = p*p*p;
-            q0 = 1 + p3 * (1 + p3 * (4 + p2 *(-1 + p*(22 + p2* (-13 + 140 * p)))));
+            double p = psf / 2.0;
+            double p2 = p * p;
+            double p3 = p * p * p;
+            q0 = 1 + p3 * (1 + p3 * (4 + p2 * (-1 + p * (22 + p2 * (-13 + 140 * p)))));
             q0 *= p;
         }
         x = sqrt(-log(q0) / 2);
         if (x < a || x > b) {
-            x = (a+b)/2;
+            x = (a + b) / 2;
         }
     }
     assert(a <= b);
@@ -339,10 +329,10 @@ _kolmogi(double psf, double pcdf)
 
         dfdx = -probs.pdf;
         if (fabs(dfdx) <= 0.0) {
-            x = (a+b)/2;
+            x = (a + b) / 2;
             t = x0 - x;
         } else {
-            t = df/dfdx;
+            t = df / dfdx;
             x = x0 - t;
         }
 
@@ -352,7 +342,7 @@ _kolmogi(double psf, double pcdf)
          * concave near x=0, and we should be approaching from the correct side.
          * If out-of-bounds, replace x with a midpoint of the bracket.
          */
-        if (x >= a && x <= b)  {
+        if (x >= a && x <= b) {
             if (_within_tol(x, x0, _xtol, _rtol)) {
                 break;
             }
@@ -374,32 +364,25 @@ _kolmogi(double psf, double pcdf)
             sf_error("kolmogi", SF_ERROR_SLOW, NULL);
             break;
         }
-    } while(1);
+    } while (1);
     return (x);
 }
 
-
-double
-kolmogorov(double x)
-{
+double kolmogorov(double x) {
     if (isnan(x)) {
         return NAN;
     }
     return _kolmogorov(x).sf;
 }
 
-double
-kolmogc(double x)
-{
+double kolmogc(double x) {
     if (isnan(x)) {
         return NAN;
     }
     return _kolmogorov(x).cdf;
 }
 
-double
-kolmogp(double x)
-{
+double kolmogp(double x) {
     if (isnan(x)) {
         return NAN;
     }
@@ -412,42 +395,34 @@ kolmogp(double x)
 /* Functional inverse of Kolmogorov survival statistic for two-sided test.
  * Finds x such that kolmogorov(x) = p.
  */
-double
-kolmogi(double p)
-{
+double kolmogi(double p) {
     if (isnan(p)) {
         return NAN;
     }
-    return _kolmogi(p, 1-p);
+    return _kolmogi(p, 1 - p);
 }
 
 /* Functional inverse of Kolmogorov cumulative statistic for two-sided test.
  * Finds x such that kolmogc(x) = p = (or kolmogorov(x) = 1-p).
  */
-double
-kolmogci(double p)
-{
+double kolmogci(double p) {
     if (isnan(p)) {
         return NAN;
     }
-    return _kolmogi(1-p, p);
+    return _kolmogi(1 - p, p);
 }
-
-
 
 /* ************************************************************************ */
 /* ********** Smirnov : One-sided ***************************************** */
 /* ************************************************************************ */
 
-static double
-nextPowerOf2(double x)
-{
-    double q = ldexp(x, 1-DBL_MANT_DIG);
-    double L = fabs(q+x);
+static double nextPowerOf2(double x) {
+    double q = ldexp(x, 1 - DBL_MANT_DIG);
+    double L = fabs(q + x);
     if (L == 0) {
         L = fabs(x);
     } else {
-        int Lint = (int)(L);
+        int Lint = (int) (L);
         if (Lint == L) {
             L = Lint;
         }
@@ -455,9 +430,7 @@ nextPowerOf2(double x)
     return L;
 }
 
-static double
-modNX(int n, double x, int *pNXFloor, double *pNX)
-{
+static double modNX(int n, double x, int *pNXFloor, double *pNX) {
     /*
      * Compute floor(n*x) and remainder *exactly*.
      * If remainder is too close to 1 (E.g. (1, -DBL_EPSILON/2))
@@ -490,22 +463,17 @@ modNX(int n, double x, int *pNXFloor, double *pNX)
  *  I.e a Mantissa/significand, and an exponent.
  *  Cman lies between 0.5 and 1, and the exponent has >=32-bit.
  */
-static void
-updateBinomial(double2 *Cman, int *Cexpt, int n, int j)
-{
+static void updateBinomial(double2 *Cman, int *Cexpt, int n, int j) {
     int expt;
     double2 rat = div_dd(n - j, j + 1.0);
     double2 man2 = mul_DD(*Cman, rat);
     man2 = frexpD(man2, &expt);
-    assert (!dd_is_zero(man2));
+    assert(!dd_is_zero(man2));
     *Cexpt += expt;
     *Cman = man2;
 }
 
-
-static double2
-pow_D(double2 a,  int m)
-{
+static double2 pow_D(double2 a, int m) {
     /*
      * Using dd_npwr() here would be quite time-consuming.
      * Tradeoff accuracy-time by using pow().
@@ -521,25 +489,21 @@ pow_D(double2 a,  int m)
         return DD_C_ZERO;
     }
     ans = pow(a.x[0], m);
-    r = a.x[1]/a.x[0];
-    adj = m*r;
+    r = a.x[1] / a.x[0];
+    adj = m * r;
     if (fabs(adj) > 1e-8) {
         if (fabs(adj) < 1e-4) {
-           /* Take 1st two terms of Taylor Series for (1+r)^m */
-            adj += (m*r) * ((m-1)/2.0 * r);
+            /* Take 1st two terms of Taylor Series for (1+r)^m */
+            adj += (m * r) * ((m - 1) / 2.0 * r);
         } else {
             /* Take exp of scaled log */
-            adj = expm1(m*log1p(r));
+            adj = expm1(m * log1p(r));
         }
     }
-    return dd_add_d_d(ans, ans*adj);
+    return dd_add_d_d(ans, ans * adj);
 }
 
-static double
-pow2(double a, double b,  int m)
-{
-    return dd_to_double(pow_D(add_dd(a, b), m));
-}
+static double pow2(double a, double b, int m) { return dd_to_double(pow_D(add_dd(a, b), m)); }
 
 /*
  * Not 1024 as too big.  Want _MAX_EXPONENT < 1023-52 so as to keep both
@@ -547,14 +511,11 @@ pow2(double a, double b,  int m)
  */
 #define _MAX_EXPONENT 960
 
-#define RETURN_M_E(MAND, EXPT) \
-    *pExponent = EXPT;\
+#define RETURN_M_E(MAND, EXPT)                                                                                         \
+    *pExponent = EXPT;                                                                                                 \
     return MAND;
 
-
-static double2
-pow2Scaled_D(double2 a, int m, int *pExponent)
-{
+static double2 pow2Scaled_D(double2 a, int m, int *pExponent) {
     /* Compute a^m = significand*2^expt and return as (significand, expt) */
     double2 ans, y;
     int ansE, yE;
@@ -562,8 +523,7 @@ pow2Scaled_D(double2 a, int m, int *pExponent)
     int q, r, y2mE, y2rE, y2mqE;
     double2 y2r, y2m, y2mq;
 
-    if (m <= 0)
-    {
+    if (m <= 0) {
         int aE1, aE2;
         if (m == 0) {
             RETURN_M_E(DD_C_ONE, 0);
@@ -584,16 +544,15 @@ pow2Scaled_D(double2 a, int m, int *pExponent)
      *              <= 665/(1-y.x[0])
      * Quick check to see if we might need to break up the exponentiation
      */
-    if (m*(y.x[0]-1) / y.x[0] < -_MAX_EXPONENT * M_LN2) {
+    if (m * (y.x[0] - 1) / y.x[0] < -_MAX_EXPONENT * M_LN2) {
         /* Now do it carefully, calling log() */
         double lg2y = log(y.x[0]) / M_LN2;
         double lgAns = m * lg2y;
         if (lgAns <= -_MAX_EXPONENT) {
-            maxExpt = (int)(nextPowerOf2(-_MAX_EXPONENT / lg2y + 1)/2);
+            maxExpt = (int) (nextPowerOf2(-_MAX_EXPONENT / lg2y + 1) / 2);
         }
     }
-    if (m <= maxExpt)
-    {
+    if (m <= maxExpt) {
         double2 ans1 = pow_D(y, m);
         ans = frexpD(ans1, &ansE);
         ansE += m * yE;
@@ -613,13 +572,10 @@ pow2Scaled_D(double2 a, int m, int *pExponent)
     RETURN_M_E(ans, ansE);
 }
 
-
-static double2
-pow4_D(double a, double b, double c, double d, int m)
-{
+static double2 pow4_D(double a, double b, double c, double d, int m) {
     /* Compute ((a+b)/(c+d)) ^ m */
     double2 A, C, X;
-    if (m <= 0){
+    if (m <= 0) {
         if (m == 0) {
             return DD_C_ONE;
         }
@@ -637,17 +593,12 @@ pow4_D(double a, double b, double c, double d, int m)
     return pow_D(X, m);
 }
 
-static double
-pow4(double a, double b, double c, double d, int m)
-{
+static double pow4(double a, double b, double c, double d, int m) {
     double2 ret = pow4_D(a, b, c, d, m);
     return dd_to_double(ret);
 }
 
-
-static double2
-logpow4_D(double a, double b, double c, double d, int m)
-{
+static double2 logpow4_D(double a, double b, double c, double d, int m) {
     /*
      * Compute log(((a+b)/(c+d)) ^ m)
      *    == m * log((a+b)/(c+d))
@@ -679,9 +630,7 @@ logpow4_D(double a, double b, double c, double d, int m)
     return ans;
 }
 
-static double
-logpow4(double a, double b, double c, double d, int m)
-{
+static double logpow4(double a, double b, double c, double d, int m) {
     double2 ans = logpow4_D(a, b, c, d, m);
     return dd_to_double(ans);
 }
@@ -690,16 +639,13 @@ logpow4(double a, double b, double c, double d, int m)
  *  Compute a single term in the summation, A_v(n, x):
  *  A_v(n, x) =  Binomial(n,v) * (1-x-v/n)^(n-v) * (x+v/n)^(v-1)
  */
-static void
-computeAv(int n, double x, int v, double2 Cman, int Cexpt,
-            double2 *pt1, double2 *pt2, double2 *pAv)
-{
+static void computeAv(int n, double x, int v, double2 Cman, int Cexpt, double2 *pt1, double2 *pt2, double2 *pAv) {
     int t1E, t2E, ansE;
     double2 Av;
-    double2 t2x = sub_Dd(div_dd(n - v, n), x);  /*  1 - x - v/n */
-    double2 t2 = pow2Scaled_D(t2x, n-v, &t2E);
-    double2 t1x = add_Dd(div_dd(v, n), x);      /* x + v/n */
-    double2 t1 = pow2Scaled_D(t1x, v-1, &t1E);
+    double2 t2x = sub_Dd(div_dd(n - v, n), x); /*  1 - x - v/n */
+    double2 t2 = pow2Scaled_D(t2x, n - v, &t2E);
+    double2 t1x = add_Dd(div_dd(v, n), x); /* x + v/n */
+    double2 t1 = pow2Scaled_D(t1x, v - 1, &t1E);
     double2 ans = mul_DD(t1, t2);
     ans = mul_DD(ans, Cman);
     ansE = Cexpt + t1E + t2E;
@@ -709,10 +655,7 @@ computeAv(int n, double x, int v, double2 Cman, int Cexpt,
     *pt2 = t2;
 }
 
-
-static ThreeProbs
-_smirnov(int n, double x)
-{
+static ThreeProbs _smirnov(int n, double x) {
     double nx, alpha;
     double2 AjSum = DD_C_ZERO;
     double2 dAjSum = DD_C_ZERO;
@@ -726,7 +669,7 @@ _smirnov(int n, double x)
         RETURN_3PROBS(NAN, NAN, NAN);
     }
     if (n == 1) {
-        RETURN_3PROBS(1-x, x, 1.0);
+        RETURN_3PROBS(1 - x, x, 1.0);
     }
     if (x == 0.0) {
         RETURN_3PROBS(1.0, 0.0, 1.0);
@@ -749,8 +692,8 @@ _smirnov(int n, double x)
 
     /* Special case:  x <= 1/n  */
     if (nxfl == 0 || (nxfl == 1 && alpha == 0)) {
-        double t = pow2(1, x, n-1);
-        pdf = (nx + 1) * t / (1+x);
+        double t = pow2(1, x, n - 1);
+        pdf = (nx + 1) * t / (1 + x);
         cdf = x * t;
         sf = 1 - cdf;
         /* Adjust if x=1/n *exactly* */
@@ -761,20 +704,20 @@ _smirnov(int n, double x)
         RETURN_3PROBS(sf, cdf, pdf);
     }
     /* Special case:  x is so big, the sf underflows double64 */
-    if (-2 * n * x*x < MINLOG) {
+    if (-2 * n * x * x < MINLOG) {
         RETURN_3PROBS(0, 1, 0);
     }
     /* Special case:  x >= 1 - 1/n */
-    if (nxfl >= n-1) {
+    if (nxfl >= n - 1) {
         sf = pow2(1, -x, n);
         cdf = 1 - sf;
-        pdf = n * sf/(1-x);
+        pdf = n * sf / (1 - x);
         RETURN_3PROBS(sf, cdf, pdf);
     }
     /* Special case:  n is so big, take too long to compute */
     if (n > SMIRNOV_MAX_COMPUTE_N) {
         /* p ~ e^(-(6nx+1)^2 / 18n) */
-        double logp = -pow(6.0*n*x+1, 2)/18.0/n;
+        double logp = -pow(6.0 * n * x + 1, 2) / 18.0 / n;
         /* Maximise precision for small p-value. */
         if (logp < -M_LN2) {
             sf = exp(logp);
@@ -783,7 +726,7 @@ _smirnov(int n, double x)
             cdf = -expm1(logp);
             sf = 1 - cdf;
         }
-        pdf = (6.0*n*x+1) * 2 * sf/3;
+        pdf = (6.0 * n * x + 1) * 2 * sf / 3;
         RETURN_3PROBS(sf, cdf, pdf);
     }
     {
@@ -794,16 +737,14 @@ _smirnov(int n, double x)
          */
         int nUpperTerms = n - n1mxceil + 1;
         bUseUpperSum = (nUpperTerms <= 1 && x < 0.5);
-        bUseUpperSum = (bUseUpperSum ||
-                        ((n >= SM_UPPERSUM_MIN_N)
-                          && (nUpperTerms <= SM_UPPER_MAX_TERMS)
-                          && (x <= 0.5 / sqrt(n))));
+        bUseUpperSum =
+            (bUseUpperSum || ((n >= SM_UPPERSUM_MIN_N) && (nUpperTerms <= SM_UPPER_MAX_TERMS) && (x <= 0.5 / sqrt(n))));
     }
 
     {
-        int start=0, step=1, nTerms=n1mxfl+1;
+        int start = 0, step = 1, nTerms = n1mxfl + 1;
         int j, firstJ = 0;
-        int vmid = n/2;
+        int vmid = n / 2;
         double2 Cman = DD_C_ONE;
         int Cexpt = 0;
         double2 Aj, dAj, t1, t2, dAjCoeff;
@@ -835,7 +776,7 @@ _smirnov(int n, double x)
         dAjSum = add_DD(dAjSum, dAj);
 
         updateBinomial(&Cman, &Cexpt, n, 0);
-        firstJ ++;
+        firstJ++;
 
         for (j = firstJ; j < nTerms; j += 1) {
             int v = start + j * step;
@@ -845,7 +786,7 @@ _smirnov(int n, double x)
             if (dd_isfinite(Aj) && !dd_is_zero(Aj)) {
                 /* coeff = 1/x + (j-1)/(x+j/n) - (n-j)/(1-x-j/n) */
                 dAjCoeff = sub_DD(div_dD((n * (v - 1)), add_dd(nxfl + v, alpha)),
-                            div_dD(((n - v) * n), sub_dd(n - nxfl - v, alpha)));
+                                  div_dD(((n - v) * n), sub_dd(n - nxfl - v, alpha)));
                 dAjCoeff = add_DD(dAjCoeff, oneOverX);
                 dAj = mul_DD(Aj, dAjCoeff);
 
@@ -855,12 +796,11 @@ _smirnov(int n, double x)
             }
             /* Safe to terminate early? */
             if (!dd_is_zero(Aj)) {
-               if ((4*(nTerms-j) * fabs(dd_to_double(Aj)) < DBL_EPSILON * dd_to_double(AjSum))
-                     && (j != nTerms - 1)) {
-                   break;
+                if ((4 * (nTerms - j) * fabs(dd_to_double(Aj)) < DBL_EPSILON * dd_to_double(AjSum)) &&
+                    (j != nTerms - 1)) {
+                    break;
                 }
-            }
-            else if (j > vmid) {
+            } else if (j > vmid) {
                 assert(dd_is_zero(Aj));
                 break;
             }
@@ -875,13 +815,13 @@ _smirnov(int n, double x)
             double deriv = dd_to_double(derivD);
             double prob = dd_to_double(probD);
 
-            assert (nx != 1 || alpha > 0);
+            assert(nx != 1 || alpha > 0);
             if (step < 0) {
                 cdf = prob;
-                sf = 1-prob;
+                sf = 1 - prob;
                 pdf = deriv;
             } else {
-                cdf = 1-prob;
+                cdf = 1 - prob;
                 sf = prob;
                 pdf = -deriv;
             }
@@ -898,9 +838,7 @@ _smirnov(int n, double x)
  * Functional inverse of Smirnov distribution
  * finds x such that smirnov(n, x) = psf; smirnovc(n, x) = pcdf).
  */
-static double
-_smirnovi(int n, double psf, double pcdf)
-{
+static double _smirnovi(int n, double psf, double pcdf) {
     /*
      * Need to use a bracketing NR algorithm here and be very careful
      *  about the starting point.
@@ -908,7 +846,7 @@ _smirnovi(int n, double psf, double pcdf)
     double x, logpcdf;
     int iterations = 0;
     int function_calls = 0;
-    double a=0, b=1;
+    double a = 0, b = 1;
     double maxlogpcdf, psfrootn;
     double dx, dxold;
 
@@ -916,7 +854,7 @@ _smirnovi(int n, double psf, double pcdf)
         sf_error("smirnovi", SF_ERROR_DOMAIN, NULL);
         return (NAN);
     }
-    if (fabs(1.0 - pcdf - psf) >  4* DBL_EPSILON) {
+    if (fabs(1.0 - pcdf - psf) > 4 * DBL_EPSILON) {
         sf_error("smirnovi", SF_ERROR_DOMAIN, NULL);
         return (NAN);
     }
@@ -935,9 +873,9 @@ _smirnovi(int n, double psf, double pcdf)
     /* STEP 3 Handle psf *very* close to 0.  Correspond to (n-1)/n < x < 1  */
     psfrootn = pow(psf, 1.0 / n);
     /* xmin > 1 - 1.0 / n */
-    if (n < 150 && n*psfrootn <= 1) {
+    if (n < 150 && n * psfrootn <= 1) {
         /* Solve exactly. */
-        x = 1  - psfrootn;
+        x = 1 - psfrootn;
         return x;
     }
 
@@ -952,7 +890,7 @@ _smirnovi(int n, double psf, double pcdf)
         double xmin = pcdf / SCIPY_El;
         double xmax = pcdf;
         double P1 = pow4(n, 1, n, 0, n - 1) / n;
-        double R = pcdf/P1;
+        double R = pcdf / P1;
         double z0 = R;
         /*
          * Do one iteration of N-R solving: z*e^(z-1) = R, with z0=pcdf/P1
@@ -965,21 +903,19 @@ _smirnovi(int n, double psf, double pcdf)
              * R>1 can happen due to truncation error for x = (1-1/n)+-eps
              */
             R = 1;
-            x = R/n;
+            x = R / n;
             return x;
         }
-        z0 = (z0*z0 + R * exp(1-z0))/(1+z0);
-        x = z0/n;
-        a = xmin*(1 - 4 * DBL_EPSILON);
+        z0 = (z0 * z0 + R * exp(1 - z0)) / (1 + z0);
+        x = z0 / n;
+        a = xmin * (1 - 4 * DBL_EPSILON);
         a = MAX(a, 0);
         b = xmax * (1 + 4 * DBL_EPSILON);
-        b = MIN(b, 1.0/n);
+        b = MIN(b, 1.0 / n);
         x = CLIP(x, a, b);
-    }
-    else
-    {
+    } else {
         /* 4(b) : 1/n < x < (n-1)/n */
-        double xmin = 1  - psfrootn;
+        double xmin = 1 - psfrootn;
         double logpsf = (psf < 0.5 ? log(psf) : log1p(-pcdf));
         double xmax = sqrt(-logpsf / (2.0L * n));
         double xmax6 = xmax - 1.0L / (6 * n);
@@ -988,14 +924,14 @@ _smirnovi(int n, double psf, double pcdf)
         /* Allow for a little rounding error */
         a *= 1 - 4 * DBL_EPSILON;
         b *= 1 + 4 * DBL_EPSILON;
-        a = MAX(xmin, 1.0/n);
-        b = MIN(xmax, 1-1.0/n);
+        a = MAX(xmin, 1.0 / n);
+        b = MIN(xmax, 1 - 1.0 / n);
         x = xmax6;
     }
     if (x < a || x > b) {
-        x = (a + b)/2;
+        x = (a + b) / 2;
     }
-    assert (x < 1);
+    assert(x < 1);
 
     /*
      * Skip computing fa, fb as that takes cycles and the exact values
@@ -1022,7 +958,7 @@ _smirnovi(int n, double psf, double pcdf)
             return x;
         }
         /* Update the bracketing interval */
-        if (df > 0 &&  x > a) {
+        if (df > 0 && x > a) {
             a = x;
         } else if (df < 0 && x < b) {
             b = x;
@@ -1034,9 +970,9 @@ _smirnovi(int n, double psf, double pcdf)
              * This implies that x >> 1/sqrt(n), and even then |smirnovp| >= |smirnov|
              * so this condition is unexpected.  Do a bisection step.
              */
-            x = (a+b)/2;
+            x = (a + b) / 2;
             deltax = x0 - x;
-        }  else {
+        } else {
             deltax = df / dfdx;
             x = x0 - deltax;
         }
@@ -1073,10 +1009,7 @@ _smirnovi(int n, double psf, double pcdf)
     return x;
 }
 
-
-double
-smirnov(int n, double d)
-{
+double smirnov(int n, double d) {
     ThreeProbs probs;
     if (isnan(d)) {
         return NAN;
@@ -1085,9 +1018,7 @@ smirnov(int n, double d)
     return probs.sf;
 }
 
-double
-smirnovc(int n, double d)
-{
+double smirnovc(int n, double d) {
     ThreeProbs probs;
     if (isnan(d)) {
         return NAN;
@@ -1096,21 +1027,18 @@ smirnovc(int n, double d)
     return probs.cdf;
 }
 
-
 /*
  * Derivative of smirnov(n, d)
  *  One interior point of discontinuity at d=1/n.
-*/
-double
-smirnovp(int n, double d)
-{
+ */
+double smirnovp(int n, double d) {
     ThreeProbs probs;
     if (!(n > 0 && d >= 0.0 && d <= 1.0)) {
         return (NAN);
     }
     if (n == 1) {
-         /* Slope is always -1 for n=1, even at d = 1.0 */
-         return -1.0;
+        /* Slope is always -1 for n=1, even at d = 1.0 */
+        return -1.0;
     }
     if (d == 1.0) {
         return -0.0;
@@ -1126,21 +1054,16 @@ smirnovp(int n, double d)
     return -probs.pdf;
 }
 
-
-double
-smirnovi(int n, double p)
-{
+double smirnovi(int n, double p) {
     if (isnan(p)) {
         return NAN;
     }
-    return _smirnovi(n, p, 1-p);
+    return _smirnovi(n, p, 1 - p);
 }
 
-double
-smirnovci(int n, double p)
-{
+double smirnovci(int n, double p) {
     if (isnan(p)) {
         return NAN;
     }
-    return _smirnovi(n, 1-p, p);
+    return _smirnovi(n, 1 - p, p);
 }

@@ -127,8 +127,7 @@
 
 #include "mconf.h"
 
-double pdtrc(double k, double m)
-{
+double pdtrc(double k, double m) {
     double v;
 
     if (k < 0.0 || m < 0.0) {
@@ -142,9 +141,7 @@ double pdtrc(double k, double m)
     return (igam(v, m));
 }
 
-
-double pdtr(double k, double m)
-{
+double pdtr(double k, double m) {
     double v;
 
     if (k < 0 || m < 0) {
@@ -158,9 +155,7 @@ double pdtr(double k, double m)
     return (igamc(v, m));
 }
 
-
-double pdtri(int k, double y)
-{
+double pdtri(int k, double y) {
     double v;
 
     if ((k < 0) || (y < 0.0) || (y >= 1.0)) {
