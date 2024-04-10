@@ -306,12 +306,11 @@ py3.extension_module('_comb',
   subdir: 'scipy/special'
 )
 
-dd_dep = declare_dependency(sources: ['cephes/dd_real.c'])
 
 py3.extension_module('_test_internal',
-  cython_gen.process('_test_internal.pyx'),
+  [cython_gen.process('_test_internal.pyx'), 'dd_real_wrappers.cpp'],
   include_directories: ['cephes', '../_lib', '../_build_utils/src'],
-  dependencies: [np_dep, dd_dep],
+  dependencies: [np_dep],
   link_args: version_link_args,
   install: true,
   subdir: 'scipy/special'
