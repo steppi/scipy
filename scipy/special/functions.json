@@ -613,7 +613,7 @@
     },
     "gammaln": {
         "_special.h++": {
-            "cephes_lgam": "d->d"
+            "gammaln": "d->d"
         }
     },
     "gammasgn": {
@@ -743,7 +743,7 @@
         "_legacy.pxd": {
             "kn_unsafe": "dd->d"
         },
-        "amos_wrappers.h": {
+        "special_wrappers.h": {
             "cbesk_wrap_real_int": "id->d"
         }
     },

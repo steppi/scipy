@@ -111,6 +111,7 @@ npy_cdouble cbesh_wrap1_e(double v, npy_cdouble z);
 npy_cdouble cbesh_wrap2(double v, npy_cdouble z);
 npy_cdouble cbesh_wrap2_e(double v, npy_cdouble z);
 double sin_pi(double x);
+double gammaln_wrap(double x);
 
 #ifdef __cplusplus
 } /* extern "C" */

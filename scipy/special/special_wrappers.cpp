@@ -3,6 +3,7 @@
 #include "special/amos.h"
 #include "special/bessel.h"
 #include "special/fresnel.h"
+#include "special/gamma.h"
 #include "special/kelvin.h"
 #include "special/mathieu.h"
 #include "special/par_cyl.h"
@@ -263,3 +264,5 @@ npy_cdouble cbesh_wrap1_e(double v, npy_cdouble z) { return to_ccomplex(special:
 npy_cdouble cbesh_wrap2(double v, npy_cdouble z) { return to_ccomplex(special::cbesh_wrap2(v, to_complex(z))); }
 
 npy_cdouble cbesh_wrap2_e(double v, npy_cdouble z) { return to_ccomplex(special::cbesh_wrap2_e(v, to_complex(z))); }
+
+double gammaln_wrap(double x) { return special::gammaln(x); }
