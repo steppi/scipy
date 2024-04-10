@@ -282,7 +282,7 @@ py3.extension_module('cython_special',
     'scaled_exp1.c',
     'special_wrappers.cpp',
     'special_c_wrappers.cpp',
-    'sf_error.c'
+    'sf_error.c',
     'dd_real_wrappers.cpp'
   ],
   c_args: [cython_c_args, Wno_maybe_uninitialized],
