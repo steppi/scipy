@@ -1,4 +1,19 @@
 {
+    "_gdtria_new": {
+        "special_wrappers.h": {
+            "gdtria_wrap": "ddd->d"
+        }
+    },
+    "_gdtrib_new": {
+        "special_wrappers.h": {
+            "gdtrib_wrap": "ddd->d"
+        }
+    },
+    "_gdtrix_new": {
+        "special_wrappers.h": {
+            "gdtrix_wrap": "ddd->d"
+        }
+    },
     "_cosine_cdf": {
         "_cosine.h": {
             "cosine_cdf": "d->d"

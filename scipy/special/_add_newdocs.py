@@ -23,6 +23,20 @@ add_newdoc("_sf_error_test_function",
     Private function; do not use.
     """)
 
+add_newdoc("_gdtria_new",
+    """
+    Private function; do not use.
+    """)
+
+add_newdoc("_gdtrib_new",
+    """
+    Private function; do not use.
+    """)
+
+add_newdoc("_gdtrix_new",
+    """
+    Private function; do not use.
+    """)
 
 add_newdoc("_cosine_cdf",
     """
