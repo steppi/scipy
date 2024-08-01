@@ -428,9 +428,9 @@ double cephes_struve_l(double v, double z);
 
 double gdtria_wrap(double p, double b, double x);
 
-double gdtrib_wrap(double p, double a, double x);
+double gdtrib_wrap(double a, double p, double x);
 
-double gdtrix_wrap(double p, double a, double b);
+double gdtrix_wrap(double a, double b, double p);
 
 #ifdef __cplusplus
 } /* extern "C" */

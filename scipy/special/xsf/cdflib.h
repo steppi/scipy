@@ -27,9 +27,10 @@ namespace special {
 	    return cephes::gdtr(a, b, x) - p;
 	};
 	double result = detail::find_root_bus_dekker_r(func, 1e-100, 1e100, 10000);
+	return result;
     }
 
-    SPECFUN_HOST_DEVICE inline double gdtrib(double p, double a, double x) {
+    SPECFUN_HOST_DEVICE inline double gdtrib(double a, double p, double x) {
 	if (std::isnan(p) || std::isnan(a) || std::isnan(x)) {
 	    return std::numeric_limits<double>::quiet_NaN();
 	}
@@ -49,9 +50,10 @@ namespace special {
 	    return cephes::gdtr(a, b, x) - p;
 	};
 	double result = detail::find_root_bus_dekker_r(func, 1e-100, 1e100, 10000);
+	return result;
     }
 
-    SPECFUN_HOST_DEVICE inline double gdtrix(double p, double a, double b) {
+    SPECFUN_HOST_DEVICE inline double gdtrix(double a, double b, double p) {
 	if (std::isnan(p) || std::isnan(a) || std::isnan(b)) {
 	    return std::numeric_limits<double>::quiet_NaN();
 	}
@@ -71,6 +73,7 @@ namespace special {
 	    return cephes::gdtr(a, b, x) - p;
 	};
 	double result = detail::find_root_bus_dekker_r(func, 0, 1e100, 10000);
+	return result;
     }
 
 }
