@@ -266,5 +266,122 @@ namespace detail {
         return ContinuedFractionSeriesGenerator<Generator, T>(cf);
     }
 
+
+    /* Find root of a real valued continuous function of a single variable
+     *
+     * This is algorithm R from the paper "Two Efficient Algorithms with Guaranteed Convergence
+     * for Finding a Zero of a Function" by Bus and Dekker. This algorithm used Barry Brown,
+     * James Lovato, and Kathy Russell's cdflib library available at https://www.netlib.org/random/,
+     * but it was translated from the Algol code in Bus & Dekker, not the Fortran from cdflib.
+     *
+     * The algorithm is similar to Brent's method, and uses a mix of linear interpolation,
+     * (secant method), rational interpolation, and bisection.
+     */
+    SPECFUN_HOST_DEVICE inline double find_root_bus_dekker_r(std::function<double(double)> func,
+							     double a, double b,
+							     std::uint64_t max_terms) {
+	double fa = func(a), fb = func(b);
+	// Handle cases where zero is on endpoint of initial bracket.
+	if (fa == 0) {
+	    return a;
+	}
+	if (fb == 0) {
+	    return b;
+	}
+	if (std::signbit(fa) == std::signbit(fb)) {
+	    // Initial bracket is invalid.
+	    return std::numeric_limits<double>::quiet_NaN();
+	}
+	bool first = true;
+	/* Bus and Dekker distinguish between what they call intrapolation steps
+	 *  when a == c and extrapolation steps when a != c. For first iteration attempt
+	 * an intrapolation step. */
+	int ext = 0;
+	double c = a, fc = fa;
+	/* d stores the previous value of a. We initialize to avoid compiler warnings,
+	 * but the initial values here don't actually matter. */
+	double d = 0, fd = 0;
+	for (uint64_t i = 1; i < max_terms; i++) {
+	    if (std::abs(fc) < std::abs(fb)) {
+		// interchange to ensure f(b) is the smallest value seen so far.
+		if (c != a) {
+		    d = a; fd = fa;
+		}
+		a = b; fa = fb; b = c; fb = fc; c = a; fc = fa;
+	    }
+	    double m = 0.5 * (b + c);
+	    double mb = m - b;
+	    double eps = std::nextafter(b, std::numeric_limits<double>::infinity()) - b;
+	    if (std::abs(mb) <= eps) {
+		if (std::abs(func(b + mb)) < std::abs(fb)) {
+		    /* If we know the bisection step is the minimum possible that gives
+		     * something different from b, we might as well check here whether
+		     * func(b + mb) is closer to zero than func(b).*/
+		    b += mb;
+		}
+		break;
+	    }
+	    // w is the step used to update b
+	    double w;
+	    if (ext > 3) {
+		/* w = mb corresponds to bisection. After 3 successive extrapolations, run
+		 * a bisection step. This ensures desired asymptotic behavior. See
+		 * Bus and Dekker Section 4.2.*/
+		w = mb; 
+	    } else {
+		// 
+		double p = (b - a) * fb;
+		double q;
+		if (first) {
+		    // Only on first iteration use a linear interpolation step.
+		    q = fa - fb;
+		    first = false;
+		} else {
+		    // Otherwise, perform three point rational interpolation.
+		    double fdb = (fd - fb) / (d - b);
+		    double fda = (fd - fa) / (d - a);
+		    p = fda * p; q = fdb * fa - fda * fb;
+		}
+		if (p < 0) {
+		    p = -p; q = -q;
+		}
+		if (ext == 3) {
+		    /* On attempt at 3rd extrapolation, step is doubled. This is to ensure desired
+		     * asymptotic behavior. See Bus and Dekker, Section 4.2. */
+		    p *= 2.0;
+		}
+		if (p < std::abs(q) * eps) {
+		    /* If step size p / q is too small for b + p / q to be 
+		     * different from b, choose minimal step size that will make them different. */
+		    w = std::signbit(mb) * eps;
+		} else if (p < mb * q) {
+		    // Use the calculated step size if it will keep b within the current interval.
+		    w = p / q;
+		} else {
+		    // Otherwise bisection.
+		    w = mb;
+		}
+	    }
+	    d = a; fd = fa; a = b; fa = fb;
+	    b += w;
+	    fb = func(b);
+	    if (std::signbit(fb) == std::signbit(fc)) {
+  		/* If f(b) and f(c) have the same sign, next step is intrapolation.
+		 * Set c to a and reset extrapolation count. */
+		c = a; fc = fa; ext = 0;
+	    } else {
+		if (w == mb) {
+		    // Reset extrapolation count if bisection was performed.
+		    ext = 0;
+		} else {
+		    /* Otherwise, increment extrapolation count. Bisection will be used after 4
+		     * successive extrapolations */
+		    ext += 1;
+		}
+	    }
+	}
+	return b;
+    }
+
 } // namespace detail
 } // namespace xsf
