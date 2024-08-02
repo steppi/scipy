@@ -7,7 +7,7 @@
 #include "trig.h"
 #include "digamma.h"
 #include "cephes/const.h"
-#include "cephes/erf.h"
+#include "cephes/ndtr.h"
 #include "cephes/gamma.h"
 #include "cephes/gdtr.h"
 #include "cephes/unity.h"
@@ -1749,7 +1749,7 @@ namespace cdflib {
 	    
 	    if (((a > x) || (x >= x0)) || (twoa != m)) {
 		t1 = a*std::log(x) - x;
-		r = std::exp(t1)/gamma(a);
+		r = std::exp(t1)/xsf::cephes::gamma(a);
 		
 		//
 		// 40 Again - This time coming from 20
