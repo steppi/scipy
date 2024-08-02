@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cephes/gamma.h"
+#include "cdflib.h"
 #include "loggamma.h"
 
 namespace xsf {
@@ -12,7 +13,7 @@ XSF_HOST_DEVICE T gamma(T x) {
 
 template <typename T>
 XSF_HOST_DEVICE T gammaln(T x) {
-    return cephes::lgam(x);
+    return cdflib::gammaln(x);
 }
 
 XSF_HOST_DEVICE inline std::complex<double> gamma(std::complex<double> z) {
