@@ -438,6 +438,7 @@ double cdflib_rlog1_wrap(double x);
 double cdflib_gamln_wrap(double x);
 double cdflib_betaln_wrap(double a, double b);
 double cdflib_erf_wrap(double x);
+double cdflib_gamma_wrap(double x);
 
 #ifdef __cplusplus
 } /* extern "C" */

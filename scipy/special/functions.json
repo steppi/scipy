@@ -44,6 +44,11 @@
             "cdflib_erf_wrap": "d->d"
         }
     },
+    "_cdflib_gamma": {
+        "xsf_wrappers.h": {
+            "cdflib_gamma_wrap": "d->d"
+        }
+    },
     "_cosine_cdf": {
         "_cosine.h": {
             "cosine_cdf": "d->d"

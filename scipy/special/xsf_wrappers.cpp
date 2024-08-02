@@ -453,6 +453,10 @@ double cdflib_erf_wrap(double x) {
     return xsf::cdflib::erf(x);
 }
 
+double cdflib_gamma_wrap(double x) {
+    return xsf::cdflib::gamma(x);
+}
+
 double cephes_hyp2f1_wrap(double a, double b, double c, double x) { return xsf::cephes::hyp2f1(a, b, c, x); }
 
 double cephes_airy_wrap(double x, double *ai, double *aip, double *bi, double *bip) {
