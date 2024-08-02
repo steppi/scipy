@@ -426,11 +426,7 @@ double cephes_struve_h(double v, double z);
 
 double cephes_struve_l(double v, double z);
 
-double gdtria_wrap(double p, double b, double x);
-
 double gdtrib_wrap(double a, double p, double x);
-
-double gdtrix_wrap(double a, double b, double p);
 
 double cdflib_alngam_wrap(double x);
 double cdflib_psi_wrap(double x);

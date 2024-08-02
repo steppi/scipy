@@ -1,17 +1,7 @@
 {
-    "_gdtria_new": {
-        "xsf_wrappers.h": {
-            "gdtria_wrap": "ddd->d"
-        }
-    },
     "_gdtrib_new": {
         "xsf_wrappers.h": {
             "gdtrib_wrap": "ddd->d"
-        }
-    },
-    "_gdtrix_new": {
-        "xsf_wrappers.h": {
-            "gdtrix_wrap": "ddd->d"
         }
     },
     "_cdflib_alngam": {
@@ -594,10 +584,6 @@
     "gdtrib": {
         "_cdflib_wrappers.pxd": {
             "gdtrib": "ddd->d"        }
-    },
-    "gdtrix": {
-        "_cdflib_wrappers.pxd": {
-            "gdtrix": "ddd->d"        }
     },
     "huber": {
         "_convex_analysis.pxd": {

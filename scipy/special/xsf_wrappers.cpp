@@ -417,16 +417,8 @@ npy_cdouble special_sph_harm_unsafe(double m, double n, double theta, double phi
     return to_ccomplex(::sph_harm(static_cast<long>(m), static_cast<long>(n), theta, phi));
 }
 
-double gdtria_wrap(double p, double b, double x) {
-    return xsf::gdtria(p, b, x);
-}
-
 double gdtrib_wrap(double a, double p, double x) {
     return xsf::gdtrib(a, p, x);
-}
-
-double gdtrix_wrap(double a, double b, double p) {
-    return xsf::gdtrix(a, b, p);
 }
 
 double cdflib_alngam_wrap(double x) {
