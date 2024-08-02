@@ -277,7 +277,7 @@ namespace detail {
      * The algorithm is similar to Brent's method, and uses a mix of linear interpolation,
      * (secant method), rational interpolation, and bisection.
      */
-    SPECFUN_HOST_DEVICE inline double find_root_bus_dekker_r(std::function<double(double)> func,
+    XSF_HOST_DEVICE inline double find_root_bus_dekker_r(std::function<double(double)> func,
 							     double a, double b,
 							     std::uint64_t max_terms) {
 	double fa = func(a), fb = func(b);

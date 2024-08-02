@@ -1,17 +1,42 @@
 {
     "_gdtria_new": {
-        "special_wrappers.h": {
+        "xsf_wrappers.h": {
             "gdtria_wrap": "ddd->d"
         }
     },
     "_gdtrib_new": {
-        "special_wrappers.h": {
+        "xsf_wrappers.h": {
             "gdtrib_wrap": "ddd->d"
         }
     },
     "_gdtrix_new": {
-        "special_wrappers.h": {
+        "xsf_wrappers.h": {
             "gdtrix_wrap": "ddd->d"
+        }
+    },
+    "_cdflib_alngam": {
+        "xsf_wrappers.h": {
+            "cdflib_alngam_wrap": "d->d"
+        }
+    },
+    "_cdflib_psi": {
+        "xsf_wrappers.h": {
+            "cdflib_psi_wrap": "d->d"
+        }
+    },
+    "_cdflib_rlog1": {
+        "xsf_wrappers.h": {
+            "cdflib_rlog1_wrap": "d->d"
+        }
+    },
+    "_cdflib_gamln": {
+        "xsf_wrappers.h": {
+            "cdflib_gamln_wrap": "d->d"
+        }
+    },
+    "_cdflib_betaln": {
+        "xsf_wrappers.h": {
+            "cdflib_betaln_wrap": "dd->d"
         }
     },
     "_cosine_cdf": {

@@ -38,6 +38,31 @@ add_newdoc("_gdtrix_new",
     Private function; do not use.
     """)
 
+add_newdoc("_cdflib_alngam",
+    """
+    Private function; do not use.
+    """)
+
+add_newdoc("_cdflib_psi",
+    """
+    Private function; do not use.
+    """)
+
+add_newdoc("_cdflib_rlog1",
+    """
+    Private function; do not use.
+    """)
+
+add_newdoc("_cdflib_gamln",
+    """
+    Private function; do not use.
+    """)
+
+add_newdoc("_cdflib_betaln",
+    """
+    Private function; do not use.
+    """)
+
 add_newdoc("_cosine_cdf",
     """
     _cosine_cdf(x)

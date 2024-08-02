@@ -4,6 +4,7 @@
 #include "xsf/amos.h"
 #include "xsf/bessel.h"
 #include "xsf/binom.h"
+#include "xsf/cdflib.h"
 #include "xsf/expint.h"
 #include "xsf/fresnel.h"
 #include "xsf/gamma.h"
@@ -414,6 +415,38 @@ npy_cdouble special_sph_harm(long m, long n, double theta, double phi) {
 
 npy_cdouble special_sph_harm_unsafe(double m, double n, double theta, double phi) {
     return to_ccomplex(::sph_harm(static_cast<long>(m), static_cast<long>(n), theta, phi));
+}
+
+double gdtria_wrap(double p, double b, double x) {
+    return xsf::gdtria(p, b, x);
+}
+
+double gdtrib_wrap(double a, double p, double x) {
+    return xsf::gdtrib(a, p, x);
+}
+
+double gdtrix_wrap(double a, double b, double p) {
+    return xsf::gdtrix(a, b, p);
+}
+
+double cdflib_alngam_wrap(double x) {
+    return xsf::cdflib::alngam(x);
+}
+
+double cdflib_psi_wrap(double x) {
+    return xsf::cdflib::psi(x);
+}
+
+double cdflib_rlog1_wrap(double x) {
+    return xsf::cdflib::rlog1(x);
+}
+
+double cdflib_gamln_wrap(double x) {
+    return xsf::cdflib::gamln(x);
+}
+
+double cdflib_betaln_wrap(double a, double b) {
+    return xsf::cdflib::betaln(a, b);
 }
 
 double cephes_hyp2f1_wrap(double a, double b, double c, double x) { return xsf::cephes::hyp2f1(a, b, c, x); }

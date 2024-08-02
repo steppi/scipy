@@ -432,6 +432,12 @@ double gdtrib_wrap(double a, double p, double x);
 
 double gdtrix_wrap(double a, double b, double p);
 
+double cdflib_alngam_wrap(double x);
+double cdflib_psi_wrap(double x);
+double cdflib_rlog1_wrap(double x);
+double cdflib_gamln_wrap(double x);
+double cdflib_betaln_wrap(double a, double b);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */
