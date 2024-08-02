@@ -39,6 +39,11 @@
             "cdflib_betaln_wrap": "dd->d"
         }
     },
+    "_cdflib_erf": {
+        "xsf_wrappers.h": {
+            "cdflib_erf_wrap": "d->d"
+        }
+    },
     "_cosine_cdf": {
         "_cosine.h": {
             "cosine_cdf": "d->d"

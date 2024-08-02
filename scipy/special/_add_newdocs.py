@@ -63,6 +63,11 @@ add_newdoc("_cdflib_betaln",
     Private function; do not use.
     """)
 
+add_newdoc("_cdflib_erf",
+    """
+    Private function; do not use.
+    """)
+
 add_newdoc("_cosine_cdf",
     """
     _cosine_cdf(x)
