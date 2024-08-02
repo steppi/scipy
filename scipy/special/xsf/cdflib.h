@@ -7,6 +7,7 @@
 #include "trig.h"
 #include "digamma.h"
 #include "cephes/const.h"
+#include "cephes/erf.h"
 #include "cephes/gamma.h"
 #include "cephes/gdtr.h"
 #include "cephes/unity.h"
@@ -1157,7 +1158,7 @@ namespace cdflib {
 
 	if (a == 0.5) {
 	    if (x < 0.25) {
-		p = erf(sqrt(x));
+		p = xsf::cephes::erf(std::sqrt(x));
 		return {p, 0.5 + (0.5 - p)};
 	    } else {
 		q = erfc1(0, std::sqrt(x));
@@ -1886,7 +1887,7 @@ namespace cdflib {
 		qans = erfc1(0, std::sqrt(x));
 		ans = 0.5 + (0.5 - qans);
 	    } else {
-		ans = erf(std::sqrt(x));
+		ans = xsf::cephes::erf(std::sqrt(x));
 		qans = 0.5 + (0.5 - ans);
 	    }
 	    return {ans, qans};
