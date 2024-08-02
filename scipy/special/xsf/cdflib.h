@@ -1749,7 +1749,7 @@ namespace cdflib {
 	    
 	    if (((a > x) || (x >= x0)) || (twoa != m)) {
 		t1 = a*std::log(x) - x;
-		r = std::exp(t1)/xsf::cephes::gamma(a);
+		r = std::exp(t1)/xsf::cephes::Gamma(a);
 		
 		//
 		// 40 Again - This time coming from 20
