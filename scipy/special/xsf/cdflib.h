@@ -900,7 +900,7 @@ namespace cdflib {
 	//    Evaluation of x**a*y**b/beta(a,b)
 
 	double a0, apb, b0, c, e, h, lmbda, lnx, lny, t, u, v, x0, y0, z;
-	double constexpr r2pi = 0.3989422804014327  // 1. / std::sqrt(2 * M_PI);
+	double constexpr r2pi = 0.3989422804014327;  // 1. / std::sqrt(2 * M_PI);
 	int i, n;
 
 	if ((x == 0.) || (y == 0.)) {
@@ -1157,7 +1157,7 @@ namespace cdflib {
 
 	if (a == 0.5) {
 	    if (x < 0.25) {
-		p = cdflib_erf(sqrt(x));
+		p = erf(sqrt(x));
 		return {p, 0.5 + (0.5 - p)};
 	    } else {
 		q = erfc1(0, std::sqrt(x));
@@ -1434,9 +1434,9 @@ namespace cdflib {
 	    ind = 2;
 	}
 
-	acc = std::fmax(acc0[ind], eps);
-	e0 = e00[ind];
-	x0 = x00[ind];
+	acc = std::fmax(gratio_acc0[ind], eps);
+	e0 = gratio_e00[ind];
+	x0 = gratio_x00[ind];
 
 	if (a >= 1.0) {
 	    if (a >= gratio_big[ind]) {
@@ -1986,7 +1986,7 @@ namespace cdflib {
 	if (u == 0.0) { return {w, 1}; }
 
 	std::pair<double, double> ret = grat1(b, z, r, eps);
-	q = ret[1];
+	q = ret.second;
 	v = 0.25 * std::pow((1 / nu), 2);
 	t2 = 0.25*lnx*lnx;
 	l = w / u;
