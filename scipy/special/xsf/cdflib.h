@@ -2091,8 +2091,24 @@ XSF_HOST_DEVICE inline double gdtrib(double a, double p, double x) {
 	}
 	return result.second - q;
     };
-    double result = detail::find_root_bus_dekker_r(func, 1e-100, 1e100, 10000);
-    return result;
+    double lower_bound = 1e-100;
+    double upper_bound = 1e100;
+    std::pair<double, int> result = detail::find_root_bus_dekker_r(func, lower_bound, upper_bound, 100000);
+    double value = result.first;
+    int status = result.second;
+    if (status == 1) {
+	set_error("gdtrib", SF_ERROR_OTHER, "Answer appears to be lower than lowest search bound %g", lower_bound);
+	return value;
+    }
+    if (status == 2) {
+	set_error("gdtrib", SF_ERROR_OTHER, "Answer appears to be greater than highest search bound %g", upper_bound);
+	return value;
+    }
+    if (status > 2) {
+	set_error("gdtrib", SF_ERROR_OTHER, "Computational Error");;
+	return std::numeric_limits<double>::quiet_NaN();
+    }
+    return value;
 }
 
 

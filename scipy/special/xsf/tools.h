@@ -277,20 +277,30 @@ namespace detail {
      * The algorithm is similar to Brent's method, and uses a mix of linear interpolation,
      * (secant method), rational interpolation, and bisection.
      */
-    XSF_HOST_DEVICE inline double find_root_bus_dekker_r(std::function<double(double)> func,
+    XSF_HOST_DEVICE inline std::pair<double, int> find_root_bus_dekker_r(std::function<double(double)> func,
 							     double a, double b,
-							     std::uint64_t max_terms) {
+							     std::uint64_t max_iter) {
+	if (a > b) {
+	    std::swap(a, b);
+	}
 	double fa = func(a), fb = func(b);
 	// Handle cases where zero is on endpoint of initial bracket.
 	if (fa == 0) {
-	    return a;
+	    return {a, 0};
 	}
 	if (fb == 0) {
-	    return b;
+	    return {b, 0};
 	}
 	if (std::signbit(fa) == std::signbit(fb)) {
 	    // Initial bracket is invalid.
-	    return std::numeric_limits<double>::quiet_NaN();
+	    if (std::abs(fa) == std::abs(fb)) {
+		return {std::numeric_limits<double>::quiet_NaN(), 3};
+	    } else if (std::abs(fa) > std::abs(fb)) {
+		// Answer is likely beyond upper bound
+		return {b, 2};
+	    }
+	    // Answer is likely before lower bound.
+	    return {a, 1};
 	}
 	bool first = true;
 	/* Bus and Dekker distinguish between what they call intrapolation steps
@@ -301,7 +311,7 @@ namespace detail {
 	/* d stores the previous value of a. We initialize to avoid compiler warnings,
 	 * but the initial values here don't actually matter. */
 	double d = 0, fd = 0;
-	for (uint64_t i = 1; i < max_terms; i++) {
+	for (uint64_t i = 1; i < max_iter; i++) {
 	    if (std::abs(fc) < std::abs(fb)) {
 		// interchange to ensure f(b) is the smallest value seen so far.
 		if (c != a) {
@@ -319,7 +329,7 @@ namespace detail {
 		     * func(b + mb) is closer to zero than func(b).*/
 		    b += mb;
 		}
-		break;
+		return {b, 0};
 	    }
 	    // w is the step used to update b
 	    double w;
@@ -380,7 +390,8 @@ namespace detail {
 		}
 	    }
 	}
-	return b;
+	// Exceeded maximum number of iterations.
+	return {std::numeric_limits<double>::quiet_NaN(), 3};
     }
 
 } // namespace detail
