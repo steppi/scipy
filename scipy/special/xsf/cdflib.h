@@ -2091,24 +2091,27 @@ XSF_HOST_DEVICE inline double gdtrib(double a, double p, double x) {
 	}
 	return result.second - q;
     };
-    double lower_bound = 1e-100;
-    double upper_bound = 1e100;
-    std::pair<double, int> result = detail::find_root_bus_dekker_r(func, lower_bound, upper_bound, 100000);
-    double value = result.first;
-    int status = result.second;
-    if (status == 1) {
+    double lower_bound = std::numeric_limits<double>::min();
+    double upper_bound = std::numeric_limits<double>::max();
+    auto [x_left, x_right, bracket_status] = detail::bracket_root(func, 1.0, 10.0, lower_bound, upper_bound, 10.0, false);
+    if (bracket_status == 1) {
 	set_error("gdtrib", SF_ERROR_OTHER, "Answer appears to be lower than lowest search bound %g", lower_bound);
-	return value;
+	return lower_bound;
     }
-    if (status == 2) {
+    if (bracket_status == 2) {
 	set_error("gdtrib", SF_ERROR_OTHER, "Answer appears to be greater than highest search bound %g", upper_bound);
-	return value;
+	return upper_bound;
     }
-    if (status > 2) {
+    if (bracket_status == 3) {
 	set_error("gdtrib", SF_ERROR_OTHER, "Computational Error");;
 	return std::numeric_limits<double>::quiet_NaN();
     }
-    return value;
+    auto [result, root_status] = detail::find_root_bus_dekker_r(func, x_left, x_right);
+    if (root_status) {
+	set_error("gdtrib", SF_ERROR_OTHER, "Computational Error");;
+	return std::numeric_limits<double>::quiet_NaN();
+    }
+    return result;
 }
 
 
