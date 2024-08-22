@@ -266,6 +266,67 @@ namespace detail {
         return ContinuedFractionSeriesGenerator<Generator, T>(cf);
     }
 
+    /* Find initial bracket for a scalar root finder. Assumes function is monotonic and it is known
+     * whether the function is increasing or decreasing. */
+    XSF_HOST_DEVICE inline std::tuple<double, double, int> bracket_root(std::function<double(double)> func,
+									double x_left, double x_right,
+									double x_min, double x_max, double factor,
+									bool increasing) {
+	double y_left = func(x_left), y_right = func(x_right);
+	double y_left_sgn = std::signbit(y_left), y_right_sgn = std::signbit(y_right);
+
+	if ((y_left_sgn != y_right_sgn) || (y_left == 0) || (y_right == 0)) {
+	    return std::make_tuple(x_left, x_right, 0);
+	}
+	bool search_left;
+	double interior, frontier, y_interior, y_frontier, boundary;
+	if ((increasing && y_right < 0) || (!increasing && y_right > 0)) {
+	    interior = x_left, frontier = x_right, y_interior = y_left, y_frontier = y_right;
+	    search_left = false;
+	    boundary = x_max;
+	} else {
+	    interior = x_right, frontier = x_left, y_interior = y_right, y_frontier = y_left;
+	    search_left = true;
+	    boundary = x_min;
+	}
+	bool y_interior_sgn = std::signbit(y_interior);
+	bool y_frontier_sgn = std::signbit(y_frontier);
+
+	bool plateau = (y_left == y_right);
+	bool stop = false;
+	while (true) {
+	    double step = (frontier - interior) * factor;
+	    if (!plateau) {
+		interior = frontier;
+		y_interior = y_frontier;
+		y_interior_sgn = y_frontier_sgn;
+	    }
+	    frontier += step;
+	    if ((search_left && frontier <= boundary) || (!search_left && frontier >= boundary)) {
+		frontier = boundary;
+		stop = true;
+	    }
+	    y_frontier = func(frontier);
+	    y_frontier_sgn = std::signbit(y_frontier);
+	    if (y_frontier == y_interior) {
+		plateau = true;
+	    }
+
+	    if (y_frontier_sgn != y_interior_sgn) {
+		if (search_left) {
+		    std::swap(interior, frontier);
+		}
+		return std::make_tuple(interior, frontier, 0);
+	    }
+
+	    if (stop) {
+		return std::make_tuple(std::numeric_limits<double>::quiet_NaN(),
+				       std::numeric_limits<double>::quiet_NaN(),
+				       search_left ? 1 : 2);
+	    }
+	}
+    }
+
 
     /* Find root of a real valued continuous function of a single variable
      *
@@ -278,11 +339,7 @@ namespace detail {
      * (secant method), rational interpolation, and bisection.
      */
     XSF_HOST_DEVICE inline std::pair<double, int> find_root_bus_dekker_r(std::function<double(double)> func,
-							     double a, double b,
-							     std::uint64_t max_iter) {
-	if (a > b) {
-	    std::swap(a, b);
-	}
+									 double a, double b) {
 	double fa = func(a), fb = func(b);
 	// Handle cases where zero is on endpoint of initial bracket.
 	if (fa == 0) {
@@ -311,7 +368,7 @@ namespace detail {
 	/* d stores the previous value of a. We initialize to avoid compiler warnings,
 	 * but the initial values here don't actually matter. */
 	double d = 0, fd = 0;
-	for (uint64_t i = 1; i < max_iter; i++) {
+	while (true) {
 	    if (std::abs(fc) < std::abs(fb)) {
 		// interchange to ensure f(b) is the smallest value seen so far.
 		if (c != a) {
@@ -390,8 +447,6 @@ namespace detail {
 		}
 	    }
 	}
-	// Exceeded maximum number of iterations.
-	return {std::numeric_limits<double>::quiet_NaN(), 3};
     }
 
 } // namespace detail
