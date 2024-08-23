@@ -2093,14 +2093,14 @@ XSF_HOST_DEVICE inline double gdtrib(double a, double p, double x) {
     };
     double lower_bound = std::numeric_limits<double>::min();
     double upper_bound = std::numeric_limits<double>::max();
-    auto [x_left, x_right, bracket_status] = detail::bracket_root(func, 1.0, 10.0, lower_bound, upper_bound, 10.0, false);
+    auto [x_left, x_right, bracket_status] = detail::bracket_root(func, 1.0, 5.0, lower_bound, upper_bound, 8.0, false);
     if (bracket_status == 1) {
-	set_error("gdtrib", SF_ERROR_OTHER, "Answer appears to be lower than lowest search bound %g", lower_bound);
-	return lower_bound;
+	set_error("gdtrib", SF_ERROR_UNDERFLOW, NULL);
+	return 0.0;
     }
     if (bracket_status == 2) {
-	set_error("gdtrib", SF_ERROR_OTHER, "Answer appears to be greater than highest search bound %g", upper_bound);
-	return upper_bound;
+	set_error("gdtrib", SF_ERROR_OVERFLOW, NULL);
+	return std::numeric_limits<double>::infinity();
     }
     if (bracket_status == 3) {
 	set_error("gdtrib", SF_ERROR_OTHER, "Computational Error");;
