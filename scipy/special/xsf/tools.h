@@ -275,12 +275,12 @@ namespace detail {
 	double y_left = func(x_left), y_right = func(x_right);
 	double y_left_sgn = std::signbit(y_left), y_right_sgn = std::signbit(y_right);
 
-	if ((y_left_sgn != y_right_sgn) || (y_left == 0) || (y_right == 0)) {
+	if (y_left_sgn != y_right_sgn || (y_left != 0 && y_right == 0)) {
 	    return std::make_tuple(x_left, x_right, 0);
 	}
 	bool search_left;
 	double interior, frontier, y_interior, y_frontier, boundary;
-	if ((increasing && y_right < 0) || (!increasing && y_right > 0)) {
+	if ((y_left != 0 && increasing && y_right < 0) || (!increasing && y_right > 0)) {
 	    interior = x_left, frontier = x_right, y_interior = y_left, y_frontier = y_right;
 	    search_left = false;
 	    boundary = x_max;
@@ -311,8 +311,8 @@ namespace detail {
 	    if (y_frontier == y_interior) {
 		plateau = true;
 	    }
-
-	    if (y_frontier_sgn != y_interior_sgn || y_frontier == 0.0) {
+	    if (y_frontier_sgn != y_interior_sgn || (y_interior == 0.0 && search_left && y_frontier != 0.0)
+		|| (y_frontier == 0.0 && !search_left && y_interior != 0.0)) {
 		if (search_left) {
 		    std::swap(interior, frontier);
 		}
@@ -320,6 +320,12 @@ namespace detail {
 	    }
 
 	    if (stop) {
+		if (y_frontier == 0.0) {
+		    if (search_left) {
+			std::swap(interior, frontier);
+		    }
+		    return std::make_tuple(interior, frontier, 0);
+		}
 		return std::make_tuple(std::numeric_limits<double>::quiet_NaN(),
 				       std::numeric_limits<double>::quiet_NaN(),
 				       search_left ? 1 : 2);
@@ -327,6 +333,25 @@ namespace detail {
 	}
     }
 
+    /* Given a monotonic function func and an interval (a, b) such that func(a) != 0 and func(b) == 0
+     * find the minimal c such that func(c) == 0.
+     */
+    XSF_HOST_DEVICE inline double find_minimal_root(std::function<double(double)> func,
+						    double a, double b) {
+	double step;
+	while ((step = (b - a) / 2.0) >= std::abs(b)*std::numeric_limits<double>::epsilon()) {
+	    double m = a + step;
+	    if (func(m) == 0.0) {
+		b = m;
+	    } else {
+		a = m;
+	    }
+	}
+	while (func(a) != 0.0) {
+	    a = std::nextafter(a, std::numeric_limits<double>::infinity());
+	}
+	return a;
+    }
 
     /* Find root of a real valued continuous function of a single variable
      *
@@ -376,15 +401,23 @@ namespace detail {
 		}
 		a = b; fa = fb; b = c; fb = fc; c = a; fc = fa;
 	    }
-	    double m = 0.5 * (b + c);
+	    double m = 0.5 *  (b + c);
 	    double mb = m - b;
 	    double eps = std::nextafter(b, std::numeric_limits<double>::infinity()) - b;
 	    if (std::abs(mb) <= eps) {
-		if (std::abs(func(b + mb)) < std::abs(fb)) {
-		    /* If we know the bisection step is the minimum possible that gives
-		     * something different from b, we might as well check here whether
-		     * func(b + mb) is closer to zero than func(b).*/
-		    b += mb;
+		/* If we've converged, check doubles one step in each direction */
+		double best_val = std::abs(fb);
+		double b_r = b + eps;
+		double b_l = std::nextafter(b, -std::numeric_limits<double>::infinity());
+		double candidate_val = std::abs(func(b_l));
+		if (candidate_val <= best_val) {
+		    b = b_l, best_val = candidate_val;
+		}
+		if (best_val > 0.0) { 
+		    candidate_val = std::abs(func(b_r));
+		    if (candidate_val < best_val) {
+			b = b_r;
+		    }
 		}
 		return {b, 0};
 	    }

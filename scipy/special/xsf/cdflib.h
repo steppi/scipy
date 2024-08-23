@@ -2071,15 +2071,29 @@ XSF_HOST_DEVICE inline double gdtrib(double a, double p, double x) {
 	return std::numeric_limits<double>::quiet_NaN();
     }
     if (!((0 <= p) && (p <= 1))) {
-	set_error("gdtrib", SF_ERROR_ARG, "Input parameter p is out of range");
+	set_error("gdtrib", SF_ERROR_DOMAIN, "Input parameter p is out of range");
 	return std::numeric_limits<double>::quiet_NaN();
     }
     if (!(a > 0)) {
-	set_error("gdtrib", SF_ERROR_ARG, "Input parameter a is out of range");
+	set_error("gdtrib", SF_ERROR_DOMAIN, "Input parameter a is out of range");
 	return std::numeric_limits<double>::quiet_NaN();
     }
     if (!(x >= 0)) {
-	set_error("gdtrib", SF_ERROR_ARG, "Input parameter x is out of range");
+	set_error("gdtrib", SF_ERROR_DOMAIN, "Input parameter x is out of range");
+	return std::numeric_limits<double>::quiet_NaN();
+    }
+    if (x == 0.0) {
+	if (p == 0.0) {
+	    /* CDF evaluated at x = 0 will be zero except for degenerate b = 0
+	     * case. Following our convention, we take the smallest normalized value
+	     * for b. */
+	    return std::numeric_limits<double>::min();
+	} else if (p == 1.0) {
+	    /* The CDF evaluated at x = 0 will be one for the degenerate b = 0
+	     * case, where we get a point distribution at zero. */
+	    return 0.0;
+	}
+	// When x = 0, there can be no b for which 0 < p < 1.
 	return std::numeric_limits<double>::quiet_NaN();
     }
 
@@ -2105,6 +2119,9 @@ XSF_HOST_DEVICE inline double gdtrib(double a, double p, double x) {
     if (bracket_status == 3) {
 	set_error("gdtrib", SF_ERROR_OTHER, "Computational Error");;
 	return std::numeric_limits<double>::quiet_NaN();
+    }
+    if (func(x_right) == 0.0) {
+	return detail::find_minimal_root(func, x_left, x_right);
     }
     auto [result, root_status] = detail::find_root_bus_dekker_r(func, x_left, x_right);
     if (root_status) {
