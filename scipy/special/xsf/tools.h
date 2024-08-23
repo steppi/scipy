@@ -312,7 +312,7 @@ namespace detail {
 		plateau = true;
 	    }
 
-	    if (y_frontier_sgn != y_interior_sgn) {
+	    if (y_frontier_sgn != y_interior_sgn || y_frontier == 0.0) {
 		if (search_left) {
 		    std::swap(interior, frontier);
 		}
