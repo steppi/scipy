@@ -421,6 +421,10 @@ double gdtrib_wrap(double a, double p, double x) {
     return xsf::gdtrib(a, p, x);
 }
 
+double gdtrib2_wrap(double a, double p, double x) {
+    return xsf::gdtrib2(a, p, x);
+}
+
 double cdflib_alngam_wrap(double x) {
     return xsf::cdflib::alngam(x);
 }

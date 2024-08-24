@@ -427,6 +427,7 @@ double cephes_struve_h(double v, double z);
 double cephes_struve_l(double v, double z);
 
 double gdtrib_wrap(double a, double p, double x);
+double gdtrib2_wrap(double a, double p, double x);
 
 double cdflib_alngam_wrap(double x);
 double cdflib_psi_wrap(double x);

@@ -334,8 +334,7 @@ namespace detail {
     }
 
     /* Given a monotonic function func and an interval (a, b) such that func(a) != 0 and func(b) == 0
-     * find the minimal c such that func(c) == 0.
-     */
+     * find the c closest to a such that func(c) == 0. */
     XSF_HOST_DEVICE inline double find_minimal_root(std::function<double(double)> func,
 						    double a, double b) {
 	double step;

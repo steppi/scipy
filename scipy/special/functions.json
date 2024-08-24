@@ -4,6 +4,11 @@
             "gdtrib_wrap": "ddd->d"
         }
     },
+    "_gdtrib_new2": {
+        "xsf_wrappers.h": {
+            "gdtrib2_wrap": "ddd->d"
+        }
+    },
     "_cdflib_alngam": {
         "xsf_wrappers.h": {
             "cdflib_alngam_wrap": "d->d"

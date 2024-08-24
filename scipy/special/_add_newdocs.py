@@ -33,6 +33,11 @@ add_newdoc("_gdtrib_new",
     Private function; do not use.
     """)
 
+add_newdoc("_gdtrib_new2",
+    """
+    Private function; do not use.
+    """)
+
 add_newdoc("_cdflib_alngam",
     """
     Private function; do not use.
