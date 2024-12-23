@@ -673,11 +673,11 @@ def test_lambertw_smallz():
 
 # The functions lpn, lpmn, clpmn, and sph_harm appearing below are
 # deprecated in favor of legendre_p_all, assoc_legendre_p_all,
-# assoc_legendre_p_all (assoc_legendre_p_all covers lpmn and clpmn),
-# and sph_harm_y respectively. The deprecated functions listed above are
-# implemented as shims around their respective replacements. The replacements
-# are tested separately, but tests for the deprecated functions remain to
-# verify the correctness of the shims.
+# (assoc_legendre_p_all covers lpmn and clpmn) and sph_harm_y. The
+# deprecated functions listed above are implemented as shims around
+# their respective replacements. The replacements are tested
+# separately, but tests for the deprecated functions remain to verify
+# the correctness of the shims.
 
 HYPERKW = dict(maxprec=200, maxterms=200)
 
