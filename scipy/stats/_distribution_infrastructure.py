@@ -320,6 +320,7 @@ class _SimpleDomain(_Domain):
         # TODO: ensure outputs are floats
         if callable(self.endpoints):
             a, b = self.endpoints(**parameter_values)
+            return a, b
         else:
             a, b = self.endpoints
         # If `a` (`b`) is a string - the name of the parameter that defines
@@ -336,7 +337,6 @@ class _SimpleDomain(_Domain):
                        "all required distribution parameters as keyword "
                        "arguments.")
             raise TypeError(message) from e
-
         return a, b
 
     def contains(self, item, parameter_values=None):
