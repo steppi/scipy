@@ -269,8 +269,11 @@ class _SimpleDomain(_Domain):
     """
     def __init__(self, endpoints=(-inf, inf), inclusive=(False, False)):
         self.symbols = super().symbols.copy()
-        a, b = endpoints
-        self.endpoints = np.asarray(a)[()], np.asarray(b)[()]
+        if callable(endpoints):
+            self.endpoints = endpoints
+        else:
+            a, b = endpoints
+            self.endpoints = np.asarray(a)[()], np.asarray(b)[()]
         self.inclusive = inclusive
 
     def define_parameters(self, *parameters):
@@ -315,7 +318,10 @@ class _SimpleDomain(_Domain):
 
         """
         # TODO: ensure outputs are floats
-        a, b = self.endpoints
+        if callable(self.endpoints):
+            a, b = self.endpoints(**parameter_values)
+        else:
+            a, b = self.endpoints
         # If `a` (`b`) is a string - the name of the parameter that defines
         # the endpoint of the domain - then corresponding numerical values
         # will be found in the `parameter_values` dictionary. Otherwise, it is
@@ -395,6 +401,9 @@ class _RealDomain(_SimpleDomain):
     """
 
     def __str__(self):
+        if callable(self.endpoints):
+            return self.endpoints.__doc__
+
         a, b = self.endpoints
         left_inclusive, right_inclusive = self.inclusive
 
@@ -3605,7 +3614,20 @@ def _make_distribution_rv_generic(dist):
         parameters.append(param)
         names.append(shape_info.name)
 
-    _x_support = _RealDomain(endpoints=support, inclusive=(True, True))
+    def _overrides(method_name):
+        return (getattr(dist.__class__, method_name, None)
+                is not getattr(stats.rv_continuous, method_name, None))
+
+    if _overrides("_get_support"):
+        def endpoints(**parameter_values):
+            a, b = dist._get_support(**parameter_values)
+            return np.asarray(a)[()], np.asarray(b)[()]
+
+        endpoints.__doc__ = f"[f({names}), g({names})]"
+    else:
+        endpoints = support
+
+    _x_support = _RealDomain(endpoints=endpoints, inclusive=(True, True))
     _x_param = _RealParameter('x', domain=_x_support, typical=(-1, 1))
 
     repr_str = _distribution_names.get(dist.name, dist.name.capitalize())
@@ -3622,13 +3644,6 @@ def _make_distribution_rv_generic(dist):
         def __str__(self):
             s = super().__str__()
             return s.replace('CustomDistribution', repr_str)
-
-    # override the domain's `get_numerical_endpoints` rather than the
-    # distribution's `_support` to ensure that `_support` takes care
-    # of any required broadcasting, etc.
-    def get_numerical_endpoints(parameter_values):
-        a, b = dist._get_support(**parameter_values)
-        return np.asarray(a)[()], np.asarray(b)[()]
 
     def _sample_formula(self, _, full_shape=(), *, rng=None, **kwargs):
         return dist._rvs(size=full_shape, random_state=rng, **kwargs)
@@ -3682,14 +3697,6 @@ def _make_distribution_rv_generic(dist):
         if method is not super_method:
             # Make it an attribute of the new object with the new name
             setattr(CustomDistribution, new_method, getattr(dist, old_method))
-
-    def _overrides(method_name):
-        return (getattr(dist.__class__, method_name, None)
-                is not getattr(stats.rv_continuous, method_name, None))
-
-    if _overrides('_get_support'):
-        domain = CustomDistribution._variable.domain
-        domain.get_numerical_endpoints = get_numerical_endpoints
 
     if _overrides('_munp'):
         CustomDistribution._moment_raw_formula = _moment_raw_formula
