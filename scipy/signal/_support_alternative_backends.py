@@ -74,6 +74,7 @@ untested = {
     "argrelmax",
     "argrelmin",
     "band_stop_obj",
+    "bode",
     "check_COLA",
     "check_NOLA",
     "chirp",
@@ -89,6 +90,7 @@ untested = {
     "findfreqs",
     "freqresp",
     "gausspulse",
+    "iirdesign", # There's no reason this shouldn't work. It just needs tests.
     "istft",
     "lombscargle",
     "lsim",
@@ -96,7 +98,7 @@ untested = {
     "peak_prominences",
     "peak_widths",
     "periodogram",
-    "place_pols",
+    "place_poles",
     "sawtooth",
     "sepfir2d",
     "spectrogram",
@@ -328,8 +330,10 @@ capabilities_overrides = {
                                allow_dask_compute=True),
     "sos2tf": xp_capabilities(cpu_only=True, exceptions=["cupy"], jax_jit=False,
                               allow_dask_compute=True),
-    "sosfilt": xp_capabilities(cpu_only=True, exceptions=["cupy"],
+    "sosfilt": xp_capabilities(cpu_only=True, exceptions=["cupy"], jax_jit=False,
                                allow_dask_compute=True),
+    "sosfilt_zi": xp_capabilities(cpu_only=True, allow_dask_compute=True,
+                                  jax_jit=False),
     "sosfiltfilt": xp_capabilities(
         cpu_only=True, exceptions=["cupy"],
         skip_backends=[
