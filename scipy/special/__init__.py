@@ -807,6 +807,7 @@ from ._ellip_harm import (
 )
 
 from ._lambertw import lambertw
+from ._polygamma import polygamma
 
 # Replace some function definitions from _ufuncs, _basic, _ellip_harm
 # and _lambertw to add Array API support
@@ -862,6 +863,7 @@ __all__ += [
     'mathieu_cem',
     'mathieu_sem',
     'poisson_binom_cdf',
+    'polygamma',
 ]
 
 from scipy._lib._testutils import PytestTester
